@@ -1,0 +1,70 @@
+{
+  "navbar": {
+    "home": "Beranda",
+    "about": "Tentang",
+    "features": "Fitur",
+    "vendors": "Vendor",
+    "testimonials": "Testimoni",
+    "faq": "FAQ",
+    "contact": "Hubungi Kami",
+    "getStarted": "Mulai Sekarang"
+  },
+  "hero": {
+    "title": "Temukan Vendor Terbaik untuk Acara Spesialmu",
+    "subtitle": "Dari pernikahan hingga ulang tahun, Hacara bantu wujudkan acara impianmu.",
+    "cta": "Mulai Sekarang"
+  },
+  "about": {
+    "title": "Tentang Hacara",
+    "description": "Hacara adalah platform digital yang mempertemukan pengguna dengan vendor acara terpercaya di seluruh Indonesia.",
+    "stats": {
+      "vendors": "10.000+ Vendor",
+      "events": "25.000+ Acara Sukses", 
+      "experience": "5+ Tahun Pengalaman"
+    }
+  },
+  "features": {
+    "title": "Fitur Unggulan",
+    "items": {
+      "search": {
+        "title": "Cari Vendor Mudah",
+        "description": "Temukan vendor yang sesuai dengan kebutuhan acara Anda dengan pencarian yang mudah dan cepat."
+      },
+      "filter": {
+        "title": "Filter Berdasarkan Jenis Acara",
+        "description": "Filter vendor berdasarkan kategori acara seperti pernikahan, ulang tahun, dan acara lainnya."
+      },
+      "payment": {
+        "title": "Transaksi Aman",
+        "description": "Sistem pembayaran yang aman dan terpercaya untuk memastikan transaksi Anda berjalan lancar."
+      },
+      "review": {
+        "title": "Review & Rating Jujur",
+        "description": "Baca review dan rating dari pengguna lain untuk membantu Anda memilih vendor terbaik."
+      }
+    }
+  },
+  "categories": {
+    "title": "Kategori Acara",
+    "viewVendors": "Lihat Vendor"
+  },
+  "vendors": {
+    "title": "Vendor Populer",
+    "viewDetail": "Detail"
+  },
+  "testimonials": {
+    "title": "Testimoni Pelanggan"
+  },
+  "faq": {
+    "title": "Pertanyaan yang Sering Diajukan"
+  },
+  "cta": {
+    "title": "Siap Buat Acara Tak Terlupakan?",
+    "button": "Mulai Sekarang"
+  },
+  "footer": {
+    "contact": "Kontak",
+    "social": "Media Sosial",
+    "copyright": "© 2025 Hacara. Semua hak cipta dilindungi."
+  }
+}

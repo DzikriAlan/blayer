@@ -1,0 +1,129 @@
+{
+  "landing": {
+    "hero": {
+      "badge": "BARU",
+      "badgeText": "Platform API Client Siap Produksi",
+      "headline1": "Bangun, Uji, dan",
+      "headline2": "Integrasikan API Lebih Cepat.",
+      "desc": "Tinggalkan pekerjaan integrasi yang berulang. Kelola alur kerja API, generate kode integrasi frontend, dan percepat pengembangan dari endpoint hingga implementasi siap produksi.",
+      "microCopy": "DIBANGUN UNTUK TIM YANG PEDULI TERHADAP KECEPATAN, KONSISTENSI, DAN PENGIRIMAN FRONTEND LEBIH CEPAT.",
+      "ctaSecondary": "Instal Ekstensi VS Code"
+    },
+    "designSystems": {
+      "badge": "SIAP API",
+      "title": "UI Kit untuk",
+      "titleSpan": "Blayer API"
+    },
+    "cta": {
+      "testimonialTitle": "Pengalaman",
+      "testimonialTitleSpan": "Menggunakannya",
+      "testimonials": {
+        "0": { "quote": "Anda memulai proyek berbasis API baru dan semuanya sudah terhubung — alur request, fondasi UI, alur pengujian, dan komponen siap integrasi. Tidak ada setup berulang, tidak ada pola yang harus dibangun ulang — cukup bangun, hubungkan, dan kirim." },
+        "1": { "quote": "Saat Anda generate kode integrasi API frontend dan langsung terhubung ke UI kit — request, loading state, form, tabel, mutasi, dan token sudah bekerja bersama — dirancang terasa mulus, bukan disambung-sambungkan." },
+        "2": { "quote": "Ada rasa aman saat membangun di atas sistem yang sudah memahami cara produk dibuat. Anda berhenti menghabiskan waktu menghubungkan layer API dan konsistensi UI, dan mulai fokus pada fitur, validasi, pengujian, serta pengiriman pengalaman yang lebih baik." }
+      },
+      "title": "SIAP BERHENTI MENULIS BOILERPLATE?",
+      "button": "Coba Blayer Gratis Sekarang",
+      "subtitle": "Bergabung dengan developer yang sudah menghemat berjam-jam pekerjaan integrasi berulang."
+    },
+    "nav": {
+      "designSystems": "UI Kit",
+      "pricing": "Harga",
+      "testimonial": "Pengalaman"
+    },
+    "pricing": {
+      "title": "Harga Sederhana,",
+      "titleSpan": "Transparan",
+      "free": {
+        "name": "Gratis",
+        "desc": "Untuk developer individu yang mengeksplorasi integrasi API",
+        "price": "Rp0",
+        "period": "/selamanya",
+        "cta": "Mulai Gratis",
+        "features": [
+          {"title": "5 endpoint API", "desc": "Generate kode untuk 5 endpoint"},
+          {"title": "TypeScript types", "desc": "Definisi tipe otomatis"},
+          {"title": "State management dasar", "desc": "Zustand stores disertakan"},
+          {"title": "Dukungan komunitas", "desc": "Diskusi GitHub & dokumentasi"}
+        ]
+      },
+      "starter": {
+        "name": "Starter",
+        "desc": "Untuk tim kecil yang membangun aplikasi berbasis API",
+        "price": "Rp150rb",
+        "period": "/bulan",
+        "cta": "Coba Gratis",
+        "features": [
+          {"title": "50 endpoint API", "desc": "Skalakan integrasi API Anda"},
+          {"title": "Semua tipe kode", "desc": "Types, states, services & controllers"},
+          {"title": "TanStack Query hooks", "desc": "Controller siap produksi"},
+          {"title": "Dukungan email", "desc": "Respons prioritas dalam 24 jam"},
+          {"title": "Import Swagger/Postman", "desc": "Import spesifikasi API yang ada"}
+        ]
+      },
+      "pro": {
+        "badge": "Populer",
+        "name": "Pro",
+        "desc": "Untuk tim profesional dengan kebutuhan API kompleks",
+        "price": "Rp450rb",
+        "period": "/bulan",
+        "cta": "Coba Gratis",
+        "features": [
+          {"title": "Endpoint tak terbatas", "desc": "Tanpa batasan generasi API"},
+          {"title": "Template kustom", "desc": "Tentukan pola kode sendiri"},
+          {"title": "Integrasi CLI", "desc": "Siap pipeline CI/CD"},
+          {"title": "Dukungan prioritas", "desc": "Respons dalam 4 jam"},
+          {"title": "Kolaborasi tim", "desc": "Bagikan konfigurasi antar tim"},
+          {"title": "Pola auth lanjutan", "desc": "Dukungan OAuth, JWT, API keys"}
+        ]
+      },
+      "elite": {
+        "name": "Elite",
+        "desc": "Untuk perusahaan dengan kebutuhan kustom",
+        "price": "Kustom",
+        "period": "",
+        "cta": "Hubungi Sales",
+        "features": [
+          {"title": "Semua fitur Pro", "desc": "Semua fitur Pro disertakan"},
+          {"title": "Dukungan dedicated", "desc": "Manajer akun pribadi"},
+          {"title": "Integrasi kustom", "desc": "Disesuaikan dengan stack Anda"},
+          {"title": "Garansi SLA", "desc": "Komitmen uptime 99.9%"},
+          {"title": "Opsi on-premise", "desc": "Deploy di infrastruktur Anda"}
+        ]
+      }
+    }
+  },
+  "generator": {
+    "title": "Blayer - API Integration Code Generator",
+    "description": "API Integration Code Generator"
+  },
+  "testRequest": {
+    "title": "Test Request - Blayer"
+  },
+  "profile": {
+    "title": "Profil - Blayer",
+    "signOut": "Keluar",
+    "backHome": "← Kembali ke Beranda",
+    "notSignedIn": "Belum masuk",
+    "openTestRequest": "Buka Test Request"
+  },
+  "contact": {
+    "title": "Kontak - Blayer",
+    "description": "Hubungi Blayer"
+  },
+  "privacy": {
+    "title": "Kebijakan Privasi - Blayer",
+    "description": "Kebijakan Privasi untuk Blayer - API Integration Code Generator"
+  },
+  "terms": {
+    "title": "Ketentuan Layanan - Blayer",
+    "description": "Ketentuan Layanan untuk Blayer - API Integration Code Generator"
+  },
+  "auth": {
+    "authenticating": "Mengautentikasi...",
+    "connecting": "Menghubungkan ke VS Code...",
+    "loginSuccess": "Login Berhasil",
+    "returnToVSCode": "Kembali ke VS Code →",
+    "vscodeFallback": "VS Code akan terbuka otomatis. Jika tidak, klik tombol di bawah."
+  }
+}

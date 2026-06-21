@@ -1,0 +1,129 @@
+{
+  "landing": {
+    "hero": {
+      "badge": "NEW",
+      "badgeText": "Production-Ready API Client Platform",
+      "headline1": "Build, Test, and",
+      "headline2": "Integrate APIs Faster.",
+      "desc": "Skip repetitive integration work. Manage API workflows, generate frontend integration code, and accelerate development from endpoint to production-ready implementation.",
+      "microCopy": "BUILT FOR TEAMS THAT CARE ABOUT SPEED, CONSISTENCY, AND FASTER FRONTEND DELIVERY.",
+      "ctaSecondary": "Install on VS Code Extension"
+    },
+    "designSystems": {
+      "badge": "API-READY",
+      "title": "UI Kits Built for",
+      "titleSpan": "Blayer API"
+    },
+    "pricing": {
+      "title": "Simple, Transparent",
+      "titleSpan": "Pricing",
+      "free": {
+        "name": "Free",
+        "desc": "For individual developers exploring API integration",
+        "price": "$0",
+        "period": "/forever",
+        "cta": "Get Started Free",
+        "features": [
+          {"title": "5 API endpoints", "desc": "Generate code for up to 5 endpoints"},
+          {"title": "TypeScript types", "desc": "Auto-generated type definitions"},
+          {"title": "Basic state management", "desc": "Zustand stores included"},
+          {"title": "Community support", "desc": "GitHub discussions & docs"}
+        ]
+      },
+      "starter": {
+        "name": "Starter",
+        "desc": "For small teams building API-driven apps",
+        "price": "$12",
+        "period": "/month",
+        "cta": "Start Free Trial",
+        "features": [
+          {"title": "50 API endpoints", "desc": "Scale your API integration"},
+          {"title": "All code types", "desc": "Types, states, services & controllers"},
+          {"title": "TanStack Query hooks", "desc": "Production-ready controllers"},
+          {"title": "Email support", "desc": "Priority response within 24h"},
+          {"title": "Swagger/Postman import", "desc": "Import existing API specs"}
+        ]
+      },
+      "pro": {
+        "badge": "Popular",
+        "name": "Pro",
+        "desc": "For professional teams with complex API needs",
+        "price": "$29",
+        "period": "/month",
+        "cta": "Start Free Trial",
+        "features": [
+          {"title": "Unlimited endpoints", "desc": "No limits on API generation"},
+          {"title": "Custom templates", "desc": "Define your own code patterns"},
+          {"title": "CLI integration", "desc": "CI/CD pipeline ready"},
+          {"title": "Priority support", "desc": "Response within 4 hours"},
+          {"title": "Team collaboration", "desc": "Share configs across team"},
+          {"title": "Advanced auth patterns", "desc": "OAuth, JWT, API keys support"}
+        ]
+      },
+      "elite": {
+        "name": "Elite",
+        "desc": "For enterprises with custom requirements",
+        "price": "Custom",
+        "period": "",
+        "cta": "Contact Sales",
+        "features": [
+          {"title": "Everything in Pro", "desc": "All Pro features included"},
+          {"title": "Dedicated support", "desc": "Personal account manager"},
+          {"title": "Custom integrations", "desc": "Tailored to your stack"},
+          {"title": "SLA guarantee", "desc": "99.9% uptime commitment"},
+          {"title": "On-premise option", "desc": "Deploy on your infrastructure"}
+        ]
+      }
+    },
+    "cta": {
+      "testimonialTitle": "The Experience",
+      "testimonialTitleSpan": "of Using It",
+      "testimonials": {
+        "0": { "quote": "You start a new API-driven project and everything is already connected for momentum — request flows, UI foundations, testing workflows, and integration-ready components. No repetitive setup, no rebuilding patterns — just build, connect, and ship." },
+        "1": { "quote": "That moment when you generate frontend API integration code and it instantly plugs into the UI kit. Requests, loading states, forms, tables, mutations, and tokens already work together — designed to feel seamless instead of stitched together." },
+        "2": { "quote": "There's something reassuring about building on top of a system that already understands how products are made. You stop spending hours wiring API layers and UI consistency, and start focusing on features, validation, testing, and shipping better experiences faster." }
+      },
+      "title": "READY TO STOP WRITING BOILERPLATE?",
+      "button": "Try Blayer Free Now",
+      "subtitle": "Join developers who have already saved hours of repetitive integration work."
+    },
+    "nav": {
+      "designSystems": "UI Kits",
+      "pricing": "Pricing",
+      "testimonial": "Experience"
+    }
+  },
+  "generator": {
+    "title": "Blayer - API Integration Code Generator",
+    "description": "API Integration Code Generator"
+  },
+  "testRequest": {
+    "title": "Test Request - Blayer"
+  },
+  "profile": {
+    "title": "Profile - Blayer",
+    "signOut": "Sign Out",
+    "backHome": "← Back to Home",
+    "notSignedIn": "Not signed in",
+    "openTestRequest": "Open Test Request"
+  },
+  "contact": {
+    "title": "Contact - Blayer",
+    "description": "Contact Blayer - Get in touch with us"
+  },
+  "privacy": {
+    "title": "Privacy Policy - Blayer",
+    "description": "Privacy Policy for Blayer - API Integration Code Generator"
+  },
+  "terms": {
+    "title": "Terms of Service - Blayer",
+    "description": "Terms of Service for Blayer - API Integration Code Generator"
+  },
+  "auth": {
+    "authenticating": "Authenticating...",
+    "connecting": "Connecting to VS Code...",
+    "loginSuccess": "Login Successful",
+    "returnToVSCode": "Return to VS Code →",
+    "vscodeFallback": "VS Code should open automatically. If not, click the button below."
+  }
+}
