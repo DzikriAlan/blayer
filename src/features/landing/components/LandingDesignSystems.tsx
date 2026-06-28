@@ -38,7 +38,7 @@ export default function LandingDesignSystems() {
   const next = () => { if (currentSlide < maxSlide) setCurrentSlide(currentSlide + 1); };
 
   return (
-    <section id="design-systems" className="py-20 md:py-32 border-t border-white/10 relative z-10">
+    <section id="design-systems" className="py-20 md:py-32 relative z-10">
       <div className="max-w-[1440px] mx-auto px-6 md:px-20">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-10 lg:gap-16 items-start">
           {/* Left: info */}

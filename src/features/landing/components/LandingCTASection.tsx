@@ -6,7 +6,7 @@ export default function LandingCTASection() {
   const { t } = useTranslation('common');
 
   return (
-    <section id="testimonial" className="w-full overflow-hidden py-20 md:py-32 relative z-10 border-t border-white/10">
+    <section id="testimonial" className="w-full overflow-hidden py-20 md:py-32 relative z-10">
       <div className="max-w-[1440px] mx-auto px-6 md:px-20">
         {/* Desktop: 2-column layout */}
         <div className="hidden lg:grid grid-cols-[1fr_3fr] gap-16 items-start">
