@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import chaplinLogo from '@/shared/assets/chaplin.png'
+import blayerLogo from '@/shared/assets/blayer-logo.png'
 import { Bot, Zap, Wrench, Globe, Linkedin, Github } from 'lucide-react'
 
 const features = [
@@ -153,10 +153,10 @@ export default function LandingHero() {
               <h1 className="font-bold tracking-tight text-foreground">
                 <span className="flex items-center gap-3 text-4xl sm:text-5xl lg:text-6xl justify-center lg:justify-start">
                   <Image
-                    src={chaplinLogo}
+                    src={blayerLogo}
                     alt="Blayer"
                     height={60}
-                    className="h-9 sm:h-12 lg:h-[3.75rem] w-auto select-none brightness-0 dark:invert"
+                    className="h-9 sm:h-12 lg:h-[3.75rem] w-auto select-none brightness-0 dark:invert [@media(prefers-color-scheme:dark)]:invert"
                   />
                   Blayer
                 </span>
