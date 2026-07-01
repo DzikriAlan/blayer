@@ -2,13 +2,50 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
+import { common } from 'lowlight'
 import dart from 'highlight.js/lib/languages/dart'
 import typescript from 'highlight.js/lib/languages/typescript'
 import toast from 'react-hot-toast'
-import { Github, Copy, ChevronDown } from 'lucide-react'
+import { Github, Copy, ChevronDown, BookOpen } from 'lucide-react'
+
+const readmeContent = `## Cara Pakai
+
+1. Simpan file yang kamu generate (misal \`NEXT.md\`) sebagai \`CODE.md\` di root project kamu.
+2. Tambahkan hook berikut ke \`.claude/settings.json\` atau \`.claude/settings.local.json\` project kamu:
+
+\`\`\`json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \\"$CLAUDE_PROJECT_DIR/CODE.md\\" ]; then echo '--- CODE.md context ---'; cat \\"$CLAUDE_PROJECT_DIR/CODE.md\\"; fi"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \\"$CLAUDE_PROJECT_DIR/CODE.md\\" ]; then echo '--- CODE.md context ---'; cat \\"$CLAUDE_PROJECT_DIR/CODE.md\\"; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
+\`\`\`
+
+3. Selesai — setiap sesi baru dan setiap prompt yang kamu kirim, Claude Code otomatis membaca \`CODE.md\` dan menyuntikkannya sebagai konteks. AI selalu ingat arsitektur, tech stack, dan aturan penamaan project kamu tanpa perlu dijelaskan ulang.
+`
 
 const rehypeHighlightOptions = {
-  languages: { dart, tsx: typescript, jsx: typescript },
+  languages: { ...common, dart, tsx: typescript, jsx: typescript },
+  aliases: { xml: ['vue'] },
 }
 
 interface CodeTab {
@@ -93,6 +130,7 @@ interface LandingCodeTabsProps {
 
 export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) {
   const [active, setActive] = useState(tabs[0].file)
+  const [showReadme, setShowReadme] = useState(false)
 
   const activeTab = tabs.find((tab) => tab.file === active) ?? tabs[0]
   const key = activeTab.file.replace('.md', '')
@@ -104,8 +142,10 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
     toast.success(`${activeTab.file} copied to clipboard`)
   }
 
+  const viewerContent = showReadme ? readmeContent : content
+
   return (
-    <div className="w-full flex-1 min-w-0">
+    <div className="w-full flex-1 min-w-0 max-w-xl lg:max-w-none">
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
         {/* Window chrome */}
         <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-3">
@@ -119,7 +159,11 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
           <div className="relative">
             <select
               value={active}
-              onChange={(e) => setActive(e.target.value)}
+              onMouseDown={() => setShowReadme(false)}
+              onChange={(e) => {
+                setActive(e.target.value)
+                setShowReadme(false)
+              }}
               className="appearance-none rounded-lg border border-border bg-card py-1.5 pl-3 pr-7 text-rem-70 font-medium text-foreground hover:bg-card/70 transition-colors focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {tabs.map((tab) => (
@@ -132,35 +176,50 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowReadme((prev) => !prev)}
+              aria-label="Readme"
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-rem-70 font-medium transition-colors sm:px-3 ${
+                showReadme
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border bg-card text-foreground hover:bg-muted/60'
+              }`}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Readme</span>
+            </button>
             <a
               href={activeTab.repo}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-rem-70 font-medium text-foreground hover:bg-muted/60 transition-colors"
+              aria-label="Repository"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2 py-1.5 text-rem-70 font-medium text-foreground hover:bg-muted/60 transition-colors sm:px-3"
             >
               <Github className="h-3.5 w-3.5" />
-              Repository
+              <span className="hidden sm:inline">Repository</span>
             </a>
             <button
               type="button"
               onClick={handleCopy}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-rem-70 font-medium text-foreground hover:bg-muted/60 transition-colors"
+              aria-label="Copy .md"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2 py-1.5 text-rem-70 font-medium text-foreground hover:bg-muted/60 transition-colors sm:px-3"
             >
               <Copy className="h-3.5 w-3.5" />
-              Copy .md
+              <span className="hidden sm:inline">Copy .md</span>
             </button>
           </div>
         </div>
 
         {/* Markdown viewer */}
         <div className="h-[560px] overflow-auto bg-card px-5 py-4">
-          {content ? (
+          {viewerContent ? (
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[[rehypeHighlight, rehypeHighlightOptions]]}
               components={markdownComponents}
             >
-              {content}
+              {viewerContent}
             </ReactMarkdown>
           ) : (
             <div className="flex h-full items-center justify-center">

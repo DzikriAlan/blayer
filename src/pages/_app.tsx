@@ -6,7 +6,6 @@ import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "next-themes";
 import ThemeToggle from "@/shared/components/general/ThemeToggle";
 import "@/shared/styles/globals.css";
-import "highlight.js/styles/github.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
