@@ -64,8 +64,8 @@ export default function LandingHero({ codeSnippets }: LandingHeroProps) {
         {/* Two-column layout */}
         <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-16">
 
-          {/* Left — headline + features + CTA */}
-          <div className="flex-1 w-full min-w-0">
+          {/* Left — headline + features + CTA — sized to match chaplin's hero left column (544px, same as its max-w-6xl / 2 columns / gap-16 math) */}
+          <div className="w-full lg:w-[544px] lg:max-w-[544px] lg:shrink-0">
             {/* Headline — centered on mobile, left on desktop */}
             <div className="text-center lg:text-left mb-4">
               <h1 className="font-bold tracking-tight text-foreground">
