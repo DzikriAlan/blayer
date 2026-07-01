@@ -60,9 +60,9 @@ export default function LandingHero({ codeSnippets }: LandingHeroProps) {
       </div>
 
       {/* Main content */}
-      <div className="relative mx-auto w-full max-w-6xl">
+      <div className="relative mx-auto w-full max-w-[1400px]">
         {/* Two-column layout */}
-        <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-center lg:gap-16">
+        <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-16">
 
           {/* Left — headline + features + CTA */}
           <div className="flex-1 w-full">
