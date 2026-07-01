@@ -21,62 +21,6 @@ const features = [
   },
 ]
 
-/* Tech icons — devicons CDN */
-const NextIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg"
-    width={18} height={18} alt="Next.js"
-    className="dark:invert"
-  />
-)
-const NuxtIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nuxtjs/nuxtjs-original.svg"
-    width={18} height={18} alt="Nuxt"
-  />
-)
-const ReactIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg"
-    width={18} height={18} alt="React"
-  />
-)
-const VueIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vuejs/vuejs-original.svg"
-    width={18} height={18} alt="Vue"
-  />
-)
-const GoIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/go/go-original.svg"
-    width={18} height={18} alt="Go"
-  />
-)
-const RustIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/rust/rust-original.svg"
-    width={18} height={18} alt="Rust"
-    className="dark:invert"
-  />
-)
-const FlutterIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flutter/flutter-original.svg"
-    width={18} height={18} alt="Flutter"
-  />
-)
-
-const techStack = [
-  { label: 'Next.js',  desc: 'App Framework', icon: <NextIcon />,    top: '22%',    right: '38%', dur: '3.2s', delay: '0s'   },
-  { label: 'Nuxt',     desc: 'App Framework', icon: <NuxtIcon />,    top: '17%',    right: '26%', dur: '2.9s', delay: '0.4s' },
-  { label: 'React',    desc: 'UI Library',    icon: <ReactIcon />,   top: '22%',    right: '8%',  dur: '3.5s', delay: '0.8s' },
-  { label: 'Vue',      desc: 'UI Framework',  icon: <VueIcon />,     top: '38%',    right: '4%',  dur: '3.0s', delay: '0.2s' },
-  { label: 'Go',       desc: 'Backend',       icon: <GoIcon />,      bottom: '22%', right: '8%',  dur: '2.7s', delay: '1.0s' },
-  { label: 'Rust',     desc: 'Backend',       icon: <RustIcon />,    bottom: '17%', right: '26%', dur: '3.1s', delay: '0.3s' },
-  { label: 'Flutter',  desc: 'Mobile',        icon: <FlutterIcon />, bottom: '22%', right: '38%', dur: '2.8s', delay: '0.7s' },
-]
-
 interface LandingHeroProps {
   readonly codeSnippets: Record<string, string>
 }
@@ -115,32 +59,6 @@ export default function LandingHero({ codeSnippets }: LandingHeroProps) {
         ))}
       </div>
 
-      {/* Floating tech stack badges — desktop only, clustered around video area */}
-      <div className="pointer-events-none hidden lg:block">
-        {techStack.map((tech) => (
-          <div
-            key={tech.label}
-            className="absolute z-10 flex items-center gap-2 rounded-xl border border-border bg-card/90 backdrop-blur-sm px-3 py-2 shadow-md"
-            style={{
-              top: tech.top,
-              right: tech.right,
-              bottom: (tech as { bottom?: string }).bottom,
-              animationName: 'hero-float',
-              animationDuration: tech.dur,
-              animationTimingFunction: 'ease-in-out',
-              animationDelay: tech.delay,
-              animationIterationCount: 'infinite',
-            }}
-          >
-            <div className="shrink-0">{tech.icon}</div>
-            <div>
-              <p className="whitespace-nowrap text-rem-80 font-semibold text-foreground leading-none">{tech.label}</p>
-              <p className="whitespace-nowrap text-rem-70 text-muted-foreground mt-0.5">{tech.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* Main content */}
       <div className="relative mx-auto w-full max-w-6xl">
         {/* Two-column layout */}
@@ -170,9 +88,8 @@ export default function LandingHero({ codeSnippets }: LandingHeroProps) {
               Eliminate repetitive coding with AI-powered generation, helping developers reduce repetitive work by up to <strong>40%</strong> and focus on building impactful features.
             </p>
 
-            {/* Mobile marquee — features + tech stack rows, hidden on desktop */}
-            <div className="lg:hidden mb-6 space-y-3">
-              {/* Row 1 — Features scrolling left */}
+            {/* Mobile marquee — features row, hidden on desktop */}
+            <div className="lg:hidden mb-6">
               <div className="relative overflow-hidden">
                 <div className="pointer-events-none absolute inset-y-0 left-0 w-8 z-10 bg-gradient-to-r from-background to-transparent" />
                 <div className="pointer-events-none absolute inset-y-0 right-0 w-8 z-10 bg-gradient-to-l from-background to-transparent" />
@@ -189,26 +106,6 @@ export default function LandingHero({ codeSnippets }: LandingHeroProps) {
                         {feat.icon}
                       </div>
                       <span className="whitespace-nowrap text-rem-85 font-medium text-foreground">{feat.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Row 2 — Tech Stack scrolling right */}
-              <div className="relative overflow-hidden">
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-8 z-10 bg-gradient-to-r from-background to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-8 z-10 bg-gradient-to-l from-background to-transparent" />
-                <div
-                  className="flex gap-2 w-max"
-                  style={{ animation: 'marquee-reverse 18s linear infinite' }}
-                >
-                  {[...techStack, ...techStack].map((tech, i) => (
-                    <div
-                      key={i}
-                      className="shrink-0 flex items-center gap-2 rounded-xl border border-border bg-card/80 px-3 py-2"
-                    >
-                      <div className="shrink-0">{tech.icon}</div>
-                      <span className="whitespace-nowrap text-rem-85 font-medium text-foreground">{tech.label}</span>
                     </div>
                   ))}
                 </div>
