@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import blayerLogo from '@/shared/assets/blayer-logo.png'
 import { Bot, Zap, Globe, Linkedin, Github } from 'lucide-react'
+import LandingCodeTabs from './LandingCodeTabs'
 
 const features = [
   {
@@ -76,7 +77,11 @@ const techStack = [
   { label: 'Flutter',  desc: 'Mobile',        icon: <FlutterIcon />, bottom: '22%', right: '38%', dur: '2.8s', delay: '0.7s' },
 ]
 
-export default function LandingHero() {
+interface LandingHeroProps {
+  readonly codeSnippets: Record<string, string>
+}
+
+export default function LandingHero({ codeSnippets }: LandingHeroProps) {
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-14 pb-14 md:pb-20 md:px-6">
       {/* Grid background */}
@@ -261,25 +266,8 @@ export default function LandingHero() {
             </div>
           </div>
 
-          {/* Right — YouTube video */}
-          <div className="w-full flex-1 max-w-xl lg:max-w-none">
-            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  className="absolute inset-0 h-full w-full"
-                  src="https://www.youtube.com/embed/KgzH7uZyeT8?si=ZBGQZGxdjInCPHs4"
-                  title="Chaplin demo"
-                  style={{ border: 0 }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-            <p className="mt-3 text-center text-rem-80 text-muted-foreground">
-              Watch Chaplin in action — 2 minute demo
-            </p>
-          </div>
+          {/* Right — Code tabs */}
+          <LandingCodeTabs codeSnippets={codeSnippets} />
 
         </div>
       </div>
