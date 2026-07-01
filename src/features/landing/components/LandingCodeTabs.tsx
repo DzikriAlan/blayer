@@ -2,20 +2,27 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
+import dart from 'highlight.js/lib/languages/dart'
+import typescript from 'highlight.js/lib/languages/typescript'
+import toast from 'react-hot-toast'
+import { Github, Copy, ChevronDown } from 'lucide-react'
+
+const rehypeHighlightOptions = {
+  languages: { dart, tsx: typescript, jsx: typescript },
+}
 
 interface CodeTab {
   label: string
   file: string
+  repo: string
 }
 
 const tabs: CodeTab[] = [
-  { label: 'Next.js', file: 'NEXT.md' },
-  { label: 'Nuxt', file: 'NUXT.md' },
-  { label: 'React', file: 'REACT.md' },
-  { label: 'Vue', file: 'VUE.md' },
-  { label: 'Go', file: 'GO.md' },
-  { label: 'Rust', file: 'RUST.md' },
-  { label: 'Flutter', file: 'FLUTTER.md' },
+  { label: 'Next.js', file: 'NEXT.md', repo: 'https://github.com/DzikriAlan/next-starter' },
+  { label: 'Nuxt', file: 'NUXT.md', repo: 'https://github.com/DzikriAlan/nuxt-starter' },
+  { label: 'Go', file: 'GO.md', repo: 'https://github.com/DzikriAlan/go-starter' },
+  { label: 'Rust', file: 'RUST.md', repo: 'https://github.com/DzikriAlan/rust-starter' },
+  { label: 'Flutter', file: 'FLUTTER.md', repo: 'https://github.com/DzikriAlan/flutter-starter' },
 ]
 
 type WithNode<T> = T & { node?: unknown }
@@ -91,32 +98,58 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
   const key = activeTab.file.replace('.md', '')
   const content = codeSnippets[key]
 
+  const handleCopy = async () => {
+    if (!content) return
+    await navigator.clipboard.writeText(content)
+    toast.success(`${activeTab.file} copied to clipboard`)
+  }
+
   return (
     <div className="w-full flex-1 min-w-0">
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
         {/* Window chrome */}
         <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-accent-foreground/40" />
-          <span className="h-2.5 w-2.5 rounded-full bg-primary/40" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         </div>
 
-        {/* Tab bar */}
-        <div className="flex overflow-x-auto border-b border-border bg-muted/20">
-          {tabs.map((tab) => (
-            <button
-              key={tab.file}
-              type="button"
-              onClick={() => setActive(tab.file)}
-              className={`shrink-0 whitespace-nowrap border-r border-border px-3 py-1.5 text-rem-70 font-medium transition-colors ${
-                active === tab.file
-                  ? 'bg-card text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
-              }`}
+        {/* Stack picker + actions */}
+        <div className="flex items-center gap-2 border-b border-border bg-muted/20 px-3 py-2">
+          <div className="relative">
+            <select
+              value={active}
+              onChange={(e) => setActive(e.target.value)}
+              className="appearance-none rounded-lg border border-border bg-card py-1.5 pl-3 pr-7 text-rem-70 font-medium text-foreground hover:bg-card/70 transition-colors focus:outline-none focus:ring-1 focus:ring-primary"
             >
-              {tab.file}
+              {tabs.map((tab) => (
+                <option key={tab.file} value={tab.file}>
+                  {tab.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <a
+              href={activeTab.repo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-rem-70 font-medium text-foreground hover:bg-muted/60 transition-colors"
+            >
+              <Github className="h-3.5 w-3.5" />
+              Repository
+            </a>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-rem-70 font-medium text-foreground hover:bg-muted/60 transition-colors"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              Copy .md
             </button>
-          ))}
+          </div>
         </div>
 
         {/* Markdown viewer */}
@@ -124,7 +157,7 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
           {content ? (
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight]}
+              rehypePlugins={[[rehypeHighlight, rehypeHighlightOptions]]}
               components={markdownComponents}
             >
               {content}
