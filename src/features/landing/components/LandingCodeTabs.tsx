@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
 
 interface CodeTab {
   label: string
@@ -44,16 +46,38 @@ const markdownComponents = {
   strong: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'strong'>>) => (
     <strong className="font-semibold text-foreground" {...props} />
   ),
-  code: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'code'>>) => (
-    <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-rem-75 text-foreground" {...props} />
-  ),
+  code: ({ node: _node, className, ...props }: WithNode<React.ComponentPropsWithoutRef<'code'>>) => {
+    const isBlock = className?.includes('hljs') ?? false
+    if (isBlock) {
+      return <code className={`${className} font-mono text-rem-75`} {...props} />
+    }
+    return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-rem-75 text-foreground" {...props} />
+  },
   pre: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'pre'>>) => (
-    <pre className="mb-3 overflow-x-auto rounded-lg bg-muted p-3 font-mono text-rem-75 text-foreground" {...props} />
+    <pre className="mb-3 overflow-x-auto rounded-lg p-3" {...props} />
   ),
   blockquote: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'blockquote'>>) => (
     <blockquote className="mb-3 border-l-2 border-border pl-3 text-muted-foreground italic" {...props} />
   ),
   hr: () => <hr className="my-4 border-border" />,
+  table: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'table'>>) => (
+    <div className="mb-3 overflow-x-auto">
+      <table className="w-full border-collapse text-rem-80" {...props} />
+    </div>
+  ),
+  thead: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'thead'>>) => (
+    <thead className="bg-muted" {...props} />
+  ),
+  tbody: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'tbody'>>) => <tbody {...props} />,
+  tr: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'tr'>>) => (
+    <tr className="border-b border-border" {...props} />
+  ),
+  th: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'th'>>) => (
+    <th className="border border-border px-3 py-1.5 text-left font-semibold text-foreground" {...props} />
+  ),
+  td: ({ node: _node, ...props }: WithNode<React.ComponentPropsWithoutRef<'td'>>) => (
+    <td className="border border-border px-3 py-1.5 text-muted-foreground" {...props} />
+  ),
 }
 
 interface LandingCodeTabsProps {
@@ -84,7 +108,7 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
               key={tab.file}
               type="button"
               onClick={() => setActive(tab.file)}
-              className={`shrink-0 whitespace-nowrap border-r border-border px-4 py-2.5 text-rem-80 font-medium transition-colors ${
+              className={`shrink-0 whitespace-nowrap border-r border-border px-3 py-1.5 text-rem-70 font-medium transition-colors ${
                 active === tab.file
                   ? 'bg-card text-foreground'
                   : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
@@ -98,7 +122,13 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
         {/* Markdown viewer */}
         <div className="h-[420px] overflow-auto bg-card px-5 py-4">
           {content ? (
-            <ReactMarkdown components={markdownComponents}>{content}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeHighlight]}
+              components={markdownComponents}
+            >
+              {content}
+            </ReactMarkdown>
           ) : (
             <div className="flex h-full items-center justify-center">
               <p className="text-rem-90 text-muted-foreground">{activeTab.label} — coming soon</p>
