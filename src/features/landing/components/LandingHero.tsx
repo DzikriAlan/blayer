@@ -65,7 +65,7 @@ export default function LandingHero({ codeSnippets }: LandingHeroProps) {
         <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-16">
 
           {/* Left — headline + features + CTA */}
-          <div className="flex-1 w-full">
+          <div className="flex-1 w-full min-w-0">
             {/* Headline — centered on mobile, left on desktop */}
             <div className="text-center lg:text-left mb-4">
               <h1 className="font-bold tracking-tight text-foreground">

@@ -92,7 +92,7 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
   const content = codeSnippets[key]
 
   return (
-    <div className="w-full flex-1">
+    <div className="w-full flex-1 min-w-0">
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
         {/* Window chrome */}
         <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-3">
