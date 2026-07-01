@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import blayerLogo from '@/shared/assets/blayer-logo.png'
-import { Bot, Zap, Wrench, Globe, Linkedin, Github } from 'lucide-react'
+import { Bot, Zap, Globe, Linkedin, Github } from 'lucide-react'
 
 const features = [
   {
@@ -12,11 +12,6 @@ const features = [
     icon: <Zap className="h-4 w-4 text-primary" />,
     title: '40% Less Repetitive Work',
     description: 'Focus on solving real problems',
-  },
-  {
-    icon: <Wrench className="h-4 w-4 text-primary" />,
-    title: 'Smart Refactoring',
-    description: 'Clean',
   },
   {
     icon: <Globe className="h-4 w-4 text-primary" />,
@@ -156,7 +151,7 @@ export default function LandingHero() {
                     src={blayerLogo}
                     alt="Blayer"
                     height={60}
-                    className="h-9 sm:h-12 lg:h-[3.75rem] w-auto select-none brightness-0 dark:invert [@media(prefers-color-scheme:dark)]:invert"
+                    className="h-9 sm:h-12 lg:h-[3.75rem] w-auto select-none brightness-0 dark:invert"
                   />
                   Blayer
                 </span>
@@ -167,7 +162,7 @@ export default function LandingHero() {
             </div>
 
             <p className="mb-6 text-rem-95 text-muted-foreground leading-relaxed text-center lg:text-left max-w-md mx-auto lg:mx-0">
-              Eliminate repetitive coding with AI-powered generation, refactoring, debugging, and documentation—helping developers reduce repetitive work by up to <strong>40%</strong> and focus on building impactful features.
+              Eliminate repetitive coding with AI-powered generation, helping developers reduce repetitive work by up to <strong>40%</strong> and focus on building impactful features.
             </p>
 
             {/* Mobile marquee — features + tech stack rows, hidden on desktop */}
