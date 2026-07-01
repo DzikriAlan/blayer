@@ -1,41 +1,31 @@
 import Image from 'next/image'
 import chaplinLogo from '@/shared/assets/chaplin.png'
-import { Bot, Database, Wallet, Zap, Shield, Globe, Linkedin, Github } from 'lucide-react'
+import { Bot, Zap, Wrench, Globe, Linkedin, Github } from 'lucide-react'
 
 const features = [
   {
     icon: <Bot className="h-4 w-4 text-primary" />,
-    title: 'AI Agents',
-    description: 'Cut support workload by 70%, active around the clock',
-  },
-  {
-    icon: <Database className="h-4 w-4 text-primary" />,
-    title: 'Knowledge Base',
-    description: 'Hundreds of docs become instant, accurate answers',
-  },
-  {
-    icon: <Wallet className="h-4 w-4 text-primary" />,
-    title: 'Usage & Billing',
-    description: 'Track spend per agent — no surprise invoices',
+    title: 'AI Code Generation',
+    description: 'Generate repetitive code instantly',
   },
   {
     icon: <Zap className="h-4 w-4 text-primary" />,
-    title: 'Real-time Streaming',
-    description: 'Answers arrive before users lose patience',
+    title: '40% Less Repetitive Work',
+    description: 'Focus on solving real problems',
   },
   {
-    icon: <Shield className="h-4 w-4 text-primary" />,
-    title: 'Secure Auth',
-    description: 'Google login — entire team onboarded instantly',
+    icon: <Wrench className="h-4 w-4 text-primary" />,
+    title: 'Smart Refactoring',
+    description: 'Clean',
   },
   {
     icon: <Globe className="h-4 w-4 text-primary" />,
-    title: 'Built to Scale',
-    description: 'From dozens to millions of conversations, unchanged',
+    title: 'Built for Modern Stack',
+    description: "Seamlessly integrates with today's development tools",
   },
 ]
 
-/* Tech icons — devicons CDN for well-supported techs, inline SVG for newer ones */
+/* Tech icons — devicons CDN */
 const NextIcon = () => (
   <Image
     src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg"
@@ -43,23 +33,10 @@ const NextIcon = () => (
     className="dark:invert"
   />
 )
-const TSIcon = () => (
+const NuxtIcon = () => (
   <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg"
-    width={18} height={18} alt="TypeScript"
-  />
-)
-const TailwindIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg"
-    width={18} height={18} alt="Tailwind CSS"
-  />
-)
-const PrismaIcon = () => (
-  <Image
-    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/prisma/prisma-original.svg"
-    width={18} height={18} alt="Prisma"
-    className="dark:invert"
+    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nuxtjs/nuxtjs-original.svg"
+    width={18} height={18} alt="Nuxt"
   />
 )
 const ReactIcon = () => (
@@ -68,49 +45,40 @@ const ReactIcon = () => (
     width={18} height={18} alt="React"
   />
 )
-
-/* Shadcn/UI — overlapping circles logo */
-const ShadcnIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-    <rect width="18" height="18" rx="4" fill="#18181B" />
-    <circle cx="6.5" cy="9" r="3" fill="none" stroke="white" strokeWidth="1.4" />
-    <circle cx="11.5" cy="9" r="3" fill="none" stroke="white" strokeWidth="1.4" />
-  </svg>
+const VueIcon = () => (
+  <Image
+    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vuejs/vuejs-original.svg"
+    width={18} height={18} alt="Vue"
+  />
 )
-
-/* TanStack Query — circular refresh arrows */
-const TanStackIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-    <circle cx="9" cy="9" r="9" fill="#FF4154" />
-    <path d="M5.5 9a3.5 3.5 0 0 1 3.5-3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M9 5.5l1.5 1.5-1.5 1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M12.5 9a3.5 3.5 0 0 1-3.5 3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M9 12.5l-1.5-1.5 1.5-1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
+const GoIcon = () => (
+  <Image
+    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/go/go-original.svg"
+    width={18} height={18} alt="Go"
+  />
 )
-
-/* Zustand — simplified bear face */
-const ZustandIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-    <circle cx="9" cy="9" r="9" fill="#B45309" />
-    <circle cx="5.5" cy="5.5" r="2" fill="#92400E" />
-    <circle cx="12.5" cy="5.5" r="2" fill="#92400E" />
-    <ellipse cx="9" cy="10.5" rx="4" ry="3.5" fill="#92400E" />
-    <circle cx="7.5" cy="10" r="0.8" fill="#B45309" />
-    <circle cx="10.5" cy="10" r="0.8" fill="#B45309" />
-    <path d="M7.5 12 Q9 13 10.5 12" stroke="#B45309" strokeWidth="0.8" strokeLinecap="round" />
-  </svg>
+const RustIcon = () => (
+  <Image
+    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/rust/rust-original.svg"
+    width={18} height={18} alt="Rust"
+    className="dark:invert"
+  />
+)
+const FlutterIcon = () => (
+  <Image
+    src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flutter/flutter-original.svg"
+    width={18} height={18} alt="Flutter"
+  />
 )
 
 const techStack = [
-  { label: 'Next.js 14',     desc: 'App Framework',  icon: <NextIcon />,     top: '22%',    right: '38%', dur: '3.2s', delay: '0s'   },
-  { label: 'TypeScript',     desc: 'Type Safety',    icon: <TSIcon />,       top: '17%',    right: '26%', dur: '2.9s', delay: '0.4s' },
-  { label: 'Tailwind CSS',   desc: 'Styling',        icon: <TailwindIcon />, top: '22%',    right: '8%',  dur: '3.5s', delay: '0.8s' },
-  { label: 'Shadcn/UI',      desc: 'Components',     icon: <ShadcnIcon />,   top: '38%',    right: '4%',  dur: '3.0s', delay: '0.2s' },
-  { label: 'TanStack Query', desc: 'Server State',   icon: <TanStackIcon />, top: '57%',    right: '4%',  dur: '3.4s', delay: '0.6s' },
-  { label: 'Zustand',        desc: 'Client State',   icon: <ZustandIcon />,  bottom: '22%', right: '8%',  dur: '2.7s', delay: '1.0s' },
-  { label: 'Prisma',         desc: 'ORM',            icon: <PrismaIcon />,   bottom: '17%', right: '26%', dur: '3.1s', delay: '0.3s' },
-  { label: 'React Hook Form',desc: 'Forms',          icon: <ReactIcon />,    bottom: '22%', right: '38%', dur: '2.8s', delay: '0.7s' },
+  { label: 'Next.js',  desc: 'App Framework', icon: <NextIcon />,    top: '22%',    right: '38%', dur: '3.2s', delay: '0s'   },
+  { label: 'Nuxt',     desc: 'App Framework', icon: <NuxtIcon />,    top: '17%',    right: '26%', dur: '2.9s', delay: '0.4s' },
+  { label: 'React',    desc: 'UI Library',    icon: <ReactIcon />,   top: '22%',    right: '8%',  dur: '3.5s', delay: '0.8s' },
+  { label: 'Vue',      desc: 'UI Framework',  icon: <VueIcon />,     top: '38%',    right: '4%',  dur: '3.0s', delay: '0.2s' },
+  { label: 'Go',       desc: 'Backend',       icon: <GoIcon />,      bottom: '22%', right: '8%',  dur: '2.7s', delay: '1.0s' },
+  { label: 'Rust',     desc: 'Backend',       icon: <RustIcon />,    bottom: '17%', right: '26%', dur: '3.1s', delay: '0.3s' },
+  { label: 'Flutter',  desc: 'Mobile',        icon: <FlutterIcon />, bottom: '22%', right: '38%', dur: '2.8s', delay: '0.7s' },
 ]
 
 export default function LandingHero() {
@@ -186,20 +154,20 @@ export default function LandingHero() {
                 <span className="flex items-center gap-3 text-4xl sm:text-5xl lg:text-6xl justify-center lg:justify-start">
                   <Image
                     src={chaplinLogo}
-                    alt="Chaplin"
+                    alt="Blayer"
                     height={60}
                     className="h-9 sm:h-12 lg:h-[3.75rem] w-auto select-none brightness-0 dark:invert"
                   />
-                  Chaplin
+                  Blayer
                 </span>
                 <span className="block text-3xl sm:text-4xl lg:text-5xl text-muted-foreground mt-1">
-                  Your knowledge, always ready
+                  Handle repetitive code, ship features 40% faster
                 </span>
               </h1>
             </div>
 
             <p className="mb-6 text-rem-95 text-muted-foreground leading-relaxed text-center lg:text-left max-w-md mx-auto lg:mx-0">
-              Turn your team&apos;s knowledge into AI agents that answer questions, handle support, and automate workflows — 24/7
+              Eliminate repetitive coding with AI-powered generation, refactoring, debugging, and documentation—helping developers reduce repetitive work by up to <strong>40%</strong> and focus on building impactful features.
             </p>
 
             {/* Mobile marquee — features + tech stack rows, hidden on desktop */}
