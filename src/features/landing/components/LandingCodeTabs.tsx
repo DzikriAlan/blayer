@@ -120,7 +120,7 @@ export default function LandingCodeTabs({ codeSnippets }: LandingCodeTabsProps) 
         </div>
 
         {/* Markdown viewer */}
-        <div className="h-[420px] overflow-auto bg-card px-5 py-4">
+        <div className="h-[560px] overflow-auto bg-card px-5 py-4">
           {content ? (
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
