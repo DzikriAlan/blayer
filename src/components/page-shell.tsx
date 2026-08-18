@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { ArrowDown, FileText, MoreVertical, Palette, Send } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowDown, MoreVertical, Palette, Send } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 
@@ -71,7 +72,20 @@ export default function PageShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex items-center gap-4 border-b-2 border-foreground bg-foreground px-4 py-3.5 text-background sm:px-6">
-          <FileText className="h-5 w-5 shrink-0" />
+          <Link
+            href="/"
+            aria-label="Kembali ke halaman depan"
+            className="flex h-8 w-8 shrink-0 items-center justify-center"
+          >
+            <Image
+              src="/blayer-mark.png"
+              alt=""
+              width={32}
+              height={32}
+              priority
+              className="h-8 w-8 border-2 border-background"
+            />
+          </Link>
           <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
           <div
             aria-hidden
