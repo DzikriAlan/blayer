@@ -61,7 +61,7 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 
 | ID | Kebutuhan | Kriteria penerimaan | Prio | Status |
 | --- | --- | --- | --- | --- |
-| F-01 | Membuat form dari template | Memilih template mengisi judul, deskripsi, dan seluruh pertanyaan; semuanya masih bisa diubah | P0 | Selesai |
+| F-01 | Membuat form dari template | Memilih template mengisi judul, deskripsi, dan seluruh pertanyaan; semuanya masih bisa diubah. Template masih bisa diganti berkali-kali di builder, dan `?template=` di URL mengikuti pilihan terakhir | P0 | Selesai |
 | F-02 | Menyusun pertanyaan manual | 15 tipe field tersedia; urutan bisa digeser; field pilihan wajib punya minimal 2 opsi | P0 | Selesai |
 | F-03 | Mengisi form lewat tautan publik | Form terbuka tanpa login; field wajib divalidasi di klien dan server | P0 | Selesai |
 | F-04 | Satu nilai template menentukan tampilan | Field `view` bernilai `scoring`, `exam`, `survey`, `event`, `order`, atau `course`; halaman isi, layar setelah kirim, dan dashboard hasil diturunkan dari nilai itu | P0 | Selesai |

@@ -8,7 +8,7 @@ harus dilakukan tangan.
 | --- | --- |
 | **Versi PRD yang diuji** | 1.9 |
 | **Terakhir diperbarui** | 18 Agustus 2026 |
-| **Kasus otomatis** | 80 |
+| **Kasus otomatis** | 82 |
 | **Berkas uji** | 11 |
 
 ---
@@ -70,6 +70,8 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-34a | F-34 | Mengetik di kolom Form Title | Bilah atas ikut berubah seketika mengikuti judulnya | Otomatis | `formsCreate.test.tsx` |
 | TC-34b | F-34 | Mengosongkan kembali kolom judul | Bilah atas kembali ke label bawaan UNTITLED FORM | Otomatis | `formsCreate.test.tsx` |
 | TC-34c | F-34 | Memakai template dari builder | Judul dari template ikut mengubah bilah atas | Otomatis | `formsCreate.test.tsx` |
+| TC-35a | F-01 | Datang lewat `?template=` lalu memilih template lain | Isian berpindah ke template baru dan tidak ditarik kembali ke yang lama | Otomatis | `formsCreate.test.tsx` |
+| TC-35b | F-01 | Memilih template di builder | `?template=` di URL ikut berubah mengikuti pilihan terakhir | Otomatis | `formsCreate.test.tsx` |
 | TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `survey`, `event`, `order`, atau `course` | Otomatis | `formsTemplate.test.ts` |
 | TC-13a | F-13 | Menekan **See** pada kartu template | Riwayat form hanya menampilkan form dari template itu, dan baris filter aktif muncul | Otomatis | `formsList.test.tsx` |
 | TC-13b | F-13 | Menekan **Shown** (klik kedua) | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
