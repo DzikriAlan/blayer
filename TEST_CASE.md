@@ -6,10 +6,10 @@ harus dilakukan tangan.
 
 | | |
 | --- | --- |
-| **Versi PRD yang diuji** | 1.7 |
+| **Versi PRD yang diuji** | 1.8 |
 | **Terakhir diperbarui** | 18 Agustus 2026 |
-| **Kasus otomatis** | 71 |
-| **Berkas uji** | 9 |
+| **Kasus otomatis** | 76 |
+| **Berkas uji** | 10 |
 
 ---
 
@@ -43,8 +43,10 @@ test/
 │   │   └── responsesCourse.test.tsx           # halaman akses kelas
 │   └── uploads/
 │       └── uploadsBanner.test.tsx             # unggah banner dan kode QRIS
+├── pages/
+│   └── errorPages.test.tsx                    # halaman 404 dan 500
 └── shared/
-    └── loadingView.test.tsx                   # keadaan memuat dan status
+    └── loadData.test.tsx                      # penangan memuat, gagal, kosong
 ```
 
 State, controller, dan router di-mock per berkas uji, jadi seluruh pengujian
@@ -166,12 +168,16 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 
 | ID | Kebutuhan | Skenario | Hasil yang diharapkan | Jenis | Berkas |
 | --- | --- | --- | --- | --- | --- |
-| TC-30a | F-30 | Memuat riwayat form | Muncul ikon berputar dan keterangan "Memuat Riwayat" | Otomatis | `formsList.test.tsx` |
-| TC-30b | F-30 | Memuat halaman isi form | Muncul ikon berputar dan keterangan "Menyiapkan Form" | Otomatis | `responsesSubmit.test.tsx` |
-| TC-30c | F-30 | Keadaan memuat dibaca pembaca layar | Wadahnya `role="status"` dengan `aria-live="polite"` | Otomatis | `loadingView.test.tsx` |
-| TC-30d | F-30 | Halaman memakai jumlah balok pratinjau berbeda | Jumlah balok mengikuti nilai `lines` | Otomatis | `loadingView.test.tsx` |
-| TC-30e | F-30 | Membuka `/forms/[id]` sebelum router siap | Halaman menampilkan keadaan memuat, bukan layar kosong | Manual | — |
-| TC-03d | F-03 | Keadaan kosong maupun galat | Judul, alasan, dan tombol aksinya tampil bersamaan | Otomatis | `loadingView.test.tsx` |
+| TC-30a | F-30 | Memuat riwayat form | `LoadData` menampilkan ikon berputar; daftar form belum dirender | Otomatis | `formsList.test.tsx` |
+| TC-30b | F-30 | Memuat halaman isi form | `LoadData` menampilkan ikon berputar, bukan layar kosong | Otomatis | `responsesSubmit.test.tsx` |
+| TC-30c | F-30 | Keadaan memuat dibaca pembaca layar | Ikonnya `role="status"` berlabel Loading | Otomatis | `loadData.test.tsx` |
+| TC-30d | F-30 | Keadaan kosong dan gagal | Judul serta alasannya tampil, isi aslinya tidak dirender | Otomatis | `loadData.test.tsx` |
+| TC-30e | F-30 | Data sudah siap | Isi dirender dan tidak ada indikator memuat yang tersisa | Otomatis | `loadData.test.tsx` |
+| TC-30f | F-30 | Membuka `/forms/[id]` sebelum router siap | Halaman menampilkan keadaan memuat, bukan layar kosong | Manual | — |
+| TC-33a | F-33 | Membuka alamat yang tidak dikenal | Halaman 404 sendiri tampil dengan kode, judul, dan alasannya | Otomatis | `errorPages.test.tsx` |
+| TC-33b | F-33 | Memeriksa halaman 404 | Ada jalan keluar ke beranda, daftar form, dan builder | Otomatis | `errorPages.test.tsx` |
+| TC-33c | F-33 | Membuka halaman 500 | Dibedakan dari 404 dan tetap menyediakan jalan kembali | Otomatis | `errorPages.test.tsx` |
+| TC-33d | F-33 | Membuka alamat tak dikenal di peramban | Server membalas status 404, bukan 200 | Manual | — |
 | TC-29a | F-29 | Membuka halaman depan | Urutan section: navbar, hero, statistik, pita, kategori, footer | Manual | — |
 | TC-29b | F-29 | Membuka halaman depan di lebar ponsel | Navigasi berubah jadi tombol menu, isi tidak meluber ke samping | Manual | — |
 | TC-29c | F-29 | Menekan "Jelajahi Kategori" | Halaman menggulir mulus ke bagian kategori | Manual | — |

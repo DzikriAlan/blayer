@@ -64,9 +64,6 @@ beforeEach(() => {
   }
 })
 
-const getHistorySection = () =>
-  screen.getByRole('heading', { name: 'Ujian Sejarah' }).closest('section')
-
 describe('riwayat form', () => {
   it('TC-13 semua form tampil sebelum filter dipakai', async () => {
     await loadList()
@@ -154,12 +151,14 @@ describe('riwayat form', () => {
     expect(push).toHaveBeenCalledWith('/forms/create?template=exam')
   })
 
-  it('TC-30 keadaan memuat memakai keterangan, bukan balok kosong', async () => {
+  it('TC-30 keadaan memuat ditangani LoadData, bukan daftar kosong', async () => {
     state.forms = { ...state.forms, status: 'loading', data: [] }
     await loadList()
 
-    expect(screen.getByText('MEMUAT')).toBeInTheDocument()
-    expect(screen.getByText('Memuat Riwayat')).toBeInTheDocument()
+    expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Ujian Sejarah' })
+    ).not.toBeInTheDocument()
   })
 
   it('TC-03 kegagalan memuat menawarkan percobaan ulang', async () => {

@@ -4,7 +4,7 @@ import { ArrowUpRight, Compass, Sparkles, X, type LucideIcon } from 'lucide-reac
 import { cn } from '@/shared/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { LoadData } from '@/shared/components/load-data'
 
 export interface FormsCategoryForm {
   id: string
@@ -109,33 +109,16 @@ export default function FormsCategory({
                   <span aria-hidden className="brutal-hatch flex-1 opacity-20" />
                 </div>
 
-                {isLoading ? (
-                  <div className="flex flex-col gap-2 p-5 sm:p-7">
-                    {[0, 1].map((skeleton) => (
-                      <Skeleton key={skeleton} className="h-20 w-full" />
-                    ))}
-                  </div>
-                ) : null}
-
-                {!isLoading && !item.forms.length ? (
-                  <div className="px-5 py-7 sm:px-7">
-                    <p className="font-display text-xl font-black uppercase leading-none tracking-tight">
-                      {item.emptyExploreTitle}
-                    </p>
-                    <p className="mt-3 max-w-md font-mono text-xs leading-relaxed text-muted-foreground">
-                      {item.emptyExploreSubtitle}
-                    </p>
-                    <Button
-                      className="mt-5"
-                      size="sm"
-                      onClick={() => onLoadFormsTemplate(item.id)}
-                    >
-                      <Sparkles /> Use Template
-                    </Button>
-                  </div>
-                ) : null}
-
-                {item.forms.map((form) => (
+                <LoadData
+                  response={{
+                    isLoading,
+                    isEmpty: !isLoading && !item.forms.length,
+                    emptyTitle: item.emptyExploreTitle,
+                    emptySubtitle: item.emptyExploreSubtitle,
+                  }}
+                  minHeight="120px"
+                >
+                  {item.forms.map((form) => (
                   <Link
                     key={form.id}
                     href={`/forms/${form.id}`}
@@ -155,7 +138,21 @@ export default function FormsCategory({
                     </div>
                     <ArrowUpRight className="h-5 w-5 shrink-0 transition-colors group-hover:text-primary" />
                   </Link>
-                ))}
+                  ))}
+                </LoadData>
+
+                {/* Placeholder LoadData tidak punya slot aksi, jadi ajakan
+                    memakai templatenya diletakkan di bawah. */}
+                {!isLoading && !item.forms.length ? (
+                  <div className="px-5 pb-7 sm:px-7">
+                    <Button
+                      size="sm"
+                      onClick={() => onLoadFormsTemplate(item.id)}
+                    >
+                      <Sparkles /> Use Template
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </article>

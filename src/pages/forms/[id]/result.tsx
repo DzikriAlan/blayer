@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 
 import PageShell from '@/components/page-shell'
-import LoadingView from '@/components/loading-view'
+import { LoadData } from '@/shared/components/load-data'
 import AnalysisResult from '@/features/analysis/components/analysisResult'
 
 const FormsResultPage: NextPage = () => {
@@ -29,7 +29,7 @@ const FormsResultPage: NextPage = () => {
         {formId ? (
           <AnalysisResult formId={formId} />
         ) : (
-          <LoadingView title="Memuat Hasil" subtitle="Membuka dashboard hasil dari tautan yang kamu pakai. Sebentar lagi selesai." />
+          <LoadData response={{ isLoading: true }} minHeight="60vh" />
         )}
       </PageShell>
     </>

@@ -20,8 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import SectionHead from '@/components/section-head'
-import StatusView from '@/components/status-view'
-import LoadingView from '@/components/loading-view'
+import { LoadData } from '@/shared/components/load-data'
 import ResponsesField from './responsesField'
 import ResponsesGuard from './responsesGuard'
 import ResponsesEvent from './responsesEvent'
@@ -159,6 +158,22 @@ export default function ResponsesSubmit({ formId }: Props) {
       errorTitle: 'Form Not Found',
       errorSubtitle:
         'Form yang kamu cari tidak tersedia atau sudah dihapus oleh pembuatnya.',
+      // Keadaan halaman dan keadaan daftar pertanyaan dipisah: form yang belum
+      // punya pertanyaan tetap menampilkan kolom identitas dan tombol kirim.
+      pageState: {
+        isLoading: formsDetail.status === 'loading',
+        isError: formsDetail.status === 'error',
+        errorTitle: 'Form Not Found',
+        errorSubtitle:
+          'Form yang kamu cari tidak tersedia atau sudah dihapus oleh pembuatnya.',
+        errorImage: '/no-data.svg',
+      },
+      questionState: {
+        isEmpty: formsDetail.status === 'success' && !mappedList.length,
+        emptyTitle: 'No Questions Yet',
+        emptySubtitle: 'Pembuat form belum menambahkan field apa pun.',
+        emptyImage: '/no-data.svg',
+      },
       pagination: { currentPage: 1, perPage: mappedList.length },
       title: formsDetail.data?.title ?? 'Untitled Form',
       description:
@@ -375,24 +390,16 @@ export default function ResponsesSubmit({ formId }: Props) {
     )
   }
 
-  if (data.isLoading) {
+  if (data.isLoading || data.isError) {
     return (
-      <LoadingView
-        title="Menyiapkan Form"
-        subtitle="Mengambil pertanyaan dan pengaturan form ini. Sebentar lagi selesai."
-      />
-    )
-  }
-
-  if (data.isError) {
-    return (
-      <StatusView
-        title={data.errorTitle}
-        subtitle={data.errorSubtitle}
-        image={data.emptyImage}
-      >
-        <Button onClick={() => fetchFormsDetail.refetch()}>Coba Lagi</Button>
-      </StatusView>
+      <div className="border-2 border-foreground bg-paper">
+        <LoadData response={data.pageState} minHeight="40vh" />
+        {data.isError ? (
+          <div className="flex justify-center pb-10">
+            <Button onClick={() => fetchFormsDetail.refetch()}>Coba Lagi</Button>
+          </div>
+        ) : null}
+      </div>
     )
   }
 
@@ -476,27 +483,23 @@ export default function ResponsesSubmit({ formId }: Props) {
         </div>
       ) : null}
 
-      {data.isEmpty ? (
-        <StatusView
-          title={data.emptyTitle}
-          subtitle={data.emptySubtitle}
-          image={data.emptyImage}
-          className="border-0 border-b-2"
-        />
-      ) : null}
-
-      {data.data.map((item) => (
-        <ResponsesField
-          key={item.field.id}
-          index={item.index}
-          field={item.field}
-          value={item.value}
-          error={item.error}
-          amount={item.amount}
-          qrisUrl={data.qrisUrl}
-          onEditAnswer={editAnswer}
-        />
-      ))}
+      <LoadData
+        response={data.questionState}
+        className="border-b-2 border-foreground bg-paper"
+      >
+        {data.data.map((item) => (
+          <ResponsesField
+            key={item.field.id}
+            index={item.index}
+            field={item.field}
+            value={item.value}
+            error={item.error}
+            amount={item.amount}
+            qrisUrl={data.qrisUrl}
+            onEditAnswer={editAnswer}
+          />
+        ))}
+      </LoadData>
 
       {data.submitError ? (
         <p className="brutal-eyebrow border-b-2 border-foreground bg-primary px-7 py-4 text-primary-foreground">

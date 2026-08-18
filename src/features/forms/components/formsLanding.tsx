@@ -8,8 +8,7 @@ import { useFormsStates } from '../states/formsStates'
 import { useFormsControllers } from '../controllers/formsControllers'
 
 import { Button } from '@/components/ui/button'
-import StatusView from '@/components/status-view'
-import LoadingView from '@/components/loading-view'
+import { LoadData } from '@/shared/components/load-data'
 import FormsHero from './formsHero'
 import FormsCategory from './formsCategory'
 import { FORMS_TEMPLATES } from './formsTemplate'
@@ -180,39 +179,20 @@ export default function FormsLanding() {
           </p>
 
           <div className="mt-12">
-            {data.isLoading ? (
-              <LoadingView
-                title="Memuat Kategori"
-                subtitle="Mengambil daftar kategori beserta form yang sedang terbuka."
-                lines={2}
-              />
-            ) : null}
-
-            {data.isError ? (
-              <StatusView
-                title={data.errorTitle}
-                subtitle={data.errorSubtitle}
-                image={data.emptyImage}
-              >
-                <Button onClick={() => fetchForms.refetch()}>Retry</Button>
-              </StatusView>
-            ) : null}
-
-            {data.isEmpty ? (
-              <StatusView
-                title={data.emptyTitle}
-                subtitle={data.emptySubtitle}
-                image={data.emptyImage}
-              />
-            ) : null}
-
-            {!data.isLoading && data.data.length ? (
+            <LoadData response={data} minHeight="30vh">
               <FormsCategory
                 data={data.data}
                 isLoading={data.isLoading}
                 onLoadFormsTemplate={loadFormsTemplate}
                 onLoadFormsExplore={loadFormsExplore}
               />
+            </LoadData>
+
+            {/* Placeholder LoadData tidak punya slot aksi. */}
+            {data.isError ? (
+              <div className="mt-6 flex justify-center">
+                <Button onClick={() => fetchForms.refetch()}>Retry</Button>
+              </div>
             ) : null}
           </div>
         </div>

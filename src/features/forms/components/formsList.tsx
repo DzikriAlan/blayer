@@ -12,8 +12,7 @@ import { useFormsControllers } from '../controllers/formsControllers'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import SectionHead from '@/components/section-head'
-import StatusView from '@/components/status-view'
-import LoadingView from '@/components/loading-view'
+import { LoadData } from '@/shared/components/load-data'
 import FormsCard from './formsCard'
 import FormsTemplate, { FORMS_TEMPLATES } from './formsTemplate'
 
@@ -102,6 +101,8 @@ export default function FormsList() {
       totalResponse,
       templateId: filters.templateId,
       templateName: getTemplateName(filters.templateId),
+      search: filters.search,
+      errorImage: '/no-data.svg',
       isFirstPage: currentPage <= 1,
       isLastPage: currentPage >= totalPage,
     }
@@ -227,39 +228,9 @@ export default function FormsList() {
         </div>
       ) : null}
 
-      {data.isLoading ? (
-        <LoadingView
-          title="Memuat Riwayat"
-          subtitle="Mengambil daftar form yang pernah kamu buat beserta jumlah jawabannya."
-          lines={3}
-        />
-      ) : null}
-
-      {data.isError ? (
-        <StatusView
-          title={data.errorTitle}
-          subtitle={data.errorSubtitle}
-          image={data.emptyImage}
-        >
-          <Button onClick={() => fetchForms.refetch()}>Retry</Button>
-        </StatusView>
-      ) : null}
-
-      {data.isEmpty ? (
-        <StatusView
-          title={data.emptyTitle}
-          subtitle={data.emptySubtitle}
-          image={data.emptyImage}
-        >
-          <Button asChild>
-            <Link href="/forms/create">
-              <Plus /> Create Form
-            </Link>
-          </Button>
-        </StatusView>
-      ) : null}
-
-      {data.data.length ? (
+      {/* Satu pintu untuk memuat, gagal, dan kosong; isian hanya dirender
+          kalau memang ada datanya. */}
+      <LoadData response={data} minHeight="30vh">
         <section className="border-x-2 border-t-2 border-foreground">
           {data.data.map((item, index) => (
             <FormsCard
@@ -276,6 +247,24 @@ export default function FormsList() {
             />
           ))}
         </section>
+      </LoadData>
+
+      {/* Placeholder LoadData tidak punya slot aksi, jadi jalan keluarnya
+          diletakkan tepat di bawahnya. */}
+      {data.isError ? (
+        <div className="flex justify-center">
+          <Button onClick={() => fetchForms.refetch()}>Retry</Button>
+        </div>
+      ) : null}
+
+      {data.isEmpty && !data.templateId && !data.search ? (
+        <div className="flex justify-center">
+          <Button asChild>
+            <Link href="/forms/create">
+              <Plus /> Create Form
+            </Link>
+          </Button>
+        </div>
       ) : null}
 
       {data.pagination.totalPage > 1 ? (

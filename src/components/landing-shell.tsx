@@ -60,7 +60,7 @@ export default function LandingShell({ className, children }: Props) {
               <a
                 key={item.href}
                 href={item.href}
-                className="brutal-eyebrow text-muted-foreground transition-colors hover:text-primary"
+                className="brutal-eyebrow flex min-h-[32px] items-center text-muted-foreground transition-colors hover:text-primary"
               >
                 {item.label}
               </a>

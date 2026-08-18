@@ -1,6 +1,6 @@
 # PRD — Blayer
 
-**Versi 1.7 · Draft**
+**Versi 1.8 · Draft**
 
 Form builder yang hasilnya langsung terbaca. Satu template menentukan cara form diisi sekaligus cara hasilnya ditampilkan — ujian dikunci dan diperingkat, pendaftaran acara memberi tiket dan link Meet, pesanan restoran memberi struk, kursus membuka video kelas setelah dibayar.
 
@@ -90,9 +90,10 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | F-27 | Rekap pendapatan di dashboard | Halaman hasil form berbayar menampilkan total pemasukan dan rincian per metode pembayaran | P1 | Belum |
 | F-28 | Analisis AI atas jawaban | Peringkat dan rekomendasi naratif berdasarkan tujuan form; kode sudah ada, disembunyikan di balik saklar tampilan | P2 | Ditunda |
 | F-29 | Landing page publik | Halaman depan berdiri sendiri di luar rangka aplikasi: navbar, hero berikut ringkasan kategori, statistik, pita berjalan, daftar kategori, dan footer — memakai palet dan tipografi yang sama dengan aplikasinya | P1 | Selesai |
-| F-30 | Keadaan memuat yang terbaca | Tidak ada halaman yang menampilkan balok abu-abu polos atau layar kosong saat memuat; setiap keadaan memuat memakai ikon berputar dan keterangan apa yang sedang diambil | P1 | Selesai |
+| F-30 | Satu penangan tampilan data | Seluruh permukaan yang menampilkan data memakai `LoadData` untuk keadaan memuat, gagal, dan kosong — tidak ada halaman yang menyisakan layar kosong. Aksi lanjutan (Retry, Buat Form) diletakkan di bawah placeholder karena `LoadData` tidak punya slot aksi | P1 | Selesai |
 | F-31 | Identitas visual | Lambang Blayer dipakai sebagai logo di navbar halaman depan, bilah atas aplikasi, dan footer, sekaligus sebagai favicon dan ikon layar utama | P2 | Selesai |
 | F-32 | Tampilan ponsel di seluruh halaman | Halaman depan sampai dalam aplikasi tidak menghasilkan geseran samping pada 320 px, 390 px, dan 768 px; navigasi halaman depan berubah jadi tombol menu di bawah 640 px | P1 | Selesai |
+| F-33 | Halaman kesalahan sendiri | Alamat yang tidak dikenal menampilkan halaman 404 bergaya sistem desain sendiri lengkap dengan jalan keluarnya, bukan halaman bawaan Next; kegagalan server memakai halaman 500 yang setara | P1 | Selesai |
 
 ---
 
@@ -158,6 +159,7 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | Penyimpanan berkas | Supabase Storage, bucket publik | Banner dan kode QRIS harus permanen dan bisa dibuka tanpa login |
 | Unggahan | Base64 lewat API route | Secret key tetap di server, tanpa parser multipart tambahan |
 | Rangka halaman | `PageShell` untuk aplikasi, `LandingShell` untuk halaman depan | Halaman kerja butuh rail samping dan kolom sempit agar form terbaca; halaman depan butuh lebar penuh dan navigasi biasa. Memaksakan satu rangka membuat salah satunya terasa keliru |
+| Penangan tampilan data | `LoadData` di `src/shared/components` | Memuat, gagal, dan kosong ditangani satu komponen yang membaca bentuk `data` dari konvensi kode, jadi tiap permukaan tidak menyusun ulang keadaan yang sama |
 | Identitas pengisi | Kolom bawaan di halaman isi, jumlahnya ditentukan `view` | Keduanya mengisi `respondentName`/`respondentEmail` yang dipakai tiket, struk, dan dashboard. Template yang menambahkannya lagi hanya melahirkan pertanyaan kembar. Email ditanyakan hanya kalau ada yang dikirim ke sana — pesanan di meja selesai di tempat, jadi cukup nama |
 | Harga form berbayar | `Form.priceAmount` untuk form tanpa menu | Kelas dijual satu paket; harganya milik form, bukan pilihan yang diulang tiap peserta |
 | Konfigurasi opsi field | Satu opsi per baris, bagian dipisah `\|` | Menu dan metode pembayaran butuh data lebih dari sekadar label, tapi tetap muat di editor opsi yang sudah ada — tanpa skema baru maupun editor baru |

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ChefHat, Receipt, Wallet } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { LoadData } from '@/shared/components/load-data'
 
 export interface ResponsesOrderItem {
   name: string
@@ -105,17 +106,11 @@ export default function ResponsesOrder({
         </p>
       </div>
 
-      {data.isEmpty ? (
-        <div className="border-b-2 border-foreground bg-paper px-5 py-6 sm:px-7">
-          <p className="brutal-eyebrow text-muted-foreground">
-            {data.emptyTitle}
-          </p>
-          <p className="mt-3 font-mono text-xs leading-relaxed text-muted-foreground">
-            {data.emptySubtitle}
-          </p>
-        </div>
-      ) : (
-        <ul className="border-b-2 border-foreground bg-paper">
+      <LoadData
+        response={data}
+        className="border-b-2 border-foreground bg-paper"
+      >
+        <ul>
           {data.data.map((item) => (
             <li
               key={item.name}
@@ -133,7 +128,7 @@ export default function ResponsesOrder({
             </li>
           ))}
         </ul>
-      )}
+      </LoadData>
 
       <dl className="grid border-b-2 border-foreground bg-foreground text-background sm:grid-cols-2">
         <div className="border-b-2 border-foreground px-5 py-5 sm:border-b-0 sm:border-r-2 sm:px-7">

@@ -226,18 +226,19 @@ describe('pengiriman jawaban', () => {
 })
 
 describe('keadaan halaman', () => {
-  it('TC-30 memuat form memakai keterangan, bukan layar kosong', async () => {
+  it('TC-30 memuat form ditangani LoadData, bukan layar kosong', async () => {
     state.formsDetail = { ...state.formsDetail, status: 'loading', data: null }
     await loadSubmit()
 
-    expect(screen.getByText('MEMUAT')).toBeInTheDocument()
-    expect(screen.getByText('Menyiapkan Form')).toBeInTheDocument()
+    expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument()
   })
 
   it('TC-03 form yang tidak ditemukan menawarkan percobaan ulang', async () => {
     const user = userEvent.setup()
     state.formsDetail = { ...state.formsDetail, status: 'error', data: null }
     await loadSubmit()
+
+    expect(screen.getByText('Form Not Found')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Coba Lagi' }))
 
