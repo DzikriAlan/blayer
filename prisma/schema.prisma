@@ -67,6 +67,8 @@ model FormResponse {
   respondentName  String?
   respondentEmail String?
   answers         Json
+  /// Lama pengerjaan dalam detik, dihitung dari form dibuka sampai dikirim.
+  durationSeconds Int?
   createdAt       DateTime @default(now())
 
   form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
