@@ -123,7 +123,11 @@ const emptyField = {
   optionText: '',
 }
 
-export default function FormsCreate() {
+interface Props {
+  onEditFormsTitle?: (title: string) => void
+}
+
+export default function FormsCreate({ onEditFormsTitle }: Props) {
   const router = useRouter()
   const { formsCreated } = useFormsStates()
   const { storeForms } = useFormsControllers()
@@ -155,6 +159,7 @@ export default function FormsCreate() {
     name: 'fields',
   })
 
+  const watchedTitle = form.watch('title')
   const watchedFields = form.watch('fields')
   const watchedPublished = form.watch('isPublished')
   const watchedAiEnabled = form.watch('isAiEnabled')
@@ -202,6 +207,7 @@ export default function FormsCreate() {
       emptySubtitle: 'Tambahkan minimal satu pertanyaan untuk form ini.',
       emptyImage: '/no-data.svg',
       pagination: { currentPage: 1, perPage: mappedList.length },
+      title: watchedTitle,
       titleError: form.formState.errors.title?.message ?? '',
       purposeError: form.formState.errors.purpose?.message ?? '',
       fieldsError: form.formState.errors.fields?.message ?? '',
@@ -226,6 +232,7 @@ export default function FormsCreate() {
       totalField: mappedList.length,
     }
   }, [
+    watchedTitle,
     watchedFields,
     watchedPublished,
     watchedAiEnabled,
@@ -367,6 +374,10 @@ export default function FormsCreate() {
 
     storeForms.mutate(payload)
   })
+
+  useEffect(() => {
+    onEditFormsTitle?.(watchedTitle)
+  }, [watchedTitle, onEditFormsTitle])
 
   // Template yang dipilih dari beranda datang lewat ?template=<id>.
   useEffect(() => {

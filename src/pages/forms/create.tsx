@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 
@@ -8,6 +9,16 @@ import FormsCreate, {
 } from '@/features/forms/components/formsCreate'
 
 const FormsCreatePage: NextPage = () => {
+  const [filters, setFilters] = useState({ title: '' })
+
+  // Bilah atas mengikuti judul yang sedang diketik; kosong kembali ke label
+  // bawaan supaya bilahnya tidak pernah tampil melompong.
+  const editFormsTitle = useCallback((title: string) => {
+    setFilters((prev) => ({ ...prev, title }))
+  }, [])
+
+  const barTitle = filters.title.trim() || 'UNTITLED FORM'
+
   return (
     <>
       <Head>
@@ -18,7 +29,7 @@ const FormsCreatePage: NextPage = () => {
         />
       </Head>
       <PageShell
-        barTitle="UNTITLED FORM"
+        barTitle={barTitle}
         railWord="BLAYER"
         railEyebrow={'FORM\nBUILDER.'}
         railIndex="02"
@@ -34,7 +45,7 @@ const FormsCreatePage: NextPage = () => {
           </Button>
         }
       >
-        <FormsCreate />
+        <FormsCreate onEditFormsTitle={editFormsTitle} />
       </PageShell>
     </>
   )

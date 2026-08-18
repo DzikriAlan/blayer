@@ -22,6 +22,15 @@ vi.mock('next/image', () => ({
   ),
 }))
 
+// Radix mengukur elemennya dengan ResizeObserver, yang tidak ada di jsdom.
+if (!('ResizeObserver' in globalThis)) {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver
+}
+
 afterEach(() => {
   cleanup()
 })

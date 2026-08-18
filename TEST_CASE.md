@@ -6,10 +6,10 @@ harus dilakukan tangan.
 
 | | |
 | --- | --- |
-| **Versi PRD yang diuji** | 1.8 |
+| **Versi PRD yang diuji** | 1.9 |
 | **Terakhir diperbarui** | 18 Agustus 2026 |
-| **Kasus otomatis** | 76 |
-| **Berkas uji** | 10 |
+| **Kasus otomatis** | 80 |
+| **Berkas uji** | 11 |
 
 ---
 
@@ -34,6 +34,7 @@ test/
 ├── features/
 │   ├── forms/
 │   │   ├── formsTemplate.test.ts              # katalog template (data murni)
+│   │   ├── formsCreate.test.tsx               # builder: judul, template
 │   │   ├── formsFieldEditor.test.tsx          # editor field di builder
 │   │   └── formsList.test.tsx                 # riwayat form + filter template
 │   ├── responses/
@@ -66,6 +67,9 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-02c | F-02 | Memilih tipe tanpa opsi (mis. jawaban singkat) | Kolom opsi tidak dirender sama sekali | Otomatis | `formsFieldEditor.test.tsx` |
 | TC-02d | F-02 | Memeriksa seluruh template | Setiap field pilihan membawa minimal dua opsi | Otomatis | `formsTemplate.test.ts` |
 | TC-02e | F-02 | Menggeser urutan field dengan panah atas/bawah | Urutan pertanyaan berubah dan tersimpan sesuai tampilan | Manual | — |
+| TC-34a | F-34 | Mengetik di kolom Form Title | Bilah atas ikut berubah seketika mengikuti judulnya | Otomatis | `formsCreate.test.tsx` |
+| TC-34b | F-34 | Mengosongkan kembali kolom judul | Bilah atas kembali ke label bawaan UNTITLED FORM | Otomatis | `formsCreate.test.tsx` |
+| TC-34c | F-34 | Memakai template dari builder | Judul dari template ikut mengubah bilah atas | Otomatis | `formsCreate.test.tsx` |
 | TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `survey`, `event`, `order`, atau `course` | Otomatis | `formsTemplate.test.ts` |
 | TC-13a | F-13 | Menekan **See** pada kartu template | Riwayat form hanya menampilkan form dari template itu, dan baris filter aktif muncul | Otomatis | `formsList.test.tsx` |
 | TC-13b | F-13 | Menekan **Shown** (klik kedua) | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |

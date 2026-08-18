@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowDown, MoreVertical, Palette, Send } from 'lucide-react'
+import { ArrowDown } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 
@@ -87,15 +87,9 @@ export default function PageShell({
             />
           </Link>
           <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
-          <div
-            aria-hidden
-            className="ml-auto hidden items-center gap-5 opacity-70 sm:flex"
-          >
-            <Palette className="h-4 w-4" />
-            <Send className="h-4 w-4" />
-            <MoreVertical className="h-4 w-4" />
-          </div>
-          {action ? <div className="ml-auto sm:ml-5">{action}</div> : null}
+          {/* Aksi bilah atas — mis. tombol Save di builder — harus tetap
+              terjangkau di ponsel dan terbaca pembaca layar. */}
+          {action ? <div className="ml-auto shrink-0">{action}</div> : null}
         </header>
 
         <main className={cn('flex-1 px-4 py-8 sm:px-8 sm:py-10', className)}>

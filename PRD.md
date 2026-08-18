@@ -1,6 +1,6 @@
 # PRD — Blayer
 
-**Versi 1.8 · Draft**
+**Versi 1.9 · Draft**
 
 Form builder yang hasilnya langsung terbaca. Satu template menentukan cara form diisi sekaligus cara hasilnya ditampilkan — ujian dikunci dan diperingkat, pendaftaran acara memberi tiket dan link Meet, pesanan restoran memberi struk, kursus membuka video kelas setelah dibayar.
 
@@ -94,6 +94,7 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | F-31 | Identitas visual | Lambang Blayer dipakai sebagai logo di navbar halaman depan, bilah atas aplikasi, dan footer, sekaligus sebagai favicon dan ikon layar utama | P2 | Selesai |
 | F-32 | Tampilan ponsel di seluruh halaman | Halaman depan sampai dalam aplikasi tidak menghasilkan geseran samping pada 320 px, 390 px, dan 768 px; navigasi halaman depan berubah jadi tombol menu di bawah 640 px | P1 | Selesai |
 | F-33 | Halaman kesalahan sendiri | Alamat yang tidak dikenal menampilkan halaman 404 bergaya sistem desain sendiri lengkap dengan jalan keluarnya, bukan halaman bawaan Next; kegagalan server memakai halaman 500 yang setara | P1 | Selesai |
+| F-34 | Judul form hidup di bilah atas | Bilah atas builder mengikuti isi kolom Form Title seketika, termasuk saat template menimpanya; kosong kembali ke label UNTITLED FORM | P2 | Selesai |
 
 ---
 
