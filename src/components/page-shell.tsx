@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { ArrowDown, FileText, MoreVertical, Palette, Send } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowDown } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 
@@ -71,17 +72,24 @@ export default function PageShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex items-center gap-4 border-b-2 border-foreground bg-foreground px-4 py-3.5 text-background sm:px-6">
-          <FileText className="h-5 w-5 shrink-0" />
-          <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
-          <div
-            aria-hidden
-            className="ml-auto hidden items-center gap-5 opacity-70 sm:flex"
+          <Link
+            href="/"
+            aria-label="Kembali ke halaman depan"
+            className="flex h-8 w-8 shrink-0 items-center justify-center"
           >
-            <Palette className="h-4 w-4" />
-            <Send className="h-4 w-4" />
-            <MoreVertical className="h-4 w-4" />
-          </div>
-          {action ? <div className="ml-auto sm:ml-5">{action}</div> : null}
+            <Image
+              src="/blayer-mark.png"
+              alt=""
+              width={32}
+              height={32}
+              priority
+              className="h-8 w-8 border-2 border-background"
+            />
+          </Link>
+          <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
+          {/* Aksi bilah atas — mis. tombol Save di builder — harus tetap
+              terjangkau di ponsel dan terbaca pembaca layar. */}
+          {action ? <div className="ml-auto shrink-0">{action}</div> : null}
         </header>
 
         <main className={cn('flex-1 px-4 py-8 sm:px-8 sm:py-10', className)}>

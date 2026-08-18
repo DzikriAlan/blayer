@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { ArrowRight, Plus, Search } from 'lucide-react'
+import { ArrowRight, Plus, Search, X } from 'lucide-react'
 
 import type { DataForms } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
@@ -11,11 +11,10 @@ import { useFormsControllers } from '../controllers/formsControllers'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
 import SectionHead from '@/components/section-head'
-import StatusView from '@/components/status-view'
+import { LoadData } from '@/shared/components/load-data'
 import FormsCard from './formsCard'
-import FormsTemplate from './formsTemplate'
+import FormsTemplate, { FORMS_TEMPLATES } from './formsTemplate'
 
 export default function FormsList() {
   const router = useRouter()
@@ -24,6 +23,7 @@ export default function FormsList() {
 
   const [filters, setFilters] = useState({
     search: '',
+    templateId: '',
     pagination: {
       currentPage: 1,
       perPage: 6,
@@ -53,14 +53,20 @@ export default function FormsList() {
       createdAt: getFormattedDate(item.createdAt),
     })
 
+    const getIsKeywordMatch = (item: DataForms, keyword: string) =>
+      !keyword ||
+      item.title.toLowerCase().includes(keyword) ||
+      item.purpose.toLowerCase().includes(keyword)
+
+    const getTemplateName = (templateId: string) =>
+      FORMS_TEMPLATES.find((template) => template.id === templateId)?.name ?? ''
+
     const keyword = filters.search.trim().toLowerCase()
-    const filteredList = keyword
-      ? forms.data.filter(
-          (raw) =>
-            raw.title.toLowerCase().includes(keyword) ||
-            raw.purpose.toLowerCase().includes(keyword)
-        )
-      : forms.data
+    const filteredList = forms.data.filter(
+      (raw) =>
+        getIsKeywordMatch(raw, keyword) &&
+        (!filters.templateId || raw.templateId === filters.templateId)
+    )
 
     const totalItem = filteredList.length
     const totalPage = Math.ceil(totalItem / filters.pagination.perPage) || 1
@@ -80,10 +86,12 @@ export default function FormsList() {
       isLoading: forms.status === 'loading',
       isError: forms.status === 'error',
       isEmpty: forms.status === 'success' && !mappedList.length,
-      emptyTitle: keyword ? 'No Match' : 'No Forms Yet',
+      emptyTitle: keyword || filters.templateId ? 'No Match' : 'No Forms Yet',
       emptySubtitle: keyword
         ? `Tidak ada form yang cocok dengan "${filters.search}". Coba kata kunci lain.`
-        : 'Mulai dengan membuat form pertama dan tentukan tujuannya agar AI bisa menganalisis jawaban yang masuk.',
+        : filters.templateId
+          ? `Belum ada form yang dibuat dari template ${getTemplateName(filters.templateId)}. Klik Use untuk membuat yang pertama.`
+          : 'Mulai dengan membuat form pertama dan tentukan tujuannya agar AI bisa menganalisis jawaban yang masuk.',
       emptyImage: '/no-data.svg',
       errorTitle: 'Something Broke',
       errorSubtitle: forms.statusSubtitle,
@@ -91,6 +99,10 @@ export default function FormsList() {
       startIndex,
       totalForm: forms.data.length,
       totalResponse,
+      templateId: filters.templateId,
+      templateName: getTemplateName(filters.templateId),
+      search: filters.search,
+      errorImage: '/no-data.svg',
       isFirstPage: currentPage <= 1,
       isLastPage: currentPage >= totalPage,
     }
@@ -106,6 +118,23 @@ export default function FormsList() {
   // Dari beranda, template diteruskan ke builder lewat query string.
   const loadFormsTemplate = (templateId: string) => {
     router.push(`/forms/create?template=${templateId}`)
+  }
+
+  // "See" pada kartu template menyaring riwayat form; klik ulang melepas filter.
+  const loadFormsFilter = (templateId: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      templateId: prev.templateId === templateId ? '' : templateId,
+      pagination: { ...prev.pagination, currentPage: 1 },
+    }))
+  }
+
+  const clearFormsFilter = () => {
+    setFilters((prev) => ({
+      ...prev,
+      templateId: '',
+      pagination: { ...prev.pagination, currentPage: 1 },
+    }))
   }
 
   const editFormsSearch = (search: string) => {
@@ -169,7 +198,12 @@ export default function FormsList() {
 
       {/* border-b datang dari FormsTemplate sendiri, jadi cukup tiga sisi di sini. */}
       <section className="border-x-2 border-t-2 border-foreground">
-        <FormsTemplate activeId="" onLoadFormsTemplate={loadFormsTemplate} />
+        <FormsTemplate
+          activeId=""
+          filterId={data.templateId}
+          onLoadFormsTemplate={loadFormsTemplate}
+          onLoadFormsFilter={loadFormsFilter}
+        />
       </section>
 
       <div className="flex items-stretch gap-3">
@@ -182,39 +216,21 @@ export default function FormsList() {
         </span>
       </div>
 
-      {data.isLoading ? (
-        <div className="flex flex-col">
-          {[0, 1, 2].map((item) => (
-            <Skeleton key={item} className="mb-[-2px] h-40 w-full" />
-          ))}
+      {data.templateId ? (
+        <div className="flex flex-wrap items-center justify-between gap-4 border-2 border-foreground bg-muted px-5 py-4 sm:px-7">
+          <p className="brutal-eyebrow">
+            FILTER TEMPLATE — {data.templateName} ·{' '}
+            {String(data.pagination.totalItem).padStart(2, '0')} FORM
+          </p>
+          <Button variant="outline" size="sm" onClick={clearFormsFilter}>
+            <X /> Hapus Filter
+          </Button>
         </div>
       ) : null}
 
-      {data.isError ? (
-        <StatusView
-          title={data.errorTitle}
-          subtitle={data.errorSubtitle}
-          image={data.emptyImage}
-        >
-          <Button onClick={() => fetchForms.refetch()}>Retry</Button>
-        </StatusView>
-      ) : null}
-
-      {data.isEmpty ? (
-        <StatusView
-          title={data.emptyTitle}
-          subtitle={data.emptySubtitle}
-          image={data.emptyImage}
-        >
-          <Button asChild>
-            <Link href="/forms/create">
-              <Plus /> Create Form
-            </Link>
-          </Button>
-        </StatusView>
-      ) : null}
-
-      {data.data.length ? (
+      {/* Satu pintu untuk memuat, gagal, dan kosong; isian hanya dirender
+          kalau memang ada datanya. */}
+      <LoadData response={data} minHeight="30vh">
         <section className="border-x-2 border-t-2 border-foreground">
           {data.data.map((item, index) => (
             <FormsCard
@@ -231,6 +247,24 @@ export default function FormsList() {
             />
           ))}
         </section>
+      </LoadData>
+
+      {/* Placeholder LoadData tidak punya slot aksi, jadi jalan keluarnya
+          diletakkan tepat di bawahnya. */}
+      {data.isError ? (
+        <div className="flex justify-center">
+          <Button onClick={() => fetchForms.refetch()}>Retry</Button>
+        </div>
+      ) : null}
+
+      {data.isEmpty && !data.templateId && !data.search ? (
+        <div className="flex justify-center">
+          <Button asChild>
+            <Link href="/forms/create">
+              <Plus /> Create Form
+            </Link>
+          </Button>
+        </div>
       ) : null}
 
       {data.pagination.totalPage > 1 ? (

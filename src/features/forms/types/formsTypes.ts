@@ -12,6 +12,8 @@ export type FormsFieldType =
   | 'CHECKBOX'
   | 'RATING'
   | 'SCALE'
+  | 'MENU'
+  | 'PAYMENT'
 
 export interface FormsFieldInput {
   label: string
@@ -29,6 +31,16 @@ export interface PayloadPostForms {
   purpose: string
   /** Id template asal; menentukan bentuk dashboard hasil. */
   templateId: string
+  /** Banner acara hasil unggahan; kosong berarti tidak dipakai. */
+  bannerUrl: string
+  /** Link Google Meet acara; kosong berarti tidak dipakai. */
+  meetingUrl: string
+  /** Link video kelas; baru dibuka setelah peserta membayar dan mengisi form. */
+  videoUrl: string
+  /** Gambar QRIS pembuat form; dipindai pembayar saat memilih metode QRIS. */
+  qrisUrl: string
+  /** Harga tetap form berbayar tanpa field menu; 0 berarti tidak dipakai. */
+  priceAmount: number
   isPublished: boolean
   fields: FormsFieldInput[]
 }
@@ -43,6 +55,8 @@ export interface DataForms {
   description: string
   purpose: string
   isAiEnabled: boolean
+  /** Id template asal; dipakai memfilter riwayat form per template. */
+  templateId: string
   isPublished: boolean
   totalField: number
   totalResponse: number
@@ -73,6 +87,13 @@ export interface DataFormsDetail {
   description: string
   purpose: string
   isAiEnabled: boolean
+  /** Id template asal; menentukan mode pengerjaan dan bentuk dashboard hasil. */
+  templateId: string
+  bannerUrl: string
+  meetingUrl: string
+  videoUrl: string
+  qrisUrl: string
+  priceAmount: number
   isPublished: boolean
   createdAt: string
   fields: DataFormsDetailField[]

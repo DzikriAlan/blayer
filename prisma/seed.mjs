@@ -3,388 +3,644 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-const DEMO_TITLE = '[DEMO] Psikotes Kandidat — Frontend Engineer'
+/**
+ * Satu template = beberapa form demo.
+ *
+ * Setiap kali seed dijalankan, form lama dengan templateId yang sama dihapus
+ * dulu, jadi riwayat di beranda tidak pernah menumpuk. Templat yang sudah
+ * tidak dipakai ikut dibersihkan lewat OBSOLETE_TEMPLATE_IDS.
+ */
+const OBSOLETE_TEMPLATE_IDS = ['psychometric', 'csat', 'recruitment', 'blank']
 
-const FIELDS = [
-  { label: 'Nama Lengkap', type: 'SHORT_TEXT', isRequired: true },
-  { label: 'Email Aktif', type: 'EMAIL', isRequired: true },
-  { label: 'Lama Pengalaman Kerja (tahun)', type: 'NUMBER', isRequired: true },
+// Nama dan email tidak pernah jadi field: halaman isi sudah punya dua kolom
+// identitas bawaan yang mengisi respondentName dan respondentEmail.
+const EXAM_FIELDS = [
   {
-    label:
-      'Ceritakan satu proyek tersulit yang pernah kamu tangani dan bagaimana kamu menyelesaikannya.',
-    type: 'LONG_TEXT',
+    label: 'Kelas',
+    type: 'SELECT',
     isRequired: true,
+    options: ['XI IPA 1', 'XI IPA 2', 'XI IPA 3', 'XI IPS 1', 'XI IPS 2'],
   },
+  { label: 'Nomor Absen', type: 'NUMBER', isRequired: true },
   {
-    label:
-      'Deadline tinggal dua hari, lalu ditemukan bug besar di fitur utama. Apa yang kamu lakukan pertama kali?',
-    type: 'LONG_TEXT',
-    isRequired: true,
-  },
-  {
-    label: 'Saya nyaman menerima kritik atas hasil kerja saya.',
-    type: 'SCALE',
-    isRequired: true,
-  },
-  {
-    label: 'Saya paling produktif ketika bekerja...',
+    label: 'Siapa tokoh yang membacakan teks Proklamasi Kemerdekaan Indonesia?',
     type: 'RADIO',
     isRequired: true,
     options: [
-      'Sendiri dengan fokus penuh',
-      'Berpasangan (pair programming)',
-      'Dalam tim besar',
-      'Fleksibel, tergantung situasi',
-    ],
-  },
-]
-
-// answers diurutkan sama persis dengan FIELDS di atas.
-const CANDIDATES = [
-  {
-    name: 'Rani Puspita',
-    email: 'rani.puspita@mail.com',
-    answers: [
-      'Rani Puspita',
-      'rani.puspita@mail.com',
-      '5',
-      'Memecah monolith React 200k baris jadi micro-frontend tanpa downtime. Saya mulai dengan memetakan dependency antar modul, bikin strangler pattern lewat module federation, lalu migrasi bertahap per rute sambil menjaga bundle size tetap turun 38%. Yang paling sulit justru koordinasi rilis dengan tiga tim lain, jadi saya bikin kontrak versi antar modul supaya rilis bisa independen.',
-      'Reproduksi dulu sampai saya paham radius kerusakannya, lalu ukur berapa user yang kena. Kalau dampaknya besar saya rollback atau matikan lewat feature flag dulu supaya user aman, baru cari akar masalahnya dengan kepala dingin. Setelah itu saya kabari PM soal trade-off: fitur mana yang bisa digeser supaya perbaikan tidak dikerjakan terburu-buru.',
-      '9',
-      'Berpasangan (pair programming)',
-    ],
-    rank: 1,
-    score: 92,
-    verdict: 'Sangat Direkomendasikan',
-    strengths: [
-      'Jawaban proyek konkret dan terukur (bundle size turun 38%, zero downtime)',
-      'Menunjukkan pemikiran sistemik lewat kontrak versi antar modul',
-      'Prioritas saat krisis benar: amankan user dulu, baru cari akar masalah',
-      'Skor keterbukaan terhadap kritik tertinggi (9) dan konsisten dengan preferensi pair programming',
-    ],
-    concerns: [
-      'Belum ada bukti pengalaman memimpin atau mentoring secara langsung',
-    ],
-    reasoning:
-      'Satu-satunya kandidat yang menyertakan angka dampak nyata dan menjelaskan trade-off rilis lintas tim. Cara menangani insiden menunjukkan kematangan: mitigasi dulu lewat feature flag, komunikasi ke PM, baru perbaikan. Sangat cocok dengan budaya kerja kolaboratif yang dicari.',
-  },
-  {
-    name: 'Bagas Aditya',
-    email: 'bagas.aditya@mail.com',
-    answers: [
-      'Bagas Aditya',
-      'bagas.aditya@mail.com',
-      '4',
-      'Optimasi dashboard analitik yang render 50 ribu baris dan bikin browser hang. Saya pakai virtualisasi list plus memoisasi selector, waktu render turun dari 8 detik ke bawah 1 detik. Sempat salah arah karena awalnya saya kira masalahnya di query API, ternyata di re-render komponen.',
-      'Cek dulu error tracking buat tahu seberapa sering bug-nya kena user. Kalau kritis saya perbaiki duluan dan minta QA bantu regression test. Saya juga akan bilang ke tim kalau deadline mungkin geser, daripada rilis sesuatu yang rusak.',
-      '8',
-      'Fleksibel, tergantung situasi',
-    ],
-    rank: 2,
-    score: 84,
-    verdict: 'Direkomendasikan',
-    strengths: [
-      'Contoh optimasi performa dengan angka sebelum-sesudah yang jelas',
-      'Jujur mengakui sempat salah mendiagnosis akar masalah',
-      'Berani menyampaikan risiko geser deadline daripada rilis yang rusak',
-    ],
-    concerns: [
-      'Cakupan proyeknya lebih sempit dibanding kandidat peringkat satu',
-      'Belum menyinggung pencegahan agar masalah serupa tidak terulang',
-    ],
-    reasoning:
-      'Kemampuan teknis solid dengan bukti terukur, dan kejujuran soal salah diagnosis justru menandakan refleksi yang sehat. Skala pengalamannya masih di bawah Rani, tapi pola pikir menghadapi tekanan sudah tepat.',
-  },
-  {
-    name: 'Intan Maharani',
-    email: 'intan.maharani@mail.com',
-    answers: [
-      'Intan Maharani',
-      'intan.maharani@mail.com',
-      '3',
-      'Membangun ulang design system perusahaan dari nol supaya konsisten di lima produk. Tantangannya meyakinkan tim desain dan engineering pakai token yang sama. Hasilnya waktu bikin halaman baru berkurang cukup banyak.',
-      'Saya akan fokus benerin bug-nya dulu sampai kelar, lembur kalau perlu. Setelah itu baru lapor ke atasan hasilnya bagaimana.',
-      '7',
-      'Dalam tim besar',
-    ],
-    rank: 3,
-    score: 71,
-    verdict: 'Dipertimbangkan',
-    strengths: [
-      'Pengalaman design system yang relevan dan lintas tim',
-      'Terbiasa menjembatani desain dan engineering',
-    ],
-    concerns: [
-      'Klaim hasil tidak disertai angka ("berkurang cukup banyak")',
-      'Respons saat krisis langsung lembur tanpa menilai dampak ke user lebih dulu',
-      'Komunikasi ke atasan ditaruh setelah pekerjaan selesai, bukan saat risiko muncul',
-    ],
-    reasoning:
-      'Latar belakang design system-nya berharga dan relevan, tapi cara menghadapi tekanan masih reaktif: mengandalkan lembur alih-alih mengukur dampak dan mengelola ekspektasi lebih awal. Layak lanjut kalau posisi yang dicari condong ke design system.',
-  },
-  {
-    name: 'Yoga Pratama',
-    email: 'yoga.pratama@mail.com',
-    answers: [
-      'Yoga Pratama',
-      'yoga.pratama@mail.com',
-      '2',
-      'Bikin fitur checkout multi-step. Susahnya di validasi tiap langkah dan state yang harus tetap tersimpan kalau user mundur. Saya selesaikan pakai state machine sederhana.',
-      'Langsung cari tahu penyebabnya di kode, biasanya saya cek commit terakhir yang mengubah bagian itu.',
-      '6',
-      'Sendiri dengan fokus penuh',
-    ],
-    rank: 4,
-    score: 58,
-    verdict: 'Cadangan',
-    strengths: [
-      'Pemilihan state machine untuk alur checkout menunjukkan dasar yang benar',
-      'Punya kebiasaan menelusuri commit terakhir saat debugging',
-    ],
-    concerns: [
-      'Jawaban sangat singkat, minim konteks dampak maupun kolaborasi',
-      'Tidak menyinggung komunikasi ke tim sama sekali saat kondisi mendesak',
-      'Preferensi kerja sendiri berpotensi kurang pas dengan budaya kolaboratif yang dicari',
-    ],
-    reasoning:
-      'Dasar teknisnya masuk akal untuk pengalaman dua tahun, tapi seluruh jawabannya berhenti di level teknis tanpa menyentuh dampak ke pengguna atau koordinasi tim. Data yang tersedia belum cukup untuk menilai kesiapannya di lingkungan kolaboratif.',
-  },
-  {
-    name: 'Dimas Saputra',
-    email: 'dimas.saputra@mail.com',
-    answers: [
-      'Dimas Saputra',
-      'dimas.saputra@mail.com',
-      '1',
-      'Pernah bikin landing page pakai React dan Tailwind. Lumayan menantang karena banyak animasi.',
-      'Tanya senior dulu enaknya gimana.',
-      '5',
-      'Sendiri dengan fokus penuh',
-    ],
-    rank: 5,
-    score: 39,
-    verdict: 'Belum Sesuai',
-    strengths: [
-      'Sadar diri untuk bertanya ke senior ketika menghadapi masalah besar',
-    ],
-    concerns: [
-      'Pengalaman satu tahun dengan cakupan proyek paling ringan di antara pelamar',
-      'Jawaban situasional hanya satu kalimat, tanpa langkah konkret apa pun',
-      'Tidak ada bukti menangani masalah kompleks maupun bekerja di bawah tekanan',
-    ],
-    reasoning:
-      'Jawaban terlalu ringkas untuk dinilai secara adil. Kesediaan bertanya ke senior itu positif, tapi tidak ada satu pun contoh penanganan masalah kompleks. Berdasarkan data yang ada, belum memenuhi kebutuhan posisi ini.',
-  },
-]
-
-const main = async () => {
-  const existing = await prisma.form.findFirst({
-    where: { title: DEMO_TITLE },
-    select: { id: true },
-  })
-
-  if (existing) {
-    // Relasi pakai onDelete: Cascade, jadi field/jawaban/analisis ikut terhapus.
-    await prisma.form.delete({ where: { id: existing.id } })
-    console.log('• data demo lama dihapus')
-  }
-
-  const purpose =
-    'Menyeleksi kandidat untuk posisi Frontend Engineer. Nilai kemampuan problem solving, ketahanan menghadapi tekanan, kemauan belajar, dan kecocokan dengan budaya kerja kolaboratif. Beri peringkat kandidat dan tentukan siapa yang paling layak dilanjutkan ke tahap interview beserta alasannya.'
-
-  const form = await prisma.form.create({
-    data: {
-      title: DEMO_TITLE,
-      description:
-        'Jawab sejujurnya berdasarkan pengalaman nyata. Tidak ada jawaban benar atau salah.',
-      purpose,
-      templateId: 'psychometric',
-      isPublished: true,
-      fields: {
-        create: FIELDS.map((field, index) => ({
-          label: field.label,
-          type: field.type,
-          isRequired: field.isRequired ?? false,
-          options: field.options ?? undefined,
-          order: index,
-        })),
-      },
-    },
-    include: { fields: { orderBy: { order: 'asc' } } },
-  })
-
-  console.log(`• form dibuat (${form.fields.length} field)`)
-
-  const ranking = []
-
-  for (const candidate of CANDIDATES) {
-    const answers = {}
-    form.fields.forEach((field, index) => {
-      answers[field.id] = candidate.answers[index]
-    })
-
-    const response = await prisma.formResponse.create({
-      data: {
-        formId: form.id,
-        respondentName: candidate.name,
-        respondentEmail: candidate.email,
-        answers,
-      },
-      select: { id: true },
-    })
-
-    ranking.push({
-      responseId: response.id,
-      respondentName: candidate.name,
-      rank: candidate.rank,
-      score: candidate.score,
-      verdict: candidate.verdict,
-      strengths: candidate.strengths,
-      concerns: candidate.concerns,
-      reasoning: candidate.reasoning,
-    })
-  }
-
-  console.log(`• ${ranking.length} jawaban kandidat dibuat`)
-
-  await prisma.formAnalysis.create({
-    data: {
-      formId: form.id,
-      purpose,
-      summary:
-        'Lima kandidat masuk dengan rentang pengalaman satu sampai lima tahun dan kualitas jawaban yang cukup jauh jaraknya. Dua kandidat teratas sama-sama menyertakan angka dampak yang bisa diverifikasi dan menunjukkan cara berpikir yang terstruktur saat menghadapi insiden. Tiga sisanya berhenti di level teknis tanpa menyentuh dampak ke pengguna maupun koordinasi tim, dan satu kandidat menjawab terlalu singkat untuk dinilai secara adil. Pola yang paling membedakan bukan lama pengalaman, melainkan apakah kandidat mengukur dampak pekerjaannya dan mengelola komunikasi saat berada di bawah tekanan.',
-      recommendation:
-        'Lanjutkan Rani Puspita ke tahap interview sebagai prioritas utama. Ia satu-satunya yang menggabungkan bukti dampak terukur, penanganan insiden yang mengutamakan keamanan pengguna, dan preferensi kerja kolaboratif yang paling cocok dengan tim. Bagas Aditya layak diinterview sebagai kandidat kedua, dengan penggalian lebih dalam soal pencegahan masalah berulang. Intan Maharani dijadikan cadangan dan baru relevan bila kebutuhan bergeser ke design system. Yoga Pratama dan Dimas Saputra belum disarankan untuk tahap ini.',
-      ranking,
-    },
-  })
-
-  console.log('• hasil analisis AI dummy dibuat')
-
-  const surveyId = await seedSurvey()
-
-  console.log('\nSelesai. Buka:')
-  console.log(`  scoring : /forms/${form.id}/result`)
-  console.log(`  summary : /forms/${surveyId}/result`)
-}
-
-// Template kedua (kind: summary) untuk membandingkan bentuk dashboard.
-const SURVEY_TITLE = '[DEMO] Survei Kepuasan Pelanggan'
-
-const SURVEY_FIELDS = [
-  { label: 'Nama', type: 'SHORT_TEXT' },
-  { label: 'Bagaimana penilaianmu secara keseluruhan?', type: 'RATING', isRequired: true },
-  {
-    label: 'Seberapa besar kemungkinan kamu merekomendasikan kami ke teman?',
-    type: 'SCALE',
-    isRequired: true,
-  },
-  {
-    label: 'Layanan apa saja yang pernah kamu gunakan?',
-    type: 'CHECKBOX',
-    isRequired: true,
-    options: [
-      'Pembelian produk',
-      'Layanan pelanggan',
-      'Pengiriman',
-      'Garansi dan retur',
-      'Aplikasi mobile',
+      'Soekarno dan Mohammad Hatta',
+      'Jenderal Sudirman dan Tan Malaka',
+      'Sutan Syahrir dan Amir Syarifuddin',
+      'Pangeran Diponegoro dan Imam Bonjol',
     ],
   },
   {
-    label: 'Apa yang menurutmu paling perlu diperbaiki?',
+    label:
+      'Sebutkan dan jelaskan tiga faktor yang melatarbelakangi lahirnya pergerakan nasional.',
     type: 'LONG_TEXT',
     isRequired: true,
   },
+  {
+    label:
+      'Jelaskan dampak Politik Etis terhadap munculnya kaum terpelajar pribumi.',
+    type: 'LONG_TEXT',
+    isRequired: true,
+  },
+  {
+    label: 'Seberapa yakin kamu dengan jawabanmu secara keseluruhan?',
+    type: 'SCALE',
+  },
 ]
 
-// Digenerate supaya jumlahnya banyak dan pagination dashboard kelihatan bekerja.
-const SURVEY_NAMES = [
-  'Sinta Larasati', 'Arif Nugroho', 'Melati Anggraini', 'Dewi Kartika',
-  'Rizky Ramadhan', 'Putri Ayu', 'Bayu Setiawan', 'Nadia Safitri',
-  'Fajar Hidayat', 'Ayu Lestari', 'Gilang Permana', 'Rina Wulandari',
-  'Hendra Gunawan', 'Citra Maharani', 'Doni Prasetyo', 'Lina Marlina',
-  'Agus Salim', 'Fitri Handayani', 'Reza Mahendra', 'Wulan Sari',
-  'Andi Kurniawan', 'Maya Puspitasari', 'Eko Wibowo', 'Tari Oktaviani',
-  'Bagus Santoso', 'Nurul Aini', 'Ilham Maulana', 'Kartika Dewi',
-  'Surya Adiputra', 'Vina Rahmawati', 'Teguh Prakoso', 'Hesti Ningrum',
-  'Dimas Anggara', 'Salsabila Putri', 'Yudha Pratama', 'Ratna Kusuma',
-  'Bimo Aryo', 'Indah Permatasari', 'Galih Saputra', 'Anisa Rahma',
+// answers diurutkan sama persis dengan EXAM_FIELDS di atas; nama dan email
+// tidak ikut karena keduanya mengisi respondentName dan respondentEmail.
+const STUDENTS = [
+  {
+    name: 'Rani Puspita',
+    email: 'rani.puspita@sekolah.sch.id',
+    durationSeconds: 2735,
+    answers: [
+      'XI IPA 1',
+      '24',
+      'Soekarno dan Mohammad Hatta',
+      'Pertama, Politik Etis membuka sekolah bagi pribumi sehingga lahir golongan terpelajar yang sadar akan nasib bangsanya, terlihat dari berdirinya Budi Utomo 1908. Kedua, penderitaan akibat tanam paksa dan kerja rodi menumbuhkan kesadaran bahwa perlawanan daerah selalu gagal karena tidak terorganisasi. Ketiga, kemenangan Jepang atas Rusia 1905 membuktikan bangsa Asia sanggup mengalahkan bangsa Eropa, dan ini membakar semangat kaum pergerakan.',
+      'Politik Etis lewat program edukasi melahirkan sekolah seperti STOVIA dan OSVIA yang awalnya disiapkan untuk mencetak pegawai murah bagi Belanda. Yang terjadi justru sebaliknya: para lulusannya membaca gagasan nasionalisme dan demokrasi dari Eropa, lalu memakainya untuk mengkritik penjajahan. Dari sekolah-sekolah inilah muncul Soetomo, Tjipto Mangoenkoesoemo, dan Ki Hajar Dewantara.',
+      '9',
+    ],
+  },
+  {
+    name: 'Bagas Aditya',
+    email: 'bagas.aditya@sekolah.sch.id',
+    durationSeconds: 3120,
+    answers: [
+      'XI IPA 1',
+      '05',
+      'Soekarno dan Mohammad Hatta',
+      'Faktor pertama adalah pendidikan dari Politik Etis yang memunculkan kaum terpelajar. Faktor kedua penderitaan rakyat akibat penjajahan yang berlangsung lama. Faktor ketiga pengaruh dari luar seperti kemenangan Jepang atas Rusia dan gerakan nasionalisme di India dan Filipina yang jadi contoh.',
+      'Dampaknya muncul sekolah-sekolah untuk pribumi sehingga ada kaum terpelajar. Mereka inilah yang kemudian mendirikan organisasi pergerakan seperti Budi Utomo dan Indische Partij karena sudah paham cara berorganisasi modern.',
+      '8',
+    ],
+  },
+  {
+    name: 'Intan Maharani',
+    email: 'intan.maharani@sekolah.sch.id',
+    durationSeconds: 2410,
+    answers: [
+      'XI IPA 2',
+      '12',
+      'Soekarno dan Mohammad Hatta',
+      'Karena rakyat menderita akibat penjajahan, karena ada pendidikan untuk pribumi, dan karena terpengaruh pergerakan di negara lain. Ketiganya membuat rakyat ingin merdeka dan mulai membentuk organisasi.',
+      'Politik Etis membuat rakyat pribumi bisa sekolah. Setelah sekolah mereka jadi pintar dan mengerti bahwa penjajahan itu merugikan, lalu ikut berjuang lewat organisasi.',
+      '7',
+    ],
+  },
+  {
+    name: 'Yoga Pratama',
+    email: 'yoga.pratama@sekolah.sch.id',
+    durationSeconds: 1580,
+    answers: [
+      'XI IPS 1',
+      '31',
+      'Sutan Syahrir dan Amir Syarifuddin',
+      'Faktor internal karena rakyat menderita. Faktor eksternal karena pengaruh negara lain. Faktor ketiga karena adanya pendidikan.',
+      'Banyak pribumi yang bisa sekolah sehingga muncul orang pintar yang memimpin pergerakan.',
+      '5',
+    ],
+  },
+  {
+    name: 'Dimas Saputra',
+    email: 'dimas.saputra@sekolah.sch.id',
+    durationSeconds: 954,
+    answers: [
+      'XI IPS 2',
+      '08',
+      'Jenderal Sudirman dan Tan Malaka',
+      'Karena rakyat ingin merdeka dan tidak mau dijajah lagi.',
+      'Rakyat jadi bisa sekolah.',
+      '3',
+    ],
+  },
+  {
+    name: 'Melati Anggraini',
+    email: 'melati.anggraini@sekolah.sch.id',
+    durationSeconds: 3540,
+    answers: [
+      'XI IPA 3',
+      '19',
+      'Soekarno dan Mohammad Hatta',
+      'Faktor pertama adalah lahirnya golongan terpelajar hasil Politik Etis yang mampu berpikir dalam skala kebangsaan, bukan lagi kedaerahan. Faktor kedua adalah kegagalan perlawanan bersenjata di daerah seperti Perang Diponegoro dan Perang Aceh yang mengajarkan bahwa perjuangan harus terorganisasi. Faktor ketiga adalah pengaruh gerakan nasionalisme Asia, terutama kemenangan Jepang atas Rusia tahun 1905 dan pergerakan di India.',
+      'Program edukasi Politik Etis membuka akses sekolah bagi anak pribumi, khususnya kalangan priyayi. Lulusan STOVIA dan sekolah guru inilah yang pertama menyadari ketimpangan sistem kolonial karena mereka membacanya lewat kacamata ilmu pengetahuan Barat. Ironisnya, kebijakan yang dimaksudkan menenangkan rakyat justru melahirkan kelompok yang paling kritis terhadap Belanda.',
+      '10',
+    ],
+  },
 ]
 
-const SURVEY_LAYANAN = [
-  'Pembelian produk', 'Layanan pelanggan', 'Pengiriman',
-  'Garansi dan retur', 'Aplikasi mobile',
+const EVENT_FIELDS = [
+  { label: 'Asal Instansi atau Perusahaan', type: 'SHORT_TEXT' },
+  {
+    label: 'Pilih Sesi',
+    type: 'SELECT',
+    isRequired: true,
+    options: [
+      'Sesi Pagi (09.00 - 12.00)',
+      'Sesi Siang (13.00 - 16.00)',
+      'Sesi Malam (19.00 - 21.00)',
+    ],
+  },
 ]
 
-const SURVEY_MASUKAN = [
-  'Notifikasi pengiriman sering telat masuk, padahal barangnya sudah sampai.',
-  'Respons CS cepat, tapi jawabannya masih template. Butuh solusi yang lebih spesifik.',
-  'Proses retur terlalu panjang, harus mengulang data yang sama di tiga form berbeda.',
-  'Sudah bagus. Kalau bisa tambahkan riwayat pesanan yang lebih mudah dicari.',
-  'Ongkos kirim ke luar Jawa masih mahal dibanding kompetitor.',
-  'Aplikasi kadang force close saat membuka halaman checkout.',
-  'Stok di aplikasi tidak sinkron dengan gudang, sudah dua kali pesanan saya dibatalkan.',
-  'Fitur pencarian kurang pintar, salah ketik sedikit langsung nihil hasilnya.',
-  'Pengemasan rapi dan aman, tidak ada keluhan sama sekali dari saya.',
-  'Metode pembayaran perlu ditambah, belum ada opsi cicilan tanpa kartu kredit.',
-  'Halaman detail produk lambat dimuat kalau fotonya banyak.',
-  'Kurir sering tidak menghubungi dulu sebelum sampai di alamat.',
+// [nama, instansi, sesi]
+const ATTENDEE_ROWS = [
+  ['Sinta Larasati', 'Tokopedia', 'Sesi Malam (19.00 - 21.00)'],
+  ['Arif Nugroho', 'Freelance', 'Sesi Pagi (09.00 - 12.00)'],
+  ['Dewi Kartika', 'Bank Mandiri', 'Sesi Malam (19.00 - 21.00)'],
+  ['Rizky Ramadhan', 'Universitas Indonesia', 'Sesi Siang (13.00 - 16.00)'],
+  ['Putri Ayu', 'Gojek', 'Sesi Malam (19.00 - 21.00)'],
+  ['Bayu Setiawan', 'Startup sendiri', 'Sesi Pagi (09.00 - 12.00)'],
+  ['Nadia Safitri', 'Telkom Indonesia', 'Sesi Malam (19.00 - 21.00)'],
+  ['Fajar Hidayat', 'Binus University', 'Sesi Siang (13.00 - 16.00)'],
+  ['Ayu Lestari', 'Traveloka', 'Sesi Malam (19.00 - 21.00)'],
+  ['Gilang Permana', 'Freelance', 'Sesi Pagi (09.00 - 12.00)'],
 ]
 
-// Distribusi sengaja dibikin timpang supaya peringkatnya terlihat bervariasi.
-const SURVEY_RESPONSES = SURVEY_NAMES.map((name, index) => {
-  const rating = [5, 4, 2, 5, 3, 4, 1, 5, 3, 4, 2, 5][index % 12]
-  const scale = [9, 8, 4, 10, 6, 7, 2, 9, 5, 8, 3, 10][index % 12]
-  const layanan = SURVEY_LAYANAN.slice(0, (index % 5) + 1)
-  return [name, String(rating), String(scale), layanan, SURVEY_MASUKAN[index % SURVEY_MASUKAN.length]]
-})
+const MENU_OPTIONS = [
+  'Nasi Goreng Kampung|28000|/menu-nasi-goreng.svg',
+  'Ayam Bakar Madu|35000|/menu-ayam-bakar.svg',
+  'Sate Ayam Bumbu Kacang|32000|/menu-sate-ayam.svg',
+  'Mie Goreng Seafood|30000|/menu-mie-goreng.svg',
+  'Es Teh Manis|8000|/menu-es-teh.svg',
+  'Es Jeruk Peras|12000|/menu-es-jeruk.svg',
+]
 
-const seedSurvey = async () => {
-  const existing = await prisma.form.findFirst({
-    where: { title: SURVEY_TITLE },
-    select: { id: true },
+const RESTAURANT_PAYMENT_OPTIONS = [
+  'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
+  'Transfer Bank|Transfer ke rekening kasir, tunjukkan bukti ke pelayan',
+  'Kartu Debit/Kredit|Bayar di kasir memakai mesin EDC',
+  'Tunai|Bayar langsung di kasir setelah makan',
+]
+
+const RESTAURANT_FIELDS = [
+  {
+    label: 'Nomor Meja',
+    type: 'SELECT',
+    isRequired: true,
+    options: [
+      'Meja 01',
+      'Meja 02',
+      'Meja 03',
+      'Meja 04',
+      'Meja 05',
+      'Meja 06',
+      'Meja 07',
+      'Meja 08',
+    ],
+  },
+  { label: 'Pilih Menu', type: 'MENU', isRequired: true, options: MENU_OPTIONS },
+  {
+    label: 'Cara Penyajian',
+    type: 'RADIO',
+    isRequired: true,
+    options: ['Makan di tempat', 'Bungkus dibawa pulang'],
+  },
+  { label: 'Catatan untuk Dapur', type: 'LONG_TEXT' },
+  {
+    label: 'Metode Pembayaran',
+    type: 'PAYMENT',
+    isRequired: true,
+    options: RESTAURANT_PAYMENT_OPTIONS,
+  },
+]
+
+// [nama, meja, item pesanan, penyajian, catatan, metode, total]
+// Nama hanya mengisi respondentName, bukan jawaban field.
+const ORDER_ROWS = [
+  [
+    'Bagas Wicaksono',
+    'Meja 03',
+    ['Nasi Goreng Kampung x2', 'Es Teh Manis x2'],
+    'Makan di tempat',
+    'Nasi gorengnya pedas sedang.',
+    'QRIS',
+    72000,
+  ],
+  [
+    'Intan Permata',
+    'Meja 01',
+    ['Ayam Bakar Madu', 'Es Jeruk Peras'],
+    'Makan di tempat',
+    '',
+    'QRIS',
+    47000,
+  ],
+  [
+    'Reza Maulana',
+    'Meja 06',
+    ['Sate Ayam Bumbu Kacang x3', 'Es Teh Manis'],
+    'Bungkus dibawa pulang',
+    'Bumbu kacang dipisah.',
+    'Transfer Bank',
+    104000,
+  ],
+  [
+    'Salsabila Putri',
+    'Meja 02',
+    ['Mie Goreng Seafood', 'Es Jeruk Peras x2'],
+    'Makan di tempat',
+    'Tanpa bawang.',
+    'Tunai',
+    54000,
+  ],
+  [
+    'Hendra Gunawan',
+    'Meja 08',
+    ['Nasi Goreng Kampung', 'Ayam Bakar Madu', 'Es Teh Manis x2'],
+    'Makan di tempat',
+    '',
+    'Kartu Debit/Kredit',
+    79000,
+  ],
+]
+
+// Kelasnya satu, jadi harganya melekat pada form — bukan dipilih ulang peserta.
+const COURSE_PRICE = 350000
+
+const COURSE_PAYMENT_OPTIONS = [
+  'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
+  'Transfer Bank|Transfer ke rekening yang tertera, simpan buktinya',
+  'Virtual Account|Bayar lewat VA di aplikasi bankmu',
+]
+
+const COURSE_FIELDS = [
+  { label: 'Nomor WhatsApp', type: 'PHONE', isRequired: true },
+  {
+    label: 'Level Pengalamanmu',
+    type: 'RADIO',
+    isRequired: true,
+    options: [
+      'Belum pernah sama sekali',
+      'Sudah pernah belajar mandiri',
+      'Sudah bekerja di bidang ini',
+    ],
+  },
+  { label: 'Apa yang ingin kamu capai setelah kelas ini?', type: 'LONG_TEXT' },
+  {
+    label: 'Metode Pembayaran',
+    type: 'PAYMENT',
+    isRequired: true,
+    options: COURSE_PAYMENT_OPTIONS,
+  },
+]
+
+// [nama, level, tujuan, metode]
+const STUDENT_ROWS = [
+  [
+    'Nabila Az-Zahra',
+    'Sudah pernah belajar mandiri',
+    'Ingin bisa membangun aplikasi sendiri dari nol sampai rilis.',
+    'QRIS',
+  ],
+  [
+    'Aditya Wijaya',
+    'Belum pernah sama sekali',
+    'Mau coba pindah karier ke bidang teknologi.',
+    'Transfer Bank',
+  ],
+  [
+    'Kirana Maheswari',
+    'Sudah bekerja di bidang ini',
+    'Butuh mentor untuk mereview arsitektur proyek kantor.',
+    'Virtual Account',
+  ],
+  [
+    'Yusuf Ramadhan',
+    'Belum pernah sama sekali',
+    'Ingin punya portofolio pertama sebelum melamar kerja.',
+    'QRIS',
+  ],
+]
+
+const getSlug = (name) =>
+  name
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .join('.')
+
+const getAnswers = (fields, values) => {
+  const answers = {}
+  fields.forEach((field, index) => {
+    answers[field.id] = values[index]
   })
-  if (existing) await prisma.form.delete({ where: { id: existing.id } })
+  return answers
+}
 
-  const survey = await prisma.form.create({
-    data: {
-      title: SURVEY_TITLE,
-      description:
-        'Masukanmu membantu kami memperbaiki layanan. Pengisian hanya butuh dua menit.',
-      purpose: null,
-      templateId: 'csat',
-      isPublished: true,
-      fields: {
-        create: SURVEY_FIELDS.map((field, index) => ({
-          label: field.label,
-          type: field.type,
-          isRequired: field.isRequired ?? false,
-          options: field.options ?? undefined,
-          order: index,
-        })),
-      },
-    },
-    include: { fields: { orderBy: { order: 'asc' } } },
-  })
+const getCreatedFields = (list) =>
+  list.map((field, index) => ({
+    label: field.label,
+    type: field.type,
+    isRequired: field.isRequired ?? false,
+    options: field.options ?? undefined,
+    order: index,
+  }))
 
-  for (const row of SURVEY_RESPONSES) {
-    const answers = {}
-    survey.fields.forEach((field, index) => {
-      answers[field.id] = row[index]
-    })
-    await prisma.formResponse.create({
+/**
+ * Tiap template punya beberapa form demo, bukan satu, supaya tombol
+ * "Eksplor Kategori" di landing page selalu menemukan isi. Entri pertama
+ * adalah demo utama yang dipakai contoh di README dan output seed.
+ */
+const EXAM_FORMS = [
+  {
+    title: '[DEMO] Ujian Tengah Semester — Sejarah Kelas XI',
+    description:
+      'Kerjakan seluruh soal dalam satu kali duduk. Halaman ini terkunci: pindah tab atau keluar layar penuh akan tercatat sebagai pelanggaran.',
+    students: STUDENTS,
+  },
+  {
+    title: '[DEMO] Ujian Akhir Semester — Sejarah Kelas XI',
+    description:
+      'Penilaian penutup satu semester. Soal esai dinilai dari ketepatan argumen dan bukti peristiwa yang kamu sebutkan.',
+    students: STUDENTS.slice(0, 3),
+  },
+  {
+    title: '[DEMO] Remedial Sejarah — Pergerakan Nasional',
+    description:
+      'Kesempatan kedua untuk siswa yang nilainya belum tuntas. Fokus soal ada pada latar belakang lahirnya pergerakan nasional.',
+    students: STUDENTS.slice(3),
+  },
+]
+
+const EVENT_FORMS = [
+  {
+    title: '[DEMO] Meetup Frontend Jakarta #7',
+    description:
+      'Ngobrol santai soal performa web dan design system. Link Google Meet dikirim setelah kamu berhasil mendaftar.',
+    bannerUrl: '/event-banner-demo.svg',
+    meetingUrl: 'https://meet.google.com/xyz-demo-blayer',
+    attendees: ATTENDEE_ROWS,
+  },
+  {
+    title: '[DEMO] Workshop Design System untuk Tim Produk',
+    description:
+      'Praktik menyusun token, komponen, dan dokumentasi yang dipakai lintas tim. Peserta dibatasi 30 orang per sesi.',
+    bannerUrl: '/event-banner-demo.svg',
+    meetingUrl: 'https://meet.google.com/dsw-demo-blayer',
+    attendees: ATTENDEE_ROWS.slice(0, 6),
+  },
+  {
+    title: '[DEMO] Webinar Karier di Industri Teknologi',
+    description:
+      'Sesi tanya jawab bareng praktisi soal jalur karier, portofolio, dan proses rekrutmen. Gratis untuk umum.',
+    bannerUrl: '/event-banner-demo.svg',
+    meetingUrl: 'https://meet.google.com/kar-demo-blayer',
+    attendees: ATTENDEE_ROWS.slice(4),
+  },
+]
+
+const RESTAURANT_FORMS = [
+  {
+    title: '[DEMO] Pesan Menu — Warung Blayer',
+    description:
+      'Pilih makanan dan minumanmu, lalu bayar lewat QRIS atau metode lain. Pesanan langsung masuk ke dapur setelah pembayaran dikonfirmasi.',
+    orders: ORDER_ROWS,
+  },
+  {
+    title: '[DEMO] Pesan Menu — Warung Blayer Cabang Kemang',
+    description:
+      'Menu sama, dapur berbeda. Pesanan dari meja mana pun langsung tercatat untuk kasir cabang Kemang.',
+    orders: ORDER_ROWS.slice(0, 3),
+  },
+  {
+    title: '[DEMO] Pesan Menu — Blayer Kopi & Dapur Bandung',
+    description:
+      'Pesan dari meja tanpa antre di kasir. Cocok dipakai saat jam makan siang ramai.',
+    orders: ORDER_ROWS.slice(2),
+  },
+]
+
+const COURSE_FORMS = [
+  {
+    title: '[DEMO] Kelas Online — Dasar Membangun Web',
+    description:
+      'Lengkapi data diri, lalu selesaikan pembayaran. Video materi langsung terbuka begitu formulir terkirim.',
+    bannerUrl: '/class-intensive.svg',
+    videoUrl: 'https://www.youtube.com/watch?v=aircAruvnKk',
+    students: STUDENT_ROWS,
+  },
+  {
+    title: '[DEMO] Kelas Online — Bikin API dengan Node.js',
+    description:
+      'Belajar merancang endpoint, autentikasi, dan basis data dari nol. Rekaman bisa diulang kapan saja setelah mendaftar.',
+    bannerUrl: '/class-basic.svg',
+    videoUrl: 'https://www.youtube.com/watch?v=Oe421EPjeBE',
+    students: STUDENT_ROWS.slice(0, 2),
+  },
+  {
+    title: '[DEMO] Kelas Online — UI Design untuk Developer',
+    description:
+      'Dasar tipografi, spasi, dan warna supaya antarmuka buatanmu rapi tanpa perlu menunggu desainer.',
+    bannerUrl: '/class-mentoring.svg',
+    videoUrl: 'https://www.youtube.com/watch?v=YiLUYf4HDh4',
+    students: STUDENT_ROWS.slice(1),
+  },
+]
+
+const seedExam = async () => {
+  const ids = []
+
+  for (const demo of EXAM_FORMS) {
+    const form = await prisma.form.create({
       data: {
-        formId: survey.id,
-        respondentName: row[0],
-        respondentEmail: '',
-        answers,
+        title: demo.title,
+        description: demo.description,
+        purpose: null,
+        templateId: 'exam',
+        isPublished: true,
+        fields: { create: getCreatedFields(EXAM_FIELDS) },
       },
+      include: { fields: { orderBy: { order: 'asc' } } },
     })
+
+    for (const student of demo.students) {
+      await prisma.formResponse.create({
+        data: {
+          formId: form.id,
+          respondentName: student.name,
+          respondentEmail: student.email,
+          answers: getAnswers(form.fields, student.answers),
+          durationSeconds: student.durationSeconds,
+        },
+      })
+    }
+
+    ids.push(form.id)
   }
 
-  console.log(`• form survei dibuat (${SURVEY_RESPONSES.length} jawaban)`)
-  return survey.id
+  console.log(`• ${EXAM_FORMS.length} form ujian dibuat`)
+  return ids[0]
+}
+
+const seedEvent = async () => {
+  const ids = []
+
+  for (const demo of EVENT_FORMS) {
+    const form = await prisma.form.create({
+      data: {
+        title: demo.title,
+        description: demo.description,
+        purpose: null,
+        templateId: 'event',
+        bannerUrl: demo.bannerUrl,
+        meetingUrl: demo.meetingUrl,
+        isPublished: true,
+        fields: { create: getCreatedFields(EVENT_FIELDS) },
+      },
+      include: { fields: { orderBy: { order: 'asc' } } },
+    })
+
+    for (const [name, instansi, sesi] of demo.attendees) {
+      const email = `${getSlug(name)}@mail.com`
+      await prisma.formResponse.create({
+        data: {
+          formId: form.id,
+          respondentName: name,
+          respondentEmail: email,
+          answers: getAnswers(form.fields, [instansi, sesi]),
+          // Pendaftaran diisi cepat, beda jauh dengan pengerjaan ujian.
+          durationSeconds: 90 + demo.attendees.length * 7,
+        },
+      })
+    }
+
+    ids.push(form.id)
+  }
+
+  console.log(`• ${EVENT_FORMS.length} form acara dibuat`)
+  return ids[0]
+}
+
+const seedRestaurant = async () => {
+  const ids = []
+
+  for (const demo of RESTAURANT_FORMS) {
+    const form = await prisma.form.create({
+      data: {
+        title: demo.title,
+        description: demo.description,
+        purpose: null,
+        templateId: 'restaurant',
+        bannerUrl: '/menu-nasi-goreng.svg',
+        qrisUrl: '/menu-es-teh.svg',
+        isPublished: true,
+        fields: { create: getCreatedFields(RESTAURANT_FIELDS) },
+      },
+      include: { fields: { orderBy: { order: 'asc' } } },
+    })
+
+    for (const [
+      name,
+      table,
+      orderItems,
+      serving,
+      note,
+      method,
+      amount,
+    ] of demo.orders) {
+      await prisma.formResponse.create({
+        data: {
+          formId: form.id,
+          respondentName: name,
+          // Form pesanan tidak menanyakan email, jadi tidak ada yang disimpan.
+          respondentEmail: null,
+          answers: getAnswers(form.fields, [
+            table,
+            orderItems,
+            serving,
+            note,
+            // Metode pembayaran disimpan bersama nominalnya, sama seperti
+            // yang dilakukan halaman pengisian saat form dikirim.
+            `${method} — Rp${amount.toLocaleString('id-ID')}`,
+          ]),
+          durationSeconds: 120 + orderItems.length * 25,
+        },
+      })
+    }
+
+    ids.push(form.id)
+  }
+
+  console.log(`• ${RESTAURANT_FORMS.length} form restoran dibuat`)
+  return ids[0]
+}
+
+const seedCourse = async () => {
+  const ids = []
+
+  for (const demo of COURSE_FORMS) {
+    const form = await prisma.form.create({
+      data: {
+        title: demo.title,
+        description: demo.description,
+        purpose: null,
+        templateId: 'course',
+        bannerUrl: demo.bannerUrl,
+        qrisUrl: '/menu-es-teh.svg',
+        videoUrl: demo.videoUrl,
+        priceAmount: COURSE_PRICE,
+        isPublished: true,
+        fields: { create: getCreatedFields(COURSE_FIELDS) },
+      },
+      include: { fields: { orderBy: { order: 'asc' } } },
+    })
+
+    for (const [name, level, goal, method] of demo.students) {
+      await prisma.formResponse.create({
+        data: {
+          formId: form.id,
+          respondentName: name,
+          respondentEmail: `${getSlug(name)}@mail.com`,
+          answers: getAnswers(form.fields, [
+            '08123456789',
+            level,
+            goal,
+            // Metode pembayaran disimpan bersama nominalnya, sama seperti
+            // yang dilakukan halaman pengisian saat form dikirim.
+            `${method} — Rp${COURSE_PRICE.toLocaleString('id-ID')}`,
+          ]),
+          durationSeconds: 180 + goal.length,
+        },
+      })
+    }
+
+    ids.push(form.id)
+  }
+
+  console.log(`• ${COURSE_FORMS.length} form kursus dibuat`)
+  return ids[0]
+}
+
+const main = async () => {
+  // Relasi pakai onDelete: Cascade, jadi field/jawaban/analisis ikut terhapus.
+  const removed = await prisma.form.deleteMany({
+    where: {
+      templateId: {
+        in: ['exam', 'event', 'restaurant', 'course', ...OBSOLETE_TEMPLATE_IDS],
+      },
+    },
+  })
+
+  if (removed.count) console.log(`• ${removed.count} form demo lama dihapus`)
+
+  const examId = await seedExam()
+  const eventId = await seedEvent()
+  const restaurantId = await seedRestaurant()
+  const courseId = await seedCourse()
+
+  console.log('\nSelesai. Buka:')
+  console.log(`  ujian    : /forms/${examId}  →  /forms/${examId}/result`)
+  console.log(`  acara    : /forms/${eventId}  →  /forms/${eventId}/result`)
+  console.log(
+    `  restoran : /forms/${restaurantId}  →  /forms/${restaurantId}/result`
+  )
+  console.log(`  kursus   : /forms/${courseId}  →  /forms/${courseId}/result`)
 }
 
 main()

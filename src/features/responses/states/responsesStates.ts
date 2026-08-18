@@ -25,6 +25,7 @@ export const useResponsesStates = create<ResponsesStore>((set) => ({
     respondentName: '',
     respondentEmail: '',
     answers: {},
+    durationSeconds: 0,
   },
 
   payloadGetResponsesList: {

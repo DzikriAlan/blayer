@@ -3,6 +3,8 @@ export interface PayloadPostResponses {
   respondentName: string
   respondentEmail: string
   answers: Record<string, string | string[]>
+  /** Lama pengerjaan dalam detik, dihitung sejak form terbuka. */
+  durationSeconds: number
 }
 
 export interface PayloadGetResponsesList {
@@ -11,6 +13,8 @@ export interface PayloadGetResponsesList {
 
 export interface DataResponses {
   id: string
+  /** Jumlah pendaftar setelah jawaban ini masuk. */
+  totalResponse: number
   createdAt: string
 }
 
@@ -34,6 +38,7 @@ export interface DataResponsesListItem {
   respondentName: string
   respondentEmail: string
   answers: Record<string, string | string[]>
+  durationSeconds: number
   createdAt: string
 }
 

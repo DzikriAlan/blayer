@@ -40,6 +40,7 @@ export default async function handler(
       respondentName: response.respondentName ?? '',
       respondentEmail: response.respondentEmail ?? '',
       answers: (response.answers as Record<string, unknown>) ?? {},
+      durationSeconds: response.durationSeconds ?? 0,
       createdAt: response.createdAt.toISOString(),
     })),
   })

@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 
 import PageShell from '@/components/page-shell'
+import { LoadData } from '@/shared/components/load-data'
 import ResponsesSubmit from '@/features/responses/components/responsesSubmit'
 
 const FormsFillPage: NextPage = () => {
@@ -22,7 +23,11 @@ const FormsFillPage: NextPage = () => {
         railIndex="01"
         railNote="REQUIRED"
       >
-        {formId ? <ResponsesSubmit formId={formId} /> : null}
+        {formId ? (
+          <ResponsesSubmit formId={formId} />
+        ) : (
+          <LoadData response={{ isLoading: true }} minHeight="60vh" />
+        )}
       </PageShell>
     </>
   )

@@ -33,6 +33,16 @@ model Form {
   purpose     String?  @db.Text
   /// Id template asal (exam/psychometric/dst). Menentukan bentuk dashboard hasil.
   templateId  String?
+  /// URL banner acara di Supabase Storage. Hanya dipakai template pendaftaran.
+  bannerUrl   String?
+  /// Link Google Meet acara, dibagikan setelah peserta berhasil mendaftar.
+  meetingUrl  String?
+  /// Link video kelas, dibuka setelah peserta membayar dan mengisi form.
+  videoUrl    String?
+  /// URL gambar QRIS milik pembuat form, dipindai pembayar saat memilih QRIS.
+  qrisUrl     String?
+  /// Harga tetap form berbayar yang tidak memakai field menu, mis. kursus.
+  priceAmount Int?
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -67,6 +77,8 @@ model FormResponse {
   respondentName  String?
   respondentEmail String?
   answers         Json
+  /// Lama pengerjaan dalam detik, dihitung dari form dibuka sampai dikirim.
+  durationSeconds Int?
   createdAt       DateTime @default(now())
 
   form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
@@ -104,6 +116,10 @@ enum FieldType {
   CHECKBOX
   RATING
   SCALE
+  /// Daftar menu bergambar. Tiap opsi: "Nama|Harga|URL Gambar".
+  MENU
+  /// Pilihan metode pembayaran. Tiap opsi: "Metode|Petunjuk".
+  PAYMENT
 }
 
 enum Status {

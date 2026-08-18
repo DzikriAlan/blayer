@@ -15,9 +15,8 @@ import { useResponsesControllers } from '@/features/responses/controllers/respon
 
 import { IS_AI_VISIBLE } from '@/shared/lib/features'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import SectionHead from '@/components/section-head'
-import StatusView from '@/components/status-view'
+import { LoadData } from '@/shared/components/load-data'
 import ResponsesDashboard from '@/features/responses/components/responsesDashboard'
 import AnalysisRankingCard from './analysisRankingCard'
 
@@ -63,6 +62,9 @@ export default function AnalysisResult({ formId }: Props) {
         ? 'Bagikan link form ini terlebih dahulu. AI baru bisa menganalisis setelah ada jawaban yang masuk.'
         : 'Bagikan link form ini terlebih dahulu. Jawaban yang masuk akan muncul di sini.',
       emptyImage: '/no-data.svg',
+      errorTitle: 'Something Broke',
+      errorSubtitle: responsesList.statusSubtitle,
+      errorImage: '/no-data.svg',
       pagination: { currentPage: 1, perPage: rawResponses.length },
       formTitle: responsesList.data?.formTitle ?? 'Results',
       purpose: responsesList.data?.purpose ?? '',
@@ -109,39 +111,35 @@ export default function AnalysisResult({ formId }: Props) {
         ) : null}
       </section>
 
-      {data.isLoading ? <Skeleton className="h-52 w-full" /> : null}
+      {/* Memuat, gagal, dan kosong ditangani satu komponen; dashboard hanya
+          dirender kalau jawabannya memang sudah ada. */}
+      <LoadData response={data} minHeight="30vh">
+        {data.totalResponse > 0 ? (
+          <ResponsesDashboard
+            formTitle={data.formTitle}
+            templateId={data.templateId}
+            fields={data.rawFields}
+            responses={data.rawResponses}
+          />
+        ) : null}
+      </LoadData>
 
+      {/* Placeholder LoadData tidak punya slot aksi, jadi jalan keluarnya
+          diletakkan tepat di bawahnya. */}
       {data.isError ? (
-        <StatusView
-          title="Something Broke"
-          subtitle={responsesList.statusSubtitle}
-          image={data.emptyImage}
-        >
+        <div className="flex justify-center">
           <Button onClick={() => fetchResponsesList.refetch()}>Retry</Button>
-        </StatusView>
+        </div>
       ) : null}
 
       {data.isEmpty ? (
-        <StatusView
-          title={data.emptyTitle}
-          subtitle={data.emptySubtitle}
-          image={data.emptyImage}
-        >
+        <div className="flex justify-center">
           <Button asChild>
             <Link href={`/forms/${formId}`}>
               Open Form <ArrowRight />
             </Link>
           </Button>
-        </StatusView>
-      ) : null}
-
-      {data.totalResponse > 0 ? (
-        <ResponsesDashboard
-          formTitle={data.formTitle}
-          templateId={data.templateId}
-          fields={data.rawFields}
-          responses={data.rawResponses}
-        />
+        </div>
       ) : null}
 
       {data.isAiEnabled && data.totalResponse > 0 ? (

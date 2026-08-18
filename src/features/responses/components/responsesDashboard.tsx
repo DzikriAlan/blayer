@@ -6,7 +6,6 @@ import type {
   DataResponsesListField,
   DataResponsesListItem,
 } from '../types/responsesTypes'
-import type { FormsTemplateKind } from '@/features/forms/components/formsTemplate'
 import { FORMS_TEMPLATES } from '@/features/forms/components/formsTemplate'
 
 import { Download } from 'lucide-react'
@@ -66,6 +65,18 @@ export default function ResponsesDashboard({
       return String(answer ?? '').trim() || '(tidak dijawab)'
     }
 
+    // Durasi pengerjaan; respons lama tanpa catatan durasi ditandai "—".
+    const getDurationText = (totalSecond: number) => {
+      if (!totalSecond) return '—'
+      const hour = Math.floor(totalSecond / 3600)
+      const minute = Math.floor((totalSecond % 3600) / 60)
+      const second = totalSecond % 60
+      const parts = [minute, second].map((part) =>
+        String(part).padStart(2, '0')
+      )
+      return hour ? `${String(hour).padStart(2, '0')}:${parts.join(':')}` : parts.join(':')
+    }
+
     const getDateText = (value: string) =>
       new Date(value).toLocaleString('id-ID', {
         day: '2-digit',
@@ -75,10 +86,17 @@ export default function ResponsesDashboard({
         minute: '2-digit',
       })
 
-    // Kind diambil dari template; form tanpa template diperkirakan dari isian field.
-    const getKind = (): FormsTemplateKind => {
+    // Bentuk hasil diturunkan dari satu nilai view milik template. Form tanpa
+    // template diperkirakan dari isian field karena tidak ada yang bisa dibaca.
+    const getResultView = () => {
       const template = FORMS_TEMPLATES.find((item) => item.id === templateId)
-      if (template) return template.kind
+
+      // Acara, pesanan, dan kelas sama-sama daftar orang, bukan peringkat skor.
+      if (['event', 'order', 'course'].includes(template?.view ?? ''))
+        return 'registry'
+      if (template?.view === 'survey') return 'summary'
+      if (template) return 'scoring'
+
       const hasScorable = fields.some((field) =>
         SCORABLE_TYPES.includes(field.type)
       )
@@ -135,6 +153,7 @@ export default function ResponsesDashboard({
           respondentName: response.respondentName || 'Anonim',
           respondentEmail: response.respondentEmail,
           createdAt: getDateText(response.createdAt),
+          durationText: getDurationText(response.durationSeconds ?? 0),
           score,
           completeness,
           answers: fields.map((field) => ({
@@ -187,7 +206,7 @@ export default function ResponsesDashboard({
         )
       : 0
 
-    const kind = getKind()
+    const resultView = getResultView()
 
     // Peringkat dihitung sebelum dipotong, jadi nomornya tetap global.
     const totalItem = rankedList.length
@@ -203,7 +222,7 @@ export default function ResponsesDashboard({
       data: pagedList,
       // Daftar utuh untuk export — bukan potongan halaman aktif.
       exportList: rankedList,
-      kind,
+      resultView,
       isLoading: false,
       isError: false,
       isEmpty: !responses.length,
@@ -227,7 +246,7 @@ export default function ResponsesDashboard({
       isBasisVisible: filters.isBasisVisible,
       openRespondentId: filters.openRespondentId,
       // Peringkat skor tidak bermakna untuk form pendaftaran.
-      showScore: kind !== 'registry',
+      showScore: resultView !== 'registry',
     }
   }, [
     templateId,
@@ -245,25 +264,14 @@ export default function ResponsesDashboard({
       return /[",;\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
     }
 
-    const getHeader = () => [
-      data.showScore ? 'Peringkat' : 'No',
-      'Nama',
-      'Email',
-      ...(data.showScore ? ['Skor'] : []),
-      'Kelengkapan (%)',
-      'Waktu Isi',
-      ...fields.map((field) => field.label),
-    ]
+    // Export sengaja dibatasi tiga kolom: nama, nilai, dan waktu pengerjaan.
+    const getHeader = () => ['Nama', 'Nilai', 'Waktu Pengerjaan']
 
     const getRows = () =>
       data.exportList.map((item) => [
-        item.rank,
         item.respondentName,
-        item.respondentEmail,
-        ...(data.showScore ? [item.score] : []),
-        item.completeness,
-        item.createdAt,
-        ...item.answers.map((answer) => answer.value),
+        item.score,
+        item.durationText,
       ])
 
     const getFileName = () => {
@@ -423,6 +431,7 @@ export default function ResponsesDashboard({
           respondentName={item.respondentName}
           respondentEmail={item.respondentEmail}
           createdAt={item.createdAt}
+          durationText={item.durationText}
           score={item.score}
           showScore={data.showScore}
           answers={item.answers}
@@ -464,7 +473,7 @@ export default function ResponsesDashboard({
         </div>
       ) : null}
 
-      {data.kind === 'registry' && data.groups.length ? (
+      {data.resultView === 'registry' && data.groups.length ? (
         <div className="bg-paper px-5 py-6 sm:px-7">
           <p className="brutal-eyebrow text-muted-foreground">
             {data.groupLabel}

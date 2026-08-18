@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 
 import PageShell from '@/components/page-shell'
+import { LoadData } from '@/shared/components/load-data'
 import AnalysisResult from '@/features/analysis/components/analysisResult'
 
 const FormsResultPage: NextPage = () => {
@@ -25,7 +26,11 @@ const FormsResultPage: NextPage = () => {
         railIndex="03"
         railNote="RANKED"
       >
-        {formId ? <AnalysisResult formId={formId} /> : null}
+        {formId ? (
+          <AnalysisResult formId={formId} />
+        ) : (
+          <LoadData response={{ isLoading: true }} minHeight="60vh" />
+        )}
       </PageShell>
     </>
   )

@@ -10,12 +10,14 @@ export default async function handler(
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
   }
 
-  const { formId, respondentName, respondentEmail, answers } = req.body as {
-    formId?: string
-    respondentName?: string
-    respondentEmail?: string
-    answers?: Record<string, unknown>
-  }
+  const { formId, respondentName, respondentEmail, answers, durationSeconds } =
+    req.body as {
+      formId?: string
+      respondentName?: string
+      respondentEmail?: string
+      answers?: Record<string, unknown>
+      durationSeconds?: number
+    }
 
   if (!formId || !answers) {
     return res.status(400).json({ message: 'formId dan answers wajib diisi.' })
@@ -47,12 +49,23 @@ export default async function handler(
       respondentName: respondentName || null,
       respondentEmail: respondentEmail || null,
       answers: answers as never,
+      // Durasi negatif atau bukan angka diabaikan supaya data tetap bersih.
+      durationSeconds:
+        typeof durationSeconds === 'number' &&
+        Number.isFinite(durationSeconds) &&
+        durationSeconds >= 0
+          ? Math.round(durationSeconds)
+          : null,
     },
     select: { id: true, createdAt: true },
   })
 
+  // Dipakai layar konfirmasi acara untuk menampilkan jumlah yang sudah daftar.
+  const totalResponse = await prisma.formResponse.count({ where: { formId } })
+
   return res.status(201).json({
     id: response.id,
+    totalResponse,
     createdAt: response.createdAt.toISOString(),
   })
 }

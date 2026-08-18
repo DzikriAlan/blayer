@@ -5,9 +5,12 @@ import {
   Brain,
   Briefcase,
   CalendarDays,
+  Eye,
   FilePlus2,
   GraduationCap,
+  PlayCircle,
   Star,
+  UtensilsCrossed,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -32,33 +35,73 @@ export interface FormsTemplateValues {
   description: string
   isAiEnabled: boolean
   purpose: string
+  /** Banner acara; hanya terpakai pada template yang punya detail acara. */
+  bannerUrl: string
+  /** Link Google Meet acara; hanya terpakai pada template yang punya detail acara. */
+  meetingUrl: string
+  /** Link video kelas; hanya terpakai pada template kursus. */
+  videoUrl: string
+  /** Gambar QRIS pembuat form; hanya terpakai pada template berbayar. */
+  qrisUrl: string
+  /** Harga tetap, ditulis sebagai angka polos. Kosong berarti tidak dipakai. */
+  priceAmount: string
   isPublished: boolean
   fields: FormsTemplateField[]
 }
 
 /**
- * Menentukan bentuk dashboard hasil:
- * - scoring  : responden diberi skor lalu diperingkat (ujian, psikotes, lamaran)
- * - summary  : agregat per pertanyaan, tanpa peringkat (survei)
- * - registry : daftar peserta apa adanya (pendaftaran)
+ * Satu nilai yang menentukan seluruh tampilan sebuah template.
+ *
+ * Ketiga permukaan — halaman isi, layar setelah kirim, dan dashboard hasil —
+ * diturunkan dari nilai ini, jadi menambah template baru cukup memilih salah
+ * satunya tanpa menyentuh komponen mana pun:
+ *
+ * | view      | halaman isi     | setelah kirim  | hasil          | identitas    |
+ * | --------- | --------------- | -------------- | -------------- | ------------ |
+ * | `scoring` | biasa           | konfirmasi     | skor+peringkat | nama + email |
+ * | `exam`    | terkunci        | konfirmasi     | skor+peringkat | nama + email |
+ * | `survey`  | biasa           | konfirmasi     | ringkasan      | nama + email |
+ * | `event`   | banner acara    | tiket acara    | daftar peserta | nama + email |
+ * | `order`   | menu + bayar    | struk pesanan  | daftar pesanan | nama saja    |
+ * | `course`  | harga + bayar   | akses video    | daftar peserta | nama + email |
+ *
+ * Kolom email hanya ditanyakan kalau memang ada yang dikirim ke sana — tiket
+ * acara, akses kelas. Pesanan di meja selesai di tempat, jadi tidak usah.
  */
-export type FormsTemplateKind = 'scoring' | 'summary' | 'registry'
+export type FormsTemplateView =
+  | 'scoring'
+  | 'exam'
+  | 'survey'
+  | 'event'
+  | 'order'
+  | 'course'
+
+/** Dipakai kalau form tidak punya template, misal form lama atau buatan tangan. */
+export const FORMS_TEMPLATE_DEFAULT_VIEW: FormsTemplateView = 'scoring'
 
 export interface FormsTemplateItem {
   id: string
   name: string
   tagline: string
-  kind: FormsTemplateKind
+  /** Satu nilai yang menentukan tampilan di ketiga permukaan. */
+  view: FormsTemplateView
   /**
    * Hanya mengatur tampil/tidaknya di daftar pilihan. Entri yang `false` tetap
    * ada di katalog supaya form lama yang memakainya tetap bisa diresolusi
-   * kind-nya, dan tinggal diubah `true` untuk dimunculkan kembali.
+   * tampilannya, dan tinggal diubah `true` untuk dimunculkan kembali.
    */
   isVisible: boolean
   icon: LucideIcon
   values: FormsTemplateValues
 }
 
+/**
+ * Nama dan email tidak pernah jadi field template.
+ *
+ * Halaman isi sudah merender dua kolom identitas bawaan — keduanya yang
+ * mengisi kolom respondentName dan respondentEmail — jadi template yang
+ * menambahkannya lagi hanya menghasilkan pertanyaan kembar.
+ */
 const getField = (
   label: string,
   type: FormsFieldType,
@@ -80,7 +123,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'exam',
     name: 'Ujian Sekolah',
     tagline: 'Pilihan ganda + esai, dinilai dan diperingkat otomatis',
-    kind: 'scoring',
+    view: 'exam',
     isVisible: true,
     icon: GraduationCap,
     values: {
@@ -91,8 +134,12 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Menilai pemahaman siswa terhadap materi ujian. Beri skor untuk setiap siswa berdasarkan ketepatan jawaban pilihan ganda dan kedalaman argumen pada jawaban esai. Urutkan siswa dari nilai tertinggi, lalu sebutkan siapa yang perlu remedial beserta topik yang belum dikuasai.',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
       fields: [
-        getField('Nama Lengkap', 'SHORT_TEXT', true),
         getField(
           'Kelas',
           'SELECT',
@@ -129,7 +176,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'psychometric',
     name: 'Psikotes Kandidat',
     tagline: 'Soal situasional dan skala sikap untuk seleksi kerja',
-    kind: 'scoring',
+    view: 'scoring',
     isVisible: false,
     icon: Brain,
     values: {
@@ -140,6 +187,11 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Menyeleksi kandidat untuk posisi Frontend Engineer. Nilai kemampuan problem solving, ketahanan menghadapi tekanan, kemauan belajar, dan kecocokan dengan budaya kerja kolaboratif. Beri peringkat kandidat dan tentukan siapa yang paling layak dilanjutkan ke tahap interview beserta alasannya.',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
       fields: [
         getField('Nama Lengkap', 'SHORT_TEXT', true),
         getField('Email Aktif', 'EMAIL', true),
@@ -182,7 +234,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'recruitment',
     name: 'Lamaran Kerja',
     tagline: 'Screening pelamar lengkap dengan ekspektasi gaji',
-    kind: 'scoring',
+    view: 'scoring',
     isVisible: false,
     icon: Briefcase,
     values: {
@@ -193,6 +245,11 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Menyaring pelamar kerja. Nilai kesesuaian pengalaman dengan posisi yang dilamar, kewajaran ekspektasi gaji, dan kesiapan bergabung. Urutkan pelamar dari yang paling sesuai, lalu tandai siapa saja yang layak dipanggil interview beserta alasannya.',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
       fields: [
         getField('Nama Lengkap', 'SHORT_TEXT', true),
         getField('Email', 'EMAIL', true),
@@ -225,7 +282,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'csat',
     name: 'Survei Kepuasan',
     tagline: 'Rating, skala rekomendasi, dan masukan pelanggan',
-    kind: 'summary',
+    view: 'survey',
     isVisible: false,
     icon: Star,
     values: {
@@ -236,6 +293,11 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Mengukur kepuasan pelanggan dan menemukan masalah yang paling mendesak. Rangkum keluhan yang paling sering muncul, urutkan responden dari yang paling puas hingga paling kecewa, lalu rekomendasikan tiga perbaikan prioritas beserta alasannya.',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
       fields: [
         getField('Nama', 'SHORT_TEXT'),
         getField('Email', 'EMAIL'),
@@ -265,9 +327,9 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'event',
     name: 'Pendaftaran Acara',
-    tagline: 'Kumpulkan peserta saja, tanpa penilaian AI',
-    kind: 'registry',
-    isVisible: false,
+    tagline: 'Banner, link Google Meet, dan daftar peserta',
+    view: 'event',
+    isVisible: true,
     icon: CalendarDays,
     values: {
       title: 'Pendaftaran Workshop',
@@ -276,10 +338,12 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isAiEnabled: false,
       isPublished: true,
       purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
       fields: [
-        getField('Nama Lengkap', 'SHORT_TEXT', true),
-        getField('Email', 'EMAIL', true),
-        getField('Nomor WhatsApp', 'PHONE', true),
         getField('Asal Instansi atau Perusahaan', 'SHORT_TEXT'),
         getField(
           'Pilih Sesi',
@@ -287,10 +351,115 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
           true,
           'Sesi Pagi (09.00 - 12.00)\nSesi Siang (13.00 - 16.00)\nSesi Malam (19.00 - 21.00)'
         ),
-        getField('Tanggal Kehadiran', 'DATE', true),
+      ],
+    },
+  },
+  {
+    id: 'restaurant',
+    name: 'Menu Restoran',
+    tagline: 'Pilih makanan bergambar per meja, bayar QRIS di tempat',
+    view: 'order',
+    isVisible: true,
+    icon: UtensilsCrossed,
+    values: {
+      title: 'Pesan Menu — Meja Restoran',
+      description:
+        'Pilih makanan dan minumanmu, lalu bayar lewat QRIS atau metode lain. Pesanan langsung masuk ke dapur setelah pembayaran dikonfirmasi.',
+      isAiEnabled: false,
+      isPublished: true,
+      purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
+      fields: [
         getField(
-          'Kebutuhan khusus (makanan, aksesibilitas, dll)',
-          'LONG_TEXT'
+          'Nomor Meja',
+          'SELECT',
+          true,
+          'Meja 01\nMeja 02\nMeja 03\nMeja 04\nMeja 05\nMeja 06\nMeja 07\nMeja 08'
+        ),
+        getField(
+          'Pilih Menu',
+          'MENU',
+          true,
+          [
+            'Nasi Goreng Kampung|28000|/menu-nasi-goreng.svg',
+            'Ayam Bakar Madu|35000|/menu-ayam-bakar.svg',
+            'Sate Ayam Bumbu Kacang|32000|/menu-sate-ayam.svg',
+            'Mie Goreng Seafood|30000|/menu-mie-goreng.svg',
+            'Es Teh Manis|8000|/menu-es-teh.svg',
+            'Es Jeruk Peras|12000|/menu-es-jeruk.svg',
+          ].join('\n'),
+          'Ketuk gambar untuk menambah porsi. Total tagihan dihitung otomatis.'
+        ),
+        getField(
+          'Cara Penyajian',
+          'RADIO',
+          true,
+          'Makan di tempat\nBungkus dibawa pulang'
+        ),
+        getField('Catatan untuk Dapur', 'LONG_TEXT', false, '', '', 'Mis. tidak pedas, tanpa bawang'),
+        getField(
+          'Metode Pembayaran',
+          'PAYMENT',
+          true,
+          [
+            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
+            'Transfer Bank|Transfer ke rekening kasir, tunjukkan bukti ke pelayan',
+            'Kartu Debit/Kredit|Bayar di kasir memakai mesin EDC',
+            'Tunai|Bayar langsung di kasir setelah makan',
+          ].join('\n'),
+          'Tagihan dihitung dari menu yang kamu pilih di atas.'
+        ),
+      ],
+    },
+  },
+  {
+    id: 'course',
+    name: 'Kursus Kelas',
+    tagline: 'Bayar biaya kelas, video materi terbuka setelah mendaftar',
+    view: 'course',
+    isVisible: true,
+    icon: PlayCircle,
+    values: {
+      title: 'Kelas Online — Dasar Membangun Web',
+      description:
+        'Lengkapi data diri, lalu selesaikan pembayaran. Video materi langsung terbuka begitu formulir terkirim.',
+      isAiEnabled: false,
+      isPublished: true,
+      purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      // Kelasnya satu, jadi harganya ditetapkan pembuat form — bukan dipilih
+      // ulang oleh peserta yang sudah membuka tautan kelas ini.
+      priceAmount: '350000',
+      fields: [
+        getField('Nomor WhatsApp', 'PHONE', true, '', '', '08xx'),
+        getField(
+          'Level Pengalamanmu',
+          'RADIO',
+          true,
+          'Belum pernah sama sekali\nSudah pernah belajar mandiri\nSudah bekerja di bidang ini'
+        ),
+        getField(
+          'Apa yang ingin kamu capai setelah kelas ini?',
+          'LONG_TEXT',
+          false
+        ),
+        getField(
+          'Metode Pembayaran',
+          'PAYMENT',
+          true,
+          [
+            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
+            'Transfer Bank|Transfer ke rekening yang tertera, simpan buktinya',
+            'Virtual Account|Bayar lewat VA di aplikasi bankmu',
+          ].join('\n'),
+          'Biaya kelas ditetapkan pengajar dan tampil di bawah ini.'
         ),
       ],
     },
@@ -299,7 +468,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'blank',
     name: 'Mulai dari Nol',
     tagline: 'Form kosong dengan satu field, susun sendiri',
-    kind: 'scoring',
+    view: 'scoring',
     isVisible: false,
     icon: FilePlus2,
     values: {
@@ -308,6 +477,11 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isAiEnabled: true,
       isPublished: true,
       purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
       fields: [
         getField('', 'SHORT_TEXT'),
       ],
@@ -317,12 +491,18 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
 
 interface Props {
   activeId: string
+  /** Template yang riwayat formnya sedang difilter; kosong berarti semua. */
+  filterId?: string
   onLoadFormsTemplate: (templateId: string) => void
+  /** Diisi hanya di halaman yang punya riwayat form untuk difilter. */
+  onLoadFormsFilter?: (templateId: string) => void
 }
 
 export default function FormsTemplate({
   activeId,
+  filterId = '',
   onLoadFormsTemplate,
+  onLoadFormsFilter,
 }: Props) {
   // Katalog tetap utuh; yang disaring hanya daftar yang ditampilkan.
   const visibleTemplates = FORMS_TEMPLATES.filter(
@@ -354,6 +534,7 @@ export default function FormsTemplate({
         {visibleTemplates.map((template) => {
           const Icon = template.icon
           const isActive = activeId === template.id
+          const isFiltered = filterId === template.id
           const isAiEnabled = template.values.isAiEnabled
 
           return (
@@ -390,19 +571,34 @@ export default function FormsTemplate({
                 </p>
               </div>
 
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
                 <span className="brutal-eyebrow shrink-0 opacity-70">
                   {String(template.values.fields.length).padStart(2, '0')}{' '}
                   FIELDS
                 </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={isActive ? 'paper' : 'outline'}
-                  onClick={() => onLoadFormsTemplate(template.id)}
-                >
-                  {isActive ? 'Applied' : 'Use'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  {/* "See" hanya muncul di halaman yang memang punya riwayat
+                      form, jadi builder tidak kebagian tombol tanpa tujuan. */}
+                  {onLoadFormsFilter ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isFiltered ? 'primary' : 'ghost'}
+                      title={`Lihat riwayat form ${template.name}`}
+                      onClick={() => onLoadFormsFilter(template.id)}
+                    >
+                      <Eye /> {isFiltered ? 'Shown' : 'See'}
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={isActive ? 'paper' : 'outline'}
+                    onClick={() => onLoadFormsTemplate(template.id)}
+                  >
+                    {isActive ? 'Applied' : 'Use'}
+                  </Button>
+                </div>
               </div>
             </div>
           )
