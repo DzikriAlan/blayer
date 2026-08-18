@@ -1,28 +1,22 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 
-import PageShell from '@/components/page-shell'
-import FormsList from '@/features/forms/components/formsList'
+import LandingShell from '@/components/landing-shell'
+import FormsLanding from '@/features/forms/components/formsLanding'
 
 const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>BLAYER — Form Builder dengan Dashboard Hasil</title>
+        <title>BLAYER — Take exactly what you need</title>
         <meta
           name="description"
-          content="Buat form seperti Google Form, lalu lihat peringkat dan detail jawaban peserta di dashboard hasil."
+          content="Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interaktif sesuai kebutuhan dan hasil yang ingin dicapai."
         />
       </Head>
-      <PageShell
-        barTitle="ALL FORMS"
-        railWord="FORMS"
-        railEyebrow={'BRUTAL\nFORM.'}
-        railIndex="00"
-        railNote="SCORING"
-      >
-        <FormsList />
-      </PageShell>
+      <LandingShell>
+        <FormsLanding />
+      </LandingShell>
     </>
   )
 }
