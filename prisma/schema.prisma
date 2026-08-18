@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  status      Status   @default(PENDING)
+  priority    Priority @default(MEDIUM)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("tasks")
+}
+
+model Form {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  /// Tujuan form untuk AI. Null/kosong berarti analisis AI dimatikan.
+  purpose     String?  @db.Text
+  /// Id template asal (exam/psychometric/dst). Menentukan bentuk dashboard hasil.
+  templateId  String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fields    FormField[]
+  responses FormResponse[]
+  analyses  FormAnalysis[]
+
+  @@map("forms")
+}
+
+model FormField {
+  id          String    @id @default(cuid())
+  formId      String
+  label       String
+  description String?   @db.Text
+  placeholder String?
+  type        FieldType @default(SHORT_TEXT)
+  isRequired  Boolean   @default(false)
+  options     Json?
+  order       Int       @default(0)
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@map("form_fields")
+}
+
+model FormResponse {
+  id              String   @id @default(cuid())
+  formId          String
+  respondentName  String?
+  respondentEmail String?
+  answers         Json
+  createdAt       DateTime @default(now())
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@map("form_responses")
+}
+
+model FormAnalysis {
+  id             String   @id @default(cuid())
+  formId         String
+  purpose        String   @db.Text
+  summary        String   @db.Text
+  recommendation String   @db.Text
+  ranking        Json
+  createdAt      DateTime @default(now())
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@map("form_analyses")
+}
+
+enum FieldType {
+  SHORT_TEXT
+  LONG_TEXT
+  NUMBER
+  EMAIL
+  PHONE
+  URL
+  DATE
+  TIME
+  SELECT
+  RADIO
+  CHECKBOX
+  RATING
+  SCALE
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
