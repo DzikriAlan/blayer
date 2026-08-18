@@ -29,6 +29,8 @@ export const useFormsStates = create<FormsStore>((set) => ({
     description: '',
     purpose: '',
     templateId: '',
+    bannerUrl: '',
+    meetingUrl: '',
     isPublished: true,
     fields: [],
   },

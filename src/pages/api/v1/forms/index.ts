@@ -38,15 +38,25 @@ export default async function handler(
   }
 
   if (req.method === 'POST') {
-    const { title, description, purpose, templateId, isPublished, fields } =
-      req.body as {
-        title?: string
-        description?: string
-        purpose?: string
-        templateId?: string
-        isPublished?: boolean
-        fields?: FieldInput[]
-      }
+    const {
+      title,
+      description,
+      purpose,
+      templateId,
+      bannerUrl,
+      meetingUrl,
+      isPublished,
+      fields,
+    } = req.body as {
+      title?: string
+      description?: string
+      purpose?: string
+      templateId?: string
+      bannerUrl?: string
+      meetingUrl?: string
+      isPublished?: boolean
+      fields?: FieldInput[]
+    }
 
     if (!title || !fields?.length) {
       return res
@@ -61,6 +71,8 @@ export default async function handler(
         // Kosong berarti pembuat form mematikan analisis AI.
         purpose: purpose?.trim() || null,
         templateId: templateId?.trim() || null,
+        bannerUrl: bannerUrl?.trim() || null,
+        meetingUrl: meetingUrl?.trim() || null,
         isPublished: isPublished ?? true,
         fields: {
           create: fields.map((field, index) => ({

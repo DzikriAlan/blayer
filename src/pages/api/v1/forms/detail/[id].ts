@@ -26,6 +26,8 @@ export default async function handler(
     purpose: form.purpose ?? '',
     isAiEnabled: !!form.purpose,
     templateId: form.templateId ?? '',
+    bannerUrl: form.bannerUrl ?? '',
+    meetingUrl: form.meetingUrl ?? '',
     isPublished: form.isPublished,
     createdAt: form.createdAt.toISOString(),
     fields: form.fields.map((field) => ({

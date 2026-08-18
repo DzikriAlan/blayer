@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, BarChart3, Loader2 } from 'lucide-react'
 
 import type { PayloadPostResponses } from '../types/responsesTypes'
@@ -9,7 +10,10 @@ import { useResponsesStates } from '../states/responsesStates'
 import { useResponsesControllers } from '../controllers/responsesControllers'
 import { useFormsStates } from '@/features/forms/states/formsStates'
 import { useFormsControllers } from '@/features/forms/controllers/formsControllers'
-import { FORMS_TEMPLATES } from '@/features/forms/components/formsTemplate'
+import {
+  FORMS_TEMPLATES,
+  FORMS_TEMPLATE_DEFAULT_VIEW,
+} from '@/features/forms/components/formsTemplate'
 
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -20,6 +24,7 @@ import SectionHead from '@/components/section-head'
 import StatusView from '@/components/status-view'
 import ResponsesField from './responsesField'
 import ResponsesGuard from './responsesGuard'
+import ResponsesEvent from './responsesEvent'
 
 const IDENTITY_OFFSET = 2
 
@@ -46,12 +51,36 @@ export default function ResponsesSubmit({ formId }: Props) {
   const data = useMemo(() => {
     const getAnswer = (fieldId: string) => filters.answers[fieldId] ?? ''
 
-    // Mode ujian ditentukan oleh template asal form, bukan oleh pengisi.
-    const getIsProctored = () => {
+    // Bentuk halaman ditentukan template asal form, bukan oleh pengisi.
+    const getView = () => {
       const template = FORMS_TEMPLATES.find(
         (item) => item.id === formsDetail.data?.templateId
       )
-      return !!template?.isProctored
+      return template?.view ?? FORMS_TEMPLATE_DEFAULT_VIEW
+    }
+
+    // Tanggal dan sesi acara diambil dari jawaban peserta sendiri, karena
+    // itulah satu-satunya sumber yang ada tanpa menambah field baru di form.
+    const getFirstAnswerByType = (type: string) => {
+      const field = (formsDetail.data?.fields ?? []).find(
+        (item) => item.type === type
+      )
+      if (!field) return ''
+      const answer = filters.answers[field.id]
+      return Array.isArray(answer) ? answer.join(', ') : String(answer ?? '')
+    }
+
+    const getEventDateText = () => {
+      const raw = getFirstAnswerByType('DATE')
+      if (!raw) return ''
+      const parsed = new Date(raw)
+      if (Number.isNaN(parsed.getTime())) return raw
+      return parsed.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
     }
 
     const getDurationText = (totalSecond: number) => {
@@ -84,7 +113,14 @@ export default function ResponsesSubmit({ formId }: Props) {
         formsDetail.data?.description ||
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
       isAiEnabled: formsDetail.data?.isAiEnabled ?? false,
-      isProctored: getIsProctored(),
+      isProctored: getView() === 'exam',
+      hasEventDetail: getView() === 'event',
+      isEventDone: getView() === 'event',
+      bannerUrl: formsDetail.data?.bannerUrl ?? '',
+      meetingUrl: formsDetail.data?.meetingUrl ?? '',
+      eventDateText: getEventDateText(),
+      eventSessionText: getFirstAnswerByType('SELECT'),
+      totalAttendee: responses.data?.totalResponse ?? 0,
       durationText: getDurationText(filters.elapsedSeconds),
       violationCount: filters.violationCount,
       isSubmitting: storeResponses.isPending || responses.status === 'loading',
@@ -183,6 +219,22 @@ export default function ResponsesSubmit({ formId }: Props) {
     return () => window.clearInterval(timer)
   }, [formsDetail.status, responses.status])
 
+  if (data.isSubmitted && data.isEventDone) {
+    return (
+      <ResponsesEvent
+        formId={formId}
+        title={data.title}
+        description={formsDetail.data?.description ?? ''}
+        bannerUrl={data.bannerUrl}
+        meetingUrl={data.meetingUrl}
+        respondentName={filters.respondentName}
+        dateText={data.eventDateText}
+        sessionText={data.eventSessionText}
+        totalAttendee={data.totalAttendee}
+      />
+    )
+  }
+
   if (data.isSubmitted) {
     return (
       <div className="border-2 border-foreground">
@@ -200,6 +252,7 @@ export default function ResponsesSubmit({ formId }: Props) {
               : 'Jawabanmu sudah tersimpan.'}
           </p>
         </div>
+
         <div className="flex flex-wrap items-center gap-5 bg-paper px-7 py-6">
           <Button asChild>
             <Link href={`/forms/${formId}/result`}>
@@ -251,6 +304,23 @@ export default function ResponsesSubmit({ formId }: Props) {
         durationText={data.durationText}
         onEditViolation={editViolation}
       />
+
+      {data.hasEventDetail && data.bannerUrl ? (
+        <div className="border-b-2 border-foreground bg-muted">
+          {/* width/height 0 + sizes: rasio diambil dari berkasnya sendiri,
+              jadi poster tinggi maupun banner lebar sama-sama tampil utuh. */}
+          <Image
+            src={data.bannerUrl}
+            alt={`Banner ${data.title}`}
+            width={0}
+            height={0}
+            unoptimized
+            priority
+            sizes="(max-width: 768px) 100vw, 720px"
+            className="h-auto w-full"
+          />
+        </div>
+      ) : null}
 
       <SectionHead
         tag="SECTION 01"

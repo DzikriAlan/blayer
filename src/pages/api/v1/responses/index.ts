@@ -60,8 +60,12 @@ export default async function handler(
     select: { id: true, createdAt: true },
   })
 
+  // Dipakai layar konfirmasi acara untuk menampilkan jumlah yang sudah daftar.
+  const totalResponse = await prisma.formResponse.count({ where: { formId } })
+
   return res.status(201).json({
     id: response.id,
+    totalResponse,
     createdAt: response.createdAt.toISOString(),
   })
 }

@@ -29,6 +29,10 @@ export interface PayloadPostForms {
   purpose: string
   /** Id template asal; menentukan bentuk dashboard hasil. */
   templateId: string
+  /** Banner acara hasil unggahan; kosong berarti tidak dipakai. */
+  bannerUrl: string
+  /** Link Google Meet acara; kosong berarti tidak dipakai. */
+  meetingUrl: string
   isPublished: boolean
   fields: FormsFieldInput[]
 }
@@ -75,6 +79,8 @@ export interface DataFormsDetail {
   isAiEnabled: boolean
   /** Id template asal; menentukan mode pengerjaan dan bentuk dashboard hasil. */
   templateId: string
+  bannerUrl: string
+  meetingUrl: string
   isPublished: boolean
   createdAt: string
   fields: DataFormsDetailField[]

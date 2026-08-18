@@ -13,6 +13,8 @@ export interface PayloadGetResponsesList {
 
 export interface DataResponses {
   id: string
+  /** Jumlah pendaftar setelah jawaban ini masuk. */
+  totalResponse: number
   createdAt: string
 }
 

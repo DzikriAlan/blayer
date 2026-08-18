@@ -6,7 +6,6 @@ import type {
   DataResponsesListField,
   DataResponsesListItem,
 } from '../types/responsesTypes'
-import type { FormsTemplateKind } from '@/features/forms/components/formsTemplate'
 import { FORMS_TEMPLATES } from '@/features/forms/components/formsTemplate'
 
 import { Download } from 'lucide-react'
@@ -87,10 +86,15 @@ export default function ResponsesDashboard({
         minute: '2-digit',
       })
 
-    // Kind diambil dari template; form tanpa template diperkirakan dari isian field.
-    const getKind = (): FormsTemplateKind => {
+    // Bentuk hasil diturunkan dari satu nilai view milik template. Form tanpa
+    // template diperkirakan dari isian field karena tidak ada yang bisa dibaca.
+    const getResultView = () => {
       const template = FORMS_TEMPLATES.find((item) => item.id === templateId)
-      if (template) return template.kind
+
+      if (template?.view === 'event') return 'registry'
+      if (template?.view === 'survey') return 'summary'
+      if (template) return 'scoring'
+
       const hasScorable = fields.some((field) =>
         SCORABLE_TYPES.includes(field.type)
       )
@@ -200,7 +204,7 @@ export default function ResponsesDashboard({
         )
       : 0
 
-    const kind = getKind()
+    const resultView = getResultView()
 
     // Peringkat dihitung sebelum dipotong, jadi nomornya tetap global.
     const totalItem = rankedList.length
@@ -216,7 +220,7 @@ export default function ResponsesDashboard({
       data: pagedList,
       // Daftar utuh untuk export — bukan potongan halaman aktif.
       exportList: rankedList,
-      kind,
+      resultView,
       isLoading: false,
       isError: false,
       isEmpty: !responses.length,
@@ -240,7 +244,7 @@ export default function ResponsesDashboard({
       isBasisVisible: filters.isBasisVisible,
       openRespondentId: filters.openRespondentId,
       // Peringkat skor tidak bermakna untuk form pendaftaran.
-      showScore: kind !== 'registry',
+      showScore: resultView !== 'registry',
     }
   }, [
     templateId,
@@ -467,7 +471,7 @@ export default function ResponsesDashboard({
         </div>
       ) : null}
 
-      {data.kind === 'registry' && data.groups.length ? (
+      {data.resultView === 'registry' && data.groups.length ? (
         <div className="bg-paper px-5 py-6 sm:px-7">
           <p className="brutal-eyebrow text-muted-foreground">
             {data.groupLabel}

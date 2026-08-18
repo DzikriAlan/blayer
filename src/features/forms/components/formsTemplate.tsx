@@ -32,34 +32,45 @@ export interface FormsTemplateValues {
   description: string
   isAiEnabled: boolean
   purpose: string
+  /** Banner acara; hanya terpakai pada template yang punya detail acara. */
+  bannerUrl: string
+  /** Link Google Meet acara; hanya terpakai pada template yang punya detail acara. */
+  meetingUrl: string
   isPublished: boolean
   fields: FormsTemplateField[]
 }
 
 /**
- * Menentukan bentuk dashboard hasil:
- * - scoring  : responden diberi skor lalu diperingkat (ujian, psikotes, lamaran)
- * - summary  : agregat per pertanyaan, tanpa peringkat (survei)
- * - registry : daftar peserta apa adanya (pendaftaran)
+ * Satu nilai yang menentukan seluruh tampilan sebuah template.
+ *
+ * Ketiga permukaan — halaman isi, layar setelah kirim, dan dashboard hasil —
+ * diturunkan dari nilai ini, jadi menambah template baru cukup memilih salah
+ * satunya tanpa menyentuh komponen mana pun:
+ *
+ * | view      | halaman isi     | setelah kirim  | hasil          |
+ * | --------- | --------------- | -------------- | -------------- |
+ * | `scoring` | biasa           | konfirmasi     | skor+peringkat |
+ * | `exam`    | terkunci        | konfirmasi     | skor+peringkat |
+ * | `survey`  | biasa           | konfirmasi     | ringkasan      |
+ * | `event`   | banner acara    | tiket acara    | daftar peserta |
  */
-export type FormsTemplateKind = 'scoring' | 'summary' | 'registry'
+export type FormsTemplateView = 'scoring' | 'exam' | 'survey' | 'event'
+
+/** Dipakai kalau form tidak punya template, misal form lama atau buatan tangan. */
+export const FORMS_TEMPLATE_DEFAULT_VIEW: FormsTemplateView = 'scoring'
 
 export interface FormsTemplateItem {
   id: string
   name: string
   tagline: string
-  kind: FormsTemplateKind
+  /** Satu nilai yang menentukan tampilan di ketiga permukaan. */
+  view: FormsTemplateView
   /**
    * Hanya mengatur tampil/tidaknya di daftar pilihan. Entri yang `false` tetap
    * ada di katalog supaya form lama yang memakainya tetap bisa diresolusi
-   * kind-nya, dan tinggal diubah `true` untuk dimunculkan kembali.
+   * tampilannya, dan tinggal diubah `true` untuk dimunculkan kembali.
    */
   isVisible: boolean
-  /**
-   * Mode ujian: halaman pengisian dikunci (fullscreen, tanpa salin-tempel,
-   * pindah tab/aplikasi tercatat sebagai pelanggaran).
-   */
-  isProctored: boolean
   icon: LucideIcon
   values: FormsTemplateValues
 }
@@ -85,9 +96,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'exam',
     name: 'Ujian Sekolah',
     tagline: 'Pilihan ganda + esai, dinilai dan diperingkat otomatis',
-    kind: 'scoring',
+    view: 'exam',
     isVisible: true,
-    isProctored: true,
     icon: GraduationCap,
     values: {
       title: 'Ujian Tengah Semester — Sejarah Kelas XI',
@@ -97,6 +107,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Menilai pemahaman siswa terhadap materi ujian. Beri skor untuk setiap siswa berdasarkan ketepatan jawaban pilihan ganda dan kedalaman argumen pada jawaban esai. Urutkan siswa dari nilai tertinggi, lalu sebutkan siapa yang perlu remedial beserta topik yang belum dikuasai.',
+      bannerUrl: '',
+      meetingUrl: '',
       fields: [
         getField('Nama Lengkap', 'SHORT_TEXT', true),
         getField(
@@ -135,9 +147,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'psychometric',
     name: 'Psikotes Kandidat',
     tagline: 'Soal situasional dan skala sikap untuk seleksi kerja',
-    kind: 'scoring',
+    view: 'scoring',
     isVisible: false,
-    isProctored: false,
     icon: Brain,
     values: {
       title: 'Psikotes Kandidat — Frontend Engineer',
@@ -147,6 +158,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Menyeleksi kandidat untuk posisi Frontend Engineer. Nilai kemampuan problem solving, ketahanan menghadapi tekanan, kemauan belajar, dan kecocokan dengan budaya kerja kolaboratif. Beri peringkat kandidat dan tentukan siapa yang paling layak dilanjutkan ke tahap interview beserta alasannya.',
+      bannerUrl: '',
+      meetingUrl: '',
       fields: [
         getField('Nama Lengkap', 'SHORT_TEXT', true),
         getField('Email Aktif', 'EMAIL', true),
@@ -189,9 +202,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'recruitment',
     name: 'Lamaran Kerja',
     tagline: 'Screening pelamar lengkap dengan ekspektasi gaji',
-    kind: 'scoring',
+    view: 'scoring',
     isVisible: false,
-    isProctored: false,
     icon: Briefcase,
     values: {
       title: 'Formulir Lamaran Kerja',
@@ -201,6 +213,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Menyaring pelamar kerja. Nilai kesesuaian pengalaman dengan posisi yang dilamar, kewajaran ekspektasi gaji, dan kesiapan bergabung. Urutkan pelamar dari yang paling sesuai, lalu tandai siapa saja yang layak dipanggil interview beserta alasannya.',
+      bannerUrl: '',
+      meetingUrl: '',
       fields: [
         getField('Nama Lengkap', 'SHORT_TEXT', true),
         getField('Email', 'EMAIL', true),
@@ -233,9 +247,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'csat',
     name: 'Survei Kepuasan',
     tagline: 'Rating, skala rekomendasi, dan masukan pelanggan',
-    kind: 'summary',
+    view: 'survey',
     isVisible: false,
-    isProctored: false,
     icon: Star,
     values: {
       title: 'Survei Kepuasan Pelanggan',
@@ -245,6 +258,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       purpose:
         'Mengukur kepuasan pelanggan dan menemukan masalah yang paling mendesak. Rangkum keluhan yang paling sering muncul, urutkan responden dari yang paling puas hingga paling kecewa, lalu rekomendasikan tiga perbaikan prioritas beserta alasannya.',
+      bannerUrl: '',
+      meetingUrl: '',
       fields: [
         getField('Nama', 'SHORT_TEXT'),
         getField('Email', 'EMAIL'),
@@ -274,10 +289,9 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'event',
     name: 'Pendaftaran Acara',
-    tagline: 'Kumpulkan peserta saja, tanpa penilaian AI',
-    kind: 'registry',
-    isVisible: false,
-    isProctored: false,
+    tagline: 'Banner, link Google Meet, dan daftar peserta',
+    view: 'event',
+    isVisible: true,
     icon: CalendarDays,
     values: {
       title: 'Pendaftaran Workshop',
@@ -286,6 +300,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isAiEnabled: false,
       isPublished: true,
       purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
       fields: [
         getField('Nama Lengkap', 'SHORT_TEXT', true),
         getField('Email', 'EMAIL', true),
@@ -309,9 +325,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     id: 'blank',
     name: 'Mulai dari Nol',
     tagline: 'Form kosong dengan satu field, susun sendiri',
-    kind: 'scoring',
+    view: 'scoring',
     isVisible: false,
-    isProctored: false,
     icon: FilePlus2,
     values: {
       title: '',
@@ -319,6 +334,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isAiEnabled: true,
       isPublished: true,
       purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
       fields: [
         getField('', 'SHORT_TEXT'),
       ],

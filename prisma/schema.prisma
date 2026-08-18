@@ -33,6 +33,10 @@ model Form {
   purpose     String?  @db.Text
   /// Id template asal (exam/psychometric/dst). Menentukan bentuk dashboard hasil.
   templateId  String?
+  /// URL banner acara di Supabase Storage. Hanya dipakai template pendaftaran.
+  bannerUrl   String?
+  /// Link Google Meet acara, dibagikan setelah peserta berhasil mendaftar.
+  meetingUrl  String?
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
