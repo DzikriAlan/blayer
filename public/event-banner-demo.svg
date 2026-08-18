@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 525" width="1200" height="525" role="img" aria-label="Banner demo Meetup Frontend Jakarta">
+  <defs>
+    <pattern id="hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="16" height="16" fill="none"/>
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#111111" stroke-width="6" opacity="0.18"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="525" fill="#F5F2EA"/>
+  <rect width="1200" height="525" fill="url(#hatch)"/>
+  <rect x="0" y="0" width="1200" height="18" fill="#111111"/>
+  <rect x="0" y="507" width="1200" height="18" fill="#111111"/>
+
+  <rect x="72" y="120" width="150" height="42" fill="#E23A2E"/>
+  <text x="90" y="149" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="3" fill="#F5F2EA">MEETUP</text>
+
+  <text x="72" y="250" font-family="Impact, 'Arial Black', system-ui, sans-serif" font-size="92" letter-spacing="-2" fill="#111111">FRONTEND</text>
+  <text x="72" y="340" font-family="Impact, 'Arial Black', system-ui, sans-serif" font-size="92" letter-spacing="-2" fill="#111111">JAKARTA #7</text>
+
+  <rect x="72" y="380" width="620" height="4" fill="#111111"/>
+  <text x="72" y="424" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="21" fill="#111111">24 AGUSTUS 2026 &#183; 19.00 WIB &#183; ONLINE</text>
+
+  <rect x="856" y="120" width="272" height="272" fill="#111111"/>
+  <rect x="884" y="148" width="216" height="216" fill="#E23A2E"/>
+  <text x="992" y="284" text-anchor="middle" font-family="Impact, 'Arial Black', system-ui, sans-serif" font-size="128" fill="#F5F2EA">7</text>
+</svg>
