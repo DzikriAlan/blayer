@@ -55,6 +55,11 @@ export interface FormsTemplateItem {
    * kind-nya, dan tinggal diubah `true` untuk dimunculkan kembali.
    */
   isVisible: boolean
+  /**
+   * Mode ujian: halaman pengisian dikunci (fullscreen, tanpa salin-tempel,
+   * pindah tab/aplikasi tercatat sebagai pelanggaran).
+   */
+  isProctored: boolean
   icon: LucideIcon
   values: FormsTemplateValues
 }
@@ -82,6 +87,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Pilihan ganda + esai, dinilai dan diperingkat otomatis',
     kind: 'scoring',
     isVisible: true,
+    isProctored: true,
     icon: GraduationCap,
     values: {
       title: 'Ujian Tengah Semester — Sejarah Kelas XI',
@@ -131,6 +137,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Soal situasional dan skala sikap untuk seleksi kerja',
     kind: 'scoring',
     isVisible: false,
+    isProctored: false,
     icon: Brain,
     values: {
       title: 'Psikotes Kandidat — Frontend Engineer',
@@ -184,6 +191,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Screening pelamar lengkap dengan ekspektasi gaji',
     kind: 'scoring',
     isVisible: false,
+    isProctored: false,
     icon: Briefcase,
     values: {
       title: 'Formulir Lamaran Kerja',
@@ -227,6 +235,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Rating, skala rekomendasi, dan masukan pelanggan',
     kind: 'summary',
     isVisible: false,
+    isProctored: false,
     icon: Star,
     values: {
       title: 'Survei Kepuasan Pelanggan',
@@ -268,6 +277,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Kumpulkan peserta saja, tanpa penilaian AI',
     kind: 'registry',
     isVisible: false,
+    isProctored: false,
     icon: CalendarDays,
     values: {
       title: 'Pendaftaran Workshop',
@@ -301,6 +311,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Form kosong dengan satu field, susun sendiri',
     kind: 'scoring',
     isVisible: false,
+    isProctored: false,
     icon: FilePlus2,
     values: {
       title: '',

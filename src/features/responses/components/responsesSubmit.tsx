@@ -9,7 +9,9 @@ import { useResponsesStates } from '../states/responsesStates'
 import { useResponsesControllers } from '../controllers/responsesControllers'
 import { useFormsStates } from '@/features/forms/states/formsStates'
 import { useFormsControllers } from '@/features/forms/controllers/formsControllers'
+import { FORMS_TEMPLATES } from '@/features/forms/components/formsTemplate'
 
+import { cn } from '@/shared/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import SectionHead from '@/components/section-head'
 import StatusView from '@/components/status-view'
 import ResponsesField from './responsesField'
+import ResponsesGuard from './responsesGuard'
 
 const IDENTITY_OFFSET = 2
 
@@ -35,10 +38,27 @@ export default function ResponsesSubmit({ formId }: Props) {
     respondentEmail: '',
     answers: {} as Record<string, string | string[]>,
     errors: {} as Record<string, string>,
+    startedAt: 0,
+    elapsedSeconds: 0,
+    violationCount: 0,
   })
 
   const data = useMemo(() => {
     const getAnswer = (fieldId: string) => filters.answers[fieldId] ?? ''
+
+    // Mode ujian ditentukan oleh template asal form, bukan oleh pengisi.
+    const getIsProctored = () => {
+      const template = FORMS_TEMPLATES.find(
+        (item) => item.id === formsDetail.data?.templateId
+      )
+      return !!template?.isProctored
+    }
+
+    const getDurationText = (totalSecond: number) => {
+      const minute = Math.floor(totalSecond / 60)
+      const second = totalSecond % 60
+      return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
+    }
 
     const mappedList = (formsDetail.data?.fields ?? []).map((field, index) => ({
       index: index + IDENTITY_OFFSET,
@@ -64,6 +84,9 @@ export default function ResponsesSubmit({ formId }: Props) {
         formsDetail.data?.description ||
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
       isAiEnabled: formsDetail.data?.isAiEnabled ?? false,
+      isProctored: getIsProctored(),
+      durationText: getDurationText(filters.elapsedSeconds),
+      violationCount: filters.violationCount,
       isSubmitting: storeResponses.isPending || responses.status === 'loading',
       isSubmitted: responses.status === 'success',
       submitError: responses.status === 'error' ? responses.statusSubtitle : '',
@@ -80,6 +103,10 @@ export default function ResponsesSubmit({ formId }: Props) {
 
   const editRespondent = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const editViolation = () => {
+    setFilters((prev) => ({ ...prev, violationCount: prev.violationCount + 1 }))
   }
 
   const clearResponses = () => {
@@ -115,11 +142,17 @@ export default function ResponsesSubmit({ formId }: Props) {
       return
     }
 
+    const getDurationSeconds = () =>
+      filters.startedAt
+        ? Math.max(Math.round((Date.now() - filters.startedAt) / 1000), 0)
+        : 0
+
     const payload: PayloadPostResponses = {
       formId,
       respondentName: filters.respondentName,
       respondentEmail: filters.respondentEmail,
       answers: filters.answers,
+      durationSeconds: getDurationSeconds(),
     }
 
     storeResponses.mutate(payload)
@@ -128,6 +161,27 @@ export default function ResponsesSubmit({ formId }: Props) {
   useEffect(() => {
     if (formId) setGetFormsDetail({ id: formId })
   }, [formId, setGetFormsDetail])
+
+  // Stopwatch mulai begitu pertanyaan tampil, berhenti saat jawaban terkirim.
+  useEffect(() => {
+    if (formsDetail.status !== 'success') return
+    if (responses.status === 'success') return
+
+    setFilters((prev) =>
+      prev.startedAt ? prev : { ...prev, startedAt: Date.now() }
+    )
+
+    const timer = window.setInterval(() => {
+      setFilters((prev) => ({
+        ...prev,
+        elapsedSeconds: prev.startedAt
+          ? Math.max(Math.round((Date.now() - prev.startedAt) / 1000), 0)
+          : 0,
+      }))
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [formsDetail.status, responses.status])
 
   if (data.isSubmitted) {
     return (
@@ -184,7 +238,20 @@ export default function ResponsesSubmit({ formId }: Props) {
   }
 
   return (
-    <form onSubmit={submitResponses} className="border-2 border-foreground">
+    <form
+      onSubmit={submitResponses}
+      className={cn(
+        'border-2 border-foreground',
+        data.isProctored && 'select-none'
+      )}
+    >
+      <ResponsesGuard
+        isActive={data.isProctored}
+        violationCount={data.violationCount}
+        durationText={data.durationText}
+        onEditViolation={editViolation}
+      />
+
       <SectionHead
         tag="SECTION 01"
         title={data.title}

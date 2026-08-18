@@ -25,6 +25,7 @@ export default async function handler(
     description: form.description ?? '',
     purpose: form.purpose ?? '',
     isAiEnabled: !!form.purpose,
+    templateId: form.templateId ?? '',
     isPublished: form.isPublished,
     createdAt: form.createdAt.toISOString(),
     fields: form.fields.map((field) => ({

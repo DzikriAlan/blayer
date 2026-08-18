@@ -73,6 +73,8 @@ export interface DataFormsDetail {
   description: string
   purpose: string
   isAiEnabled: boolean
+  /** Id template asal; menentukan mode pengerjaan dan bentuk dashboard hasil. */
+  templateId: string
   isPublished: boolean
   createdAt: string
   fields: DataFormsDetailField[]
