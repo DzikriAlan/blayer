@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 12% 89%;
+    --foreground: 0 0% 5%;
+    --paper: 40 16% 92%;
+    --card: 40 16% 92%;
+    --card-foreground: 0 0% 5%;
+    --popover: 40 16% 92%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 9 100% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 5%;
+    --secondary-foreground: 40 16% 92%;
+    --muted: 40 9% 80%;
+    --muted-foreground: 0 0% 34%;
+    --accent: 9 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 9 100% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 5%;
+    --input: 0 0% 5%;
+    --ring: 9 100% 55%;
+    --chart-1: 9 100% 55%;
+    --chart-2: 0 0% 5%;
+    --chart-3: 40 9% 62%;
+    --chart-4: 9 60% 70%;
+    --chart-5: 0 0% 40%;
+    --radius: 0rem;
+  }
+
+  .dark {
+    --background: 0 0% 5%;
+    --foreground: 40 16% 92%;
+    --paper: 0 0% 9%;
+    --card: 0 0% 9%;
+    --card-foreground: 40 16% 92%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 40 16% 92%;
+    --primary: 9 100% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 16% 92%;
+    --secondary-foreground: 0 0% 5%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 40 8% 66%;
+    --accent: 9 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 9 100% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 16% 92%;
+    --input: 40 16% 92%;
+    --ring: 9 100% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background font-mono text-foreground antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display uppercase;
+  }
+}
+
+@layer components {
+  /* Diagonal hatch bar — the /////// rule next to a section tag. */
+  .brutal-hatch {
+    background-image: repeating-linear-gradient(
+      -50deg,
+      hsl(var(--foreground)) 0 3px,
+      transparent 3px 9px
+    );
+  }
+
+  /* Halftone dot field used as a texture block. */
+  .brutal-dots {
+    background-image: radial-gradient(
+      hsl(var(--foreground)) 1.1px,
+      transparent 1.1px
+    );
+    background-size: 7px 7px;
+  }
+
+  .brutal-panel {
+    @apply border-2 border-border bg-paper;
+  }
+
+  /* Mono micro-label: uppercase, wide tracking, small. */
+  .brutal-eyebrow {
+    @apply font-mono text-[11px] font-bold uppercase tracking-[0.18em];
+  }
+
+  .brutal-index {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center bg-foreground font-mono text-sm font-bold text-background;
+  }
+
+  .brutal-vertical {
+    writing-mode: vertical-rl;
+  }
+
+  /* Scroller horizontal dengan scrollbar bergaya blok, bukan bulat. */
+  .brutal-scroll-x {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--foreground)) hsl(var(--muted));
+  }
+  .brutal-scroll-x::-webkit-scrollbar {
+    height: 10px;
+  }
+  .brutal-scroll-x::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-top: 2px solid hsl(var(--foreground));
+  }
+  .brutal-scroll-x::-webkit-scrollbar-thumb {
+    background: hsl(var(--foreground));
+  }
+}
