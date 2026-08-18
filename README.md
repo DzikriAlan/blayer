@@ -80,9 +80,20 @@ DATABASE_URL="postgresql://username:password@localhost:5432/next_starter"
 # Authentication
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-key-here"
+
+# Supabase Storage — dipakai untuk upload banner acara.
+# Service role key hanya dibaca di API route, tidak pernah dikirim ke browser.
+SUPABASE_URL="https://xxxx.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+SUPABASE_BANNER_BUCKET="form-banners"
 ```
 
 > Generate `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
+
+> Banner acara butuh bucket **publik** bernama `form-banners` di dashboard
+> Supabase (Storage → New bucket → centang *Public bucket*). Tanpa env ini
+> aplikasi tetap jalan, hanya tombol unggah banner yang menolak dengan pesan
+> jelas.
 
 ### 4. Setup Database
 
