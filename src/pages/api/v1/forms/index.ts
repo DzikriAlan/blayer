@@ -29,6 +29,7 @@ export default async function handler(
         description: form.description ?? '',
         purpose: form.purpose ?? '',
         isAiEnabled: !!form.purpose,
+        templateId: form.templateId ?? '',
         isPublished: form.isPublished,
         totalField: form._count.fields,
         totalResponse: form._count.responses,
@@ -45,6 +46,9 @@ export default async function handler(
       templateId,
       bannerUrl,
       meetingUrl,
+      videoUrl,
+      qrisUrl,
+      priceAmount,
       isPublished,
       fields,
     } = req.body as {
@@ -54,6 +58,9 @@ export default async function handler(
       templateId?: string
       bannerUrl?: string
       meetingUrl?: string
+      videoUrl?: string
+      qrisUrl?: string
+      priceAmount?: number
       isPublished?: boolean
       fields?: FieldInput[]
     }
@@ -73,6 +80,15 @@ export default async function handler(
         templateId: templateId?.trim() || null,
         bannerUrl: bannerUrl?.trim() || null,
         meetingUrl: meetingUrl?.trim() || null,
+        videoUrl: videoUrl?.trim() || null,
+        qrisUrl: qrisUrl?.trim() || null,
+        // Harga negatif atau bukan angka diabaikan supaya tagihan tetap masuk akal.
+        priceAmount:
+          typeof priceAmount === 'number' &&
+          Number.isFinite(priceAmount) &&
+          priceAmount > 0
+            ? Math.round(priceAmount)
+            : null,
         isPublished: isPublished ?? true,
         fields: {
           create: fields.map((field, index) => ({

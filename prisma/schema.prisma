@@ -37,6 +37,12 @@ model Form {
   bannerUrl   String?
   /// Link Google Meet acara, dibagikan setelah peserta berhasil mendaftar.
   meetingUrl  String?
+  /// Link video kelas, dibuka setelah peserta membayar dan mengisi form.
+  videoUrl    String?
+  /// URL gambar QRIS milik pembuat form, dipindai pembayar saat memilih QRIS.
+  qrisUrl     String?
+  /// Harga tetap form berbayar yang tidak memakai field menu, mis. kursus.
+  priceAmount Int?
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -110,6 +116,10 @@ enum FieldType {
   CHECKBOX
   RATING
   SCALE
+  /// Daftar menu bergambar. Tiap opsi: "Nama|Harga|URL Gambar".
+  MENU
+  /// Pilihan metode pembayaran. Tiap opsi: "Metode|Petunjuk".
+  PAYMENT
 }
 
 enum Status {
