@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, Trophy } from 'lucide-react'
+import { ChevronDown, TimerReset, Trophy } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 
@@ -16,6 +16,7 @@ interface Props {
   respondentName: string
   respondentEmail: string
   createdAt: string
+  durationText: string
   score: number
   showScore: boolean
   answers: ResponsesScoreAnswer[]
@@ -30,6 +31,7 @@ export default function ResponsesScoreRow({
   respondentName,
   respondentEmail,
   createdAt,
+  durationText,
   score,
   showScore,
   answers,
@@ -74,6 +76,10 @@ export default function ResponsesScoreRow({
           <p className="brutal-eyebrow mt-2 break-words opacity-70">
             {respondentEmail ? `${respondentEmail} · ` : ''}
             {createdAt}
+          </p>
+          <p className="brutal-eyebrow mt-1.5 flex items-center gap-1.5 break-words">
+            <TimerReset className="h-3.5 w-3.5 shrink-0" />
+            PENGERJAAN {durationText}
           </p>
         </div>
 

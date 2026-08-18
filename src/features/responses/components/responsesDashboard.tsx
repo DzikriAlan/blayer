@@ -66,6 +66,18 @@ export default function ResponsesDashboard({
       return String(answer ?? '').trim() || '(tidak dijawab)'
     }
 
+    // Durasi pengerjaan; respons lama tanpa catatan durasi ditandai "—".
+    const getDurationText = (totalSecond: number) => {
+      if (!totalSecond) return '—'
+      const hour = Math.floor(totalSecond / 3600)
+      const minute = Math.floor((totalSecond % 3600) / 60)
+      const second = totalSecond % 60
+      const parts = [minute, second].map((part) =>
+        String(part).padStart(2, '0')
+      )
+      return hour ? `${String(hour).padStart(2, '0')}:${parts.join(':')}` : parts.join(':')
+    }
+
     const getDateText = (value: string) =>
       new Date(value).toLocaleString('id-ID', {
         day: '2-digit',
@@ -135,6 +147,7 @@ export default function ResponsesDashboard({
           respondentName: response.respondentName || 'Anonim',
           respondentEmail: response.respondentEmail,
           createdAt: getDateText(response.createdAt),
+          durationText: getDurationText(response.durationSeconds ?? 0),
           score,
           completeness,
           answers: fields.map((field) => ({
@@ -245,25 +258,14 @@ export default function ResponsesDashboard({
       return /[",;\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
     }
 
-    const getHeader = () => [
-      data.showScore ? 'Peringkat' : 'No',
-      'Nama',
-      'Email',
-      ...(data.showScore ? ['Skor'] : []),
-      'Kelengkapan (%)',
-      'Waktu Isi',
-      ...fields.map((field) => field.label),
-    ]
+    // Export sengaja dibatasi tiga kolom: nama, nilai, dan waktu pengerjaan.
+    const getHeader = () => ['Nama', 'Nilai', 'Waktu Pengerjaan']
 
     const getRows = () =>
       data.exportList.map((item) => [
-        item.rank,
         item.respondentName,
-        item.respondentEmail,
-        ...(data.showScore ? [item.score] : []),
-        item.completeness,
-        item.createdAt,
-        ...item.answers.map((answer) => answer.value),
+        item.score,
+        item.durationText,
       ])
 
     const getFileName = () => {
@@ -423,6 +425,7 @@ export default function ResponsesDashboard({
           respondentName={item.respondentName}
           respondentEmail={item.respondentEmail}
           createdAt={item.createdAt}
+          durationText={item.durationText}
           score={item.score}
           showScore={data.showScore}
           answers={item.answers}
