@@ -77,12 +77,12 @@ export default function FormsCard({
         <div className="mt-5 flex flex-wrap gap-3">
           <Button asChild size="sm" variant="outline">
             <Link href={`/forms/${id}`}>
-              <ArrowUpRight /> Lihat Form
+              <ArrowUpRight />
             </Link>
           </Button>
           <Button asChild size="sm">
             <Link href={`/forms/${id}/result`}>
-              <BarChart3 /> Dashboard Hasil
+              <BarChart3 />
             </Link>
           </Button>
         </div>
