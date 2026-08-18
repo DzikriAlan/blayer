@@ -14,10 +14,19 @@ const MAX_BYTE = 4 * 1024 * 1024
 
 interface Props {
   value: string
+  /** Teks alternatif pratinjau; dibedakan karena unggahan tidak selalu banner. */
+  alt?: string
+  /** Label tombol saat belum ada gambar. */
+  emptyLabel?: string
   onEditBanner: (url: string) => void
 }
 
-export default function UploadsBanner({ value, onEditBanner }: Props) {
+export default function UploadsBanner({
+  value,
+  alt = 'Pratinjau banner acara',
+  emptyLabel = 'UNGGAH BANNER',
+  onEditBanner,
+}: Props) {
   const { uploadsBanner } = useUploadsStates()
   const { storeUploadsBanner } = useUploadsControllers()
 
@@ -44,10 +53,14 @@ export default function UploadsBanner({ value, onEditBanner }: Props) {
       emptyImage: '/no-data.svg',
       pagination: { currentPage: 1, perPage: 1 },
       previewUrl: value,
+      previewAlt: alt,
+      emptyLabel,
       errorText: filters.localError || getUploadError(),
     }
   }, [
     value,
+    alt,
+    emptyLabel,
     filters.localError,
     uploadsBanner.status,
     uploadsBanner.statusSubtitle,
@@ -65,7 +78,7 @@ export default function UploadsBanner({ value, onEditBanner }: Props) {
     if (file.size > MAX_BYTE) {
       setFilters((prev) => ({
         ...prev,
-        localError: 'Ukuran banner maksimal 4 MB.',
+        localError: 'Ukuran gambar maksimal 4 MB.',
       }))
       return
     }
@@ -125,7 +138,7 @@ export default function UploadsBanner({ value, onEditBanner }: Props) {
             <ImagePlus className="h-6 w-6" />
           )}
           <span className="brutal-eyebrow">
-            {data.isLoading ? 'MENGUNGGAH' : 'UNGGAH BANNER'}
+            {data.isLoading ? 'MENGUNGGAH' : data.emptyLabel}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
             {data.emptySubtitle}
@@ -136,7 +149,7 @@ export default function UploadsBanner({ value, onEditBanner }: Props) {
           <div className="bg-muted">
             <Image
               src={data.previewUrl}
-              alt="Pratinjau banner acara"
+              alt={data.previewAlt}
               width={0}
               height={0}
               unoptimized

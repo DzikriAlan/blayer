@@ -19,14 +19,23 @@ import { cn } from '@/shared/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
 import SectionHead from '@/components/section-head'
 import StatusView from '@/components/status-view'
+import LoadingView from '@/components/loading-view'
 import ResponsesField from './responsesField'
 import ResponsesGuard from './responsesGuard'
 import ResponsesEvent from './responsesEvent'
+import ResponsesOrder from './responsesOrder'
+import ResponsesCourse from './responsesCourse'
 
-const IDENTITY_OFFSET = 2
+/**
+ * Pesanan di meja selesai di tempat, jadi emailnya tidak pernah dipakai.
+ * View lain masih menanyakannya karena ada yang dikirim ke sana.
+ */
+const NO_EMAIL_VIEWS = ['order']
+
+/** Jumlah porsi ditulis di belakang nama, mis. "Nasi Goreng x2". */
+const MENU_QTY_PATTERN = / x(\d+)$/
 
 interface Props {
   formId: string
@@ -89,11 +98,54 @@ export default function ResponsesSubmit({ formId }: Props) {
       return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
     }
 
+    // Pesanan dibaca dari field menu; nama, jumlah, dan harganya disatukan di
+    // sini supaya tagihan, struk, dan jawaban tersimpan memakai angka yang sama.
+    const getOrderItems = () =>
+      (formsDetail.data?.fields ?? [])
+        .filter((field) => field.type === 'MENU')
+        .flatMap((field) => {
+          const answer = filters.answers[field.id]
+          const picked = Array.isArray(answer) ? answer : []
+
+          return picked.map((entry) => {
+            const name = entry.replace(MENU_QTY_PATTERN, '')
+            const qty = Number(entry.match(MENU_QTY_PATTERN)?.[1] ?? 1)
+            const option = field.options.find(
+              (item) => item.split('|')[0]?.trim() === name
+            )
+            const price = Number(option?.split('|')[1]?.trim()) || 0
+
+            return { name, qty, price, subtotal: price * qty }
+          })
+        })
+
+    // Form tanpa menu — kursus, misalnya — memakai harga tetap yang ditetapkan
+    // pembuat form, jadi pengisi tidak perlu memilih apa pun untuk ditagih.
+    const orderItems = getOrderItems()
+    const orderAmount = orderItems.length
+      ? orderItems.reduce((total, item) => total + item.subtotal, 0)
+      : formsDetail.data?.priceAmount ?? 0
+
+    const getPaymentMethod = () => {
+      const field = (formsDetail.data?.fields ?? []).find(
+        (item) => item.type === 'PAYMENT'
+      )
+      if (!field) return ''
+      const answer = filters.answers[field.id]
+      return Array.isArray(answer) ? answer[0] ?? '' : String(answer ?? '')
+    }
+
+    // Nomor pertanyaan menyambung dari kolom identitas yang benar-benar tampil.
+    const hasEmailInput = !NO_EMAIL_VIEWS.includes(getView())
+    const identityOffset = hasEmailInput ? 2 : 1
+
     const mappedList = (formsDetail.data?.fields ?? []).map((field, index) => ({
-      index: index + IDENTITY_OFFSET,
+      index: index + identityOffset,
       field,
       value: getAnswer(field.id),
       error: filters.errors[field.id] ?? '',
+      // Hanya field pembayaran yang memakainya; sisanya mengabaikan nilai ini.
+      amount: orderAmount,
     }))
 
     return {
@@ -113,11 +165,21 @@ export default function ResponsesSubmit({ formId }: Props) {
         formsDetail.data?.description ||
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
       isAiEnabled: formsDetail.data?.isAiEnabled ?? false,
+      hasEmailInput,
       isProctored: getView() === 'exam',
       hasEventDetail: getView() === 'event',
       isEventDone: getView() === 'event',
+      isOrderDone: getView() === 'order',
+      isCourseDone: getView() === 'course',
+      // Banner dipakai sebagai poster acara, kelas, maupun restoran.
+      hasBanner: ['event', 'course', 'order'].includes(getView()),
       bannerUrl: formsDetail.data?.bannerUrl ?? '',
       meetingUrl: formsDetail.data?.meetingUrl ?? '',
+      videoUrl: formsDetail.data?.videoUrl ?? '',
+      qrisUrl: formsDetail.data?.qrisUrl ?? '',
+      orderItems,
+      orderAmount,
+      paymentMethod: getPaymentMethod(),
       eventDateText: getEventDateText(),
       eventSessionText: getFirstAnswerByType('SELECT'),
       totalAttendee: responses.data?.totalResponse ?? 0,
@@ -183,11 +245,26 @@ export default function ResponsesSubmit({ formId }: Props) {
         ? Math.max(Math.round((Date.now() - filters.startedAt) / 1000), 0)
         : 0
 
+    // Jawaban pembayaran disimpan bersama nominalnya, supaya daftar pesanan
+    // tetap terbaca tanpa menghitung ulang harga menu di halaman hasil.
+    const getPaidAnswers = () => {
+      const answers = { ...filters.answers }
+      ;(formsDetail.data?.fields ?? [])
+        .filter((field) => field.type === 'PAYMENT')
+        .forEach((field) => {
+          const method = answers[field.id]
+          if (!method || Array.isArray(method)) return
+          answers[field.id] =
+            `${method} — Rp${data.orderAmount.toLocaleString('id-ID')}`
+        })
+      return answers
+    }
+
     const payload: PayloadPostResponses = {
       formId,
       respondentName: filters.respondentName,
       respondentEmail: filters.respondentEmail,
-      answers: filters.answers,
+      answers: getPaidAnswers(),
       durationSeconds: getDurationSeconds(),
     }
 
@@ -218,6 +295,36 @@ export default function ResponsesSubmit({ formId }: Props) {
 
     return () => window.clearInterval(timer)
   }, [formsDetail.status, responses.status])
+
+  if (data.isSubmitted && data.isOrderDone) {
+    return (
+      <ResponsesOrder
+        formId={formId}
+        title={data.title}
+        bannerUrl={data.bannerUrl}
+        respondentName={filters.respondentName}
+        items={data.orderItems}
+        amount={data.orderAmount}
+        paymentMethod={data.paymentMethod}
+      />
+    )
+  }
+
+  if (data.isSubmitted && data.isCourseDone) {
+    return (
+      <ResponsesCourse
+        formId={formId}
+        title={data.title}
+        description={formsDetail.data?.description ?? ''}
+        bannerUrl={data.bannerUrl}
+        videoUrl={data.videoUrl}
+        respondentName={filters.respondentName}
+        items={data.orderItems}
+        amount={data.orderAmount}
+        paymentMethod={data.paymentMethod}
+      />
+    )
+  }
 
   if (data.isSubmitted && data.isEventDone) {
     return (
@@ -270,11 +377,10 @@ export default function ResponsesSubmit({ formId }: Props) {
 
   if (data.isLoading) {
     return (
-      <div className="flex flex-col gap-0">
-        <Skeleton className="h-52 w-full" />
-        <Skeleton className="mt-[-2px] h-28 w-full" />
-        <Skeleton className="mt-[-2px] h-28 w-full" />
-      </div>
+      <LoadingView
+        title="Menyiapkan Form"
+        subtitle="Mengambil pertanyaan dan pengaturan form ini. Sebentar lagi selesai."
+      />
     )
   }
 
@@ -305,7 +411,7 @@ export default function ResponsesSubmit({ formId }: Props) {
         onEditViolation={editViolation}
       />
 
-      {data.hasEventDetail && data.bannerUrl ? (
+      {data.hasBanner && data.bannerUrl ? (
         <div className="border-b-2 border-foreground bg-muted">
           {/* width/height 0 + sizes: rasio diambil dari berkasnya sendiri,
               jadi poster tinggi maupun banner lebar sama-sama tampil utuh. */}
@@ -348,25 +454,27 @@ export default function ResponsesSubmit({ formId }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
-        <span className="brutal-index">02</span>
-        <div className="min-w-0 flex-1">
-          <Label htmlFor="respondent-email" className="text-[13px]">
-            Email Address
-          </Label>
-          <div className="mt-4">
-            <Input
-              id="respondent-email"
-              type="email"
-              value={filters.respondentEmail}
-              placeholder="Type your answer"
-              onChange={(event) =>
-                editRespondent('respondentEmail', event.target.value)
-              }
-            />
+      {data.hasEmailInput ? (
+        <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
+          <span className="brutal-index">02</span>
+          <div className="min-w-0 flex-1">
+            <Label htmlFor="respondent-email" className="text-[13px]">
+              Email Address
+            </Label>
+            <div className="mt-4">
+              <Input
+                id="respondent-email"
+                type="email"
+                value={filters.respondentEmail}
+                placeholder="Type your answer"
+                onChange={(event) =>
+                  editRespondent('respondentEmail', event.target.value)
+                }
+              />
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {data.isEmpty ? (
         <StatusView
@@ -384,6 +492,8 @@ export default function ResponsesSubmit({ formId }: Props) {
           field={item.field}
           value={item.value}
           error={item.error}
+          amount={item.amount}
+          qrisUrl={data.qrisUrl}
           onEditAnswer={editAnswer}
         />
       ))}

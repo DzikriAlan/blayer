@@ -5,7 +5,14 @@ import { useRouter } from 'next/router'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft, ArrowRight, CalendarDays, Loader2, Plus } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Loader2,
+  Plus,
+  Wallet,
+} from 'lucide-react'
 
 import type { FormsFieldType, PayloadPostForms } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
@@ -28,7 +35,16 @@ import UploadsBanner from '@/features/uploads/components/uploadsBanner'
 
 export const FORMS_CREATE_FORM_ID = 'forms-create'
 
-const OPTION_TYPES: FormsFieldType[] = ['SELECT', 'RADIO', 'CHECKBOX']
+const OPTION_TYPES: FormsFieldType[] = [
+  'SELECT',
+  'RADIO',
+  'CHECKBOX',
+  'MENU',
+  'PAYMENT',
+]
+
+/** Template yang halaman isinya memuat pembayaran. */
+const PAID_VIEWS = ['order', 'course']
 
 const fieldSchema = z.object({
   label: z.string().min(1, 'Pertanyaan wajib diisi'),
@@ -47,6 +63,9 @@ const schema = z
     purpose: z.string(),
     bannerUrl: z.string(),
     meetingUrl: z.string(),
+    videoUrl: z.string(),
+    qrisUrl: z.string(),
+    priceAmount: z.string(),
     isPublished: z.boolean(),
     fields: z.array(fieldSchema).min(1, 'Tambahkan minimal satu field'),
   })
@@ -67,6 +86,28 @@ const schema = z
         code: z.ZodIssueCode.custom,
         path: ['meetingUrl'],
         message: 'Link acara harus diawali http:// atau https://',
+      })
+    }
+
+    // Harga boleh kosong (form gratis atau bertagihan menu), tapi kalau diisi
+    // harus angka positif — jika tidak, tagihannya tidak bisa dihitung.
+    if (
+      values.priceAmount.trim() &&
+      !(Number(values.priceAmount.trim()) > 0)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['priceAmount'],
+        message: 'Harga harus berupa angka lebih dari 0, mis. 350000',
+      })
+    }
+
+    // Aturan yang sama berlaku untuk video kelas.
+    if (values.videoUrl.trim() && !/^https?:\/\/\S+$/.test(values.videoUrl.trim())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['videoUrl'],
+        message: 'Link video harus diawali http:// atau https://',
       })
     }
   })
@@ -101,6 +142,9 @@ export default function FormsCreate() {
       purpose: '',
       bannerUrl: '',
       meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
       isPublished: true,
       fields: [{ ...emptyField }],
     },
@@ -115,6 +159,8 @@ export default function FormsCreate() {
   const watchedPublished = form.watch('isPublished')
   const watchedAiEnabled = form.watch('isAiEnabled')
   const watchedBannerUrl = form.watch('bannerUrl')
+  const watchedQrisUrl = form.watch('qrisUrl')
+  const watchedFieldTypes = (form.watch('fields') ?? []).map((field) => field.type)
 
   const data = useMemo(() => {
     const getOptions = (optionText: string) =>
@@ -164,8 +210,19 @@ export default function FormsCreate() {
       isPublished: watchedPublished,
       isAiEnabled: watchedAiEnabled,
       hasEventDetail: getView() === 'event',
+      hasCourseDetail: getView() === 'course',
+      hasPaymentDetail: PAID_VIEWS.includes(getView()),
+      // Banner dipakai sebagai poster acara, kelas, maupun restoran.
+      hasBanner: ['event', 'course', 'order'].includes(getView()),
       bannerUrl: watchedBannerUrl,
+      qrisUrl: watchedQrisUrl,
+      // Harga tetap hanya relevan untuk form berbayar yang tidak punya menu:
+      // kalau ada menu, tagihannya datang dari item yang dipilih pengisi.
+      hasFixedPrice:
+        PAID_VIEWS.includes(getView()) && !watchedFieldTypes.includes('MENU'),
+      priceAmountError: form.formState.errors.priceAmount?.message ?? '',
       meetingUrlError: form.formState.errors.meetingUrl?.message ?? '',
+      videoUrlError: form.formState.errors.videoUrl?.message ?? '',
       totalField: mappedList.length,
     }
   }, [
@@ -173,6 +230,8 @@ export default function FormsCreate() {
     watchedPublished,
     watchedAiEnabled,
     watchedBannerUrl,
+    watchedQrisUrl,
+    watchedFieldTypes,
     form.formState.errors,
     storeForms.isPending,
     formsCreated.status,
@@ -235,6 +294,10 @@ export default function FormsCreate() {
     form.setValue('bannerUrl', url, { shouldDirty: true })
   }
 
+  const editQrisUrl = (url: string) => {
+    form.setValue('qrisUrl', url, { shouldDirty: true })
+  }
+
   const submitFormsField = () => {
     append({ ...emptyField })
   }
@@ -260,6 +323,23 @@ export default function FormsCreate() {
       return
     }
 
+    // Menu tanpa harga membuat tagihan tidak bisa dihitung, jadi ditolak di sini.
+    const invalidMenuIndex = values.fields.findIndex(
+      (field) =>
+        field.type === 'MENU' &&
+        getOptions(field.optionText).some(
+          (option) => !Number(option.split('|')[1]?.trim())
+        )
+    )
+
+    if (invalidMenuIndex >= 0) {
+      setFilters((prev) => ({
+        ...prev,
+        optionError: `Field ${invalidMenuIndex + 1} butuh format Nama|Harga|URL Gambar dengan harga berupa angka.`,
+      }))
+      return
+    }
+
     setFilters((prev) => ({ ...prev, optionError: '' }))
 
     const payload: PayloadPostForms = {
@@ -268,9 +348,12 @@ export default function FormsCreate() {
       // Kirim kosong saat AI dimatikan supaya server menyimpannya sebagai null.
       purpose: values.isAiEnabled ? values.purpose.trim() : '',
       templateId: filters.activeTemplateId,
-      // Detail acara hanya ikut terkirim kalau templatenya memang acara.
-      bannerUrl: data.hasEventDetail ? values.bannerUrl : '',
+      // Detail tambahan hanya ikut terkirim kalau templatenya memang memakainya.
+      bannerUrl: data.hasBanner ? values.bannerUrl : '',
       meetingUrl: data.hasEventDetail ? values.meetingUrl.trim() : '',
+      videoUrl: data.hasCourseDetail ? values.videoUrl.trim() : '',
+      qrisUrl: data.hasPaymentDetail ? values.qrisUrl : '',
+      priceAmount: data.hasFixedPrice ? Number(values.priceAmount.trim()) || 0 : 0,
       isPublished: values.isPublished,
       fields: values.fields.map((field) => ({
         label: field.label,
@@ -373,37 +456,107 @@ export default function FormsCreate() {
         </div>
       </div>
 
-      {data.hasEventDetail ? (
+      {data.hasBanner || data.hasPaymentDetail ? (
         <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
           <span className="brutal-index">
-            <CalendarDays className="h-5 w-5" />
+            {data.hasPaymentDetail ? (
+              <Wallet className="h-5 w-5" />
+            ) : (
+              <CalendarDays className="h-5 w-5" />
+            )}
           </span>
           <div className="grid min-w-0 flex-1 gap-5">
-            <div className="flex flex-col gap-3">
-              <Label>Banner Acara</Label>
-              <UploadsBanner
-                value={data.bannerUrl}
-                onEditBanner={editBannerUrl}
-              />
-            </div>
+            {data.hasBanner ? (
+              <div className="flex flex-col gap-3">
+                <Label>Banner</Label>
+                <UploadsBanner
+                  value={data.bannerUrl}
+                  alt="Pratinjau banner form"
+                  emptyLabel="UNGGAH BANNER"
+                  onEditBanner={editBannerUrl}
+                />
+              </div>
+            ) : null}
 
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="form-meeting-url">Link Google Meet</Label>
-              <Input
-                id="form-meeting-url"
-                placeholder="https://meet.google.com/abc-defg-hij"
-                {...form.register('meetingUrl')}
-              />
-              <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                Link baru ditampilkan ke peserta setelah mereka berhasil
-                mendaftar, bukan di halaman pendaftaran.
-              </p>
-              {data.meetingUrlError ? (
-                <p className="brutal-eyebrow text-primary">
-                  {data.meetingUrlError}
+            {data.hasEventDetail ? (
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="form-meeting-url">Link Google Meet</Label>
+                <Input
+                  id="form-meeting-url"
+                  placeholder="https://meet.google.com/abc-defg-hij"
+                  {...form.register('meetingUrl')}
+                />
+                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                  Link baru ditampilkan ke peserta setelah mereka berhasil
+                  mendaftar, bukan di halaman pendaftaran.
                 </p>
-              ) : null}
-            </div>
+                {data.meetingUrlError ? (
+                  <p className="brutal-eyebrow text-primary">
+                    {data.meetingUrlError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {data.hasCourseDetail ? (
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="form-video-url">Link Video Kelas</Label>
+                <Input
+                  id="form-video-url"
+                  placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx"
+                  {...form.register('videoUrl')}
+                />
+                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                  Video baru terbuka setelah peserta memilih paket, membayar,
+                  dan formulirnya terkirim. Tautan YouTube diputar langsung di
+                  halaman, tautan lain dibuka di tab baru.
+                </p>
+                {data.videoUrlError ? (
+                  <p className="brutal-eyebrow text-primary">
+                    {data.videoUrlError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {data.hasFixedPrice ? (
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="form-price-amount">Harga (Rp)</Label>
+                <Input
+                  id="form-price-amount"
+                  inputMode="numeric"
+                  placeholder="350000"
+                  {...form.register('priceAmount')}
+                />
+                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                  Tulis angka polos tanpa titik. Inilah tagihan yang dilihat
+                  pengisi di field pembayaran.
+                </p>
+                {data.priceAmountError ? (
+                  <p className="brutal-eyebrow text-primary">
+                    {data.priceAmountError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {data.hasPaymentDetail ? (
+              <div className="flex flex-col gap-3">
+                <Label>Gambar QRIS</Label>
+                <UploadsBanner
+                  value={data.qrisUrl}
+                  alt="Pratinjau kode QRIS"
+                  emptyLabel="UNGGAH QRIS"
+                  onEditBanner={editQrisUrl}
+                />
+                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                  Unggah kode QRIS milikmu dari penyedia pembayaran. Kode ini
+                  yang dipindai pembayar saat memilih metode QRIS. Tanpa
+                  gambar ini, metode QRIS tetap bisa dipilih tapi hanya
+                  menampilkan petunjuknya.
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
