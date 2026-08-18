@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 
 import PageShell from '@/components/page-shell'
+import LoadingView from '@/components/loading-view'
 import ResponsesSubmit from '@/features/responses/components/responsesSubmit'
 
 const FormsFillPage: NextPage = () => {
@@ -22,7 +23,11 @@ const FormsFillPage: NextPage = () => {
         railIndex="01"
         railNote="REQUIRED"
       >
-        {formId ? <ResponsesSubmit formId={formId} /> : null}
+        {formId ? (
+          <ResponsesSubmit formId={formId} />
+        ) : (
+          <LoadingView title="Menyiapkan Form" subtitle="Membuka form dari tautan yang kamu pakai. Sebentar lagi selesai." />
+        )}
       </PageShell>
     </>
   )

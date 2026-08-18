@@ -15,9 +15,9 @@ import { useResponsesControllers } from '@/features/responses/controllers/respon
 
 import { IS_AI_VISIBLE } from '@/shared/lib/features'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import SectionHead from '@/components/section-head'
 import StatusView from '@/components/status-view'
+import LoadingView from '@/components/loading-view'
 import ResponsesDashboard from '@/features/responses/components/responsesDashboard'
 import AnalysisRankingCard from './analysisRankingCard'
 
@@ -109,7 +109,12 @@ export default function AnalysisResult({ formId }: Props) {
         ) : null}
       </section>
 
-      {data.isLoading ? <Skeleton className="h-52 w-full" /> : null}
+      {data.isLoading ? (
+        <LoadingView
+          title="Memuat Hasil"
+          subtitle="Mengumpulkan jawaban yang masuk untuk disusun jadi dashboard."
+        />
+      ) : null}
 
       {data.isError ? (
         <StatusView
