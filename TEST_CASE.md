@@ -213,6 +213,16 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-26aa | F-26 | Katalog publik dengan draf di database | Hanya form yang sudah dipublikasikan ikut terbaca; penyaringan ada di query | Otomatis | `formsPublic.test.ts` |
 | TC-26ab | F-26 | Isi kolom yang dikirim katalog publik | `purpose`, `qrisUrl`, dan `userId` tidak ikut diminta dari database maupun dikirim | Otomatis | `formsPublic.test.ts` |
 | TC-26ac | F-26 | Halaman depan dibuka pengunjung yang belum masuk | Tidak ada request ke endpoint terkunci — daftar form milik sendiri ditahan sampai ada sesi | Manual | — |
+| TC-36a | F-36 | Membuka kategori ujian | Disajikan sebagai daftar bernomor; satuannya soal dan peserta, bukan fields dan responses | Otomatis | `formsExplore.test.tsx` |
+| TC-36b | F-36 | Membuka kategori acara | Disajikan sebagai poster memakai banner formnya, dengan satuan terdaftar | Otomatis | `formsExplore.test.tsx` |
+| TC-36c | F-36 | Membuka kategori kelas berbayar | Harga tampil di sampul dalam format rupiah | Otomatis | `formsExplore.test.tsx` |
+| TC-36d | F-36 | Membuka kategori menu restoran | Disajikan berdampingan dengan satuan pilihan dan pesanan | Otomatis | `formsExplore.test.tsx` |
+| TC-36e | F-36 | Kategori berisi form dari template lain | Hanya form dari kategori itu yang tampil, dan jumlah tersedia mengikutinya | Otomatis | `formsExplore.test.tsx` |
+| TC-36f | F-36 | Kategori yang tidak dikenal | Dijelaskan alasannya dan tidak menawarkan template yang tidak ada | Otomatis | `formsExplore.test.tsx` |
+| TC-36g | F-36 | Membuka `/kategori/[id]` di peramban | Judul tab menyebut nama kategorinya sejak balasan pertama, bukan setelah JavaScript jalan | Manual | — |
+| TC-36h | F-36 | Membuka alamat kategori yang tidak ada | Server membalas 404, bukan 200 dengan halaman kosong | Manual | — |
+| TC-36i | F-36 | Menekan Eksplor Kategori di halaman depan | Berpindah ke halaman kategori; daftar tidak lagi terbuka di dalam kartu | Manual | — |
+| TC-36j | F-36 | Membuka halaman kategori tanpa login | Isinya tampil penuh — kategori adalah permukaan publik | Manual | — |
 | TC-29a | F-29 | Membuka halaman depan | Urutan section: navbar, hero, statistik, pita, kategori, footer | Manual | — |
 | TC-29b | F-29 | Membuka halaman depan di lebar ponsel | Navigasi berubah jadi tombol menu, isi tidak meluber ke samping | Manual | — |
 | TC-29c | F-29 | Menekan "Jelajahi Kategori" | Halaman menggulir mulus ke bagian kategori | Manual | — |

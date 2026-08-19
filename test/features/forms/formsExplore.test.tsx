@@ -1,0 +1,126 @@
+import { render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import FormsExplore from '@/features/forms/components/formsExplore'
+import { useFormsStates } from '@/features/forms/states/formsStates'
+
+vi.mock('next/router', () => ({
+  useRouter: () => ({ query: {}, push: vi.fn() }),
+}))
+
+// Komponen hanya membaca katalog dari store; query-nya tidak perlu ikut jalan.
+vi.mock('@/features/forms/controllers/formsControllers', () => ({
+  useFormsControllers: () => ({ fetchFormsPublic: { refetch: vi.fn() } }),
+}))
+
+const getForm = (overrides: Record<string, unknown> = {}) => ({
+  id: 'form-1',
+  title: 'Form Satu',
+  description: 'Penjelasan singkat',
+  templateId: 'exam',
+  bannerUrl: '',
+  priceAmount: 0,
+  totalField: 6,
+  totalResponse: 3,
+  createdAt: '2026-08-01T00:00:00.000Z',
+  ...overrides,
+})
+
+const setCatalogue = (data: ReturnType<typeof getForm>[]) => {
+  useFormsStates.setState({
+    formsPublic: {
+      status: data.length ? 'success' : 'empty',
+      statusTitle: '',
+      statusSubtitle: '',
+      data,
+    },
+  })
+}
+
+beforeEach(() => {
+  setCatalogue([])
+})
+
+describe('halaman kategori', () => {
+  it('TC-36a ujian disajikan sebagai daftar bernomor dengan satuan soal', () => {
+    setCatalogue([getForm({ templateId: 'exam', title: 'Ujian Matematika' })])
+
+    render(<FormsExplore templateId="exam" />)
+
+    expect(
+      screen.getByRole('heading', { name: /Ujian Sekolah/i, level: 1 })
+    ).toBeInTheDocument()
+    expect(screen.getByText(/06 SOAL/)).toBeInTheDocument()
+    expect(screen.getByText(/03 PESERTA/)).toBeInTheDocument()
+    expect(screen.getAllByText('Kerjakan Ujian').length).toBeGreaterThan(0)
+    // Daftar, bukan poster: tidak ada gambar sampul.
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  it('TC-36b acara disajikan sebagai poster memakai banner formnya', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'event',
+        title: 'Webinar Produk',
+        bannerUrl: 'https://contoh.test/banner.png',
+      }),
+    ])
+
+    render(<FormsExplore templateId="event" />)
+
+    expect(screen.getByRole('img')).toBeInTheDocument()
+    expect(screen.getByText(/03 TERDAFTAR/)).toBeInTheDocument()
+    expect(screen.getAllByText('Daftar Acara').length).toBeGreaterThan(0)
+  })
+
+  it('TC-36c kelas berbayar memajang harganya di sampul', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'course',
+        title: 'Kelas Desain',
+        bannerUrl: 'https://contoh.test/kelas.png',
+        priceAmount: 150000,
+      }),
+    ])
+
+    render(<FormsExplore templateId="course" />)
+
+    expect(screen.getByText('Rp150.000')).toBeInTheDocument()
+    expect(screen.getAllByText('Ikut Kelas').length).toBeGreaterThan(0)
+  })
+
+  it('TC-36d menu restoran memakai satuan pilihan dan pesanan', () => {
+    setCatalogue([
+      getForm({ templateId: 'restaurant', title: 'Meja 04', totalField: 5 }),
+    ])
+
+    render(<FormsExplore templateId="restaurant" />)
+
+    expect(screen.getByText(/05 PILIHAN/)).toBeInTheDocument()
+    expect(screen.getByText(/03 PESANAN/)).toBeInTheDocument()
+    expect(screen.getAllByText('Pesan Sekarang').length).toBeGreaterThan(0)
+  })
+
+  it('TC-36e hanya form dari kategori itu yang tampil', () => {
+    setCatalogue([
+      getForm({ id: 'a', templateId: 'exam', title: 'Ujian Matematika' }),
+      getForm({ id: 'b', templateId: 'event', title: 'Webinar Produk' }),
+    ])
+
+    render(<FormsExplore templateId="exam" />)
+
+    expect(screen.getByText('Ujian Matematika')).toBeInTheDocument()
+    expect(screen.queryByText('Webinar Produk')).not.toBeInTheDocument()
+    expect(screen.getByText(/01 TERSEDIA/)).toBeInTheDocument()
+  })
+
+  it('TC-36f kategori yang tidak dikenal dijelaskan, bukan dibiarkan kosong', () => {
+    setCatalogue([getForm()])
+
+    render(<FormsExplore templateId="entah-apa" />)
+
+    expect(screen.getByText('Kategori Tidak Ada')).toBeInTheDocument()
+    // Tidak menawarkan template untuk kategori yang memang tidak ada.
+    expect(screen.queryByText('Use Template')).not.toBeInTheDocument()
+  })
+})

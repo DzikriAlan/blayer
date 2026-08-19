@@ -95,6 +95,7 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | F-32 | Tampilan ponsel di seluruh halaman | Halaman depan sampai dalam aplikasi tidak menghasilkan geseran samping pada 320 px, 390 px, dan 768 px; navigasi halaman depan berubah jadi tombol menu di bawah 640 px | P1 | Selesai |
 | F-33 | Halaman kesalahan sendiri | Alamat yang tidak dikenal menampilkan halaman 404 bergaya sistem desain sendiri lengkap dengan jalan keluarnya, bukan halaman bawaan Next; kegagalan server memakai halaman 500 yang setara | P1 | Selesai |
 | F-34 | Judul form hidup di bilah atas | Bilah atas builder mengikuti isi kolom Form Title seketika, termasuk saat template menimpanya; kosong kembali ke label UNTITLED FORM | P2 | Selesai |
+| F-36 | Halaman kategori | Tombol Eksplor Kategori di halaman depan membuka halaman kategori sendiri, bukan daftar yang terbuka di tempat. Bentuk sajiannya mengikuti `view` template: acara dan kelas sebagai poster bersampul, restoran sebagai kartu menu berdampingan, ujian dan survei sebagai daftar berurutan. Satuan hitungnya ikut menyesuaikan — soal/peserta untuk ujian, terdaftar untuk acara, pesanan untuk restoran | P1 | Selesai |
 
 ---
 
@@ -163,6 +164,8 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | Letak guard halaman | Satu `AuthGuard` di `_app.tsx`, daftar rute publik di satu berkas | Halaman baru terkunci secara bawaan; pengecualian harus ditulis sengaja, bukan terlupakan |
 | Penegakan kepemilikan | Diperiksa di API lewat token, bukan hanya di tampilan | Guard di browser hanya menyembunyikan tampilan — `curl` tetap tembus. Pemilik diambil dari token, tidak pernah dari body, agar pengirim tidak bisa mengaku sebagai akun lain |
 | Katalog publik | Endpoint `/api/v1/forms/public` terpisah dari `/api/v1/forms` | Halaman depan menawarkan pengunjung untuk ikut form yang sudah dibuka orang lain, jadi daftarnya harus terbaca tanpa akun. Memakai satu endpoint untuk dua kebutuhan memaksa memilih antara halaman depan yang kosong atau daftar milik akun yang bocor; memisahkannya membuat kolom yang dikirim ke publik bisa dibatasi sejak query |
+| Bentuk sajian kategori | Diturunkan dari `view` template, bukan dari cabang per kategori | `view` sudah menentukan halaman isi, layar setelah kirim, dan dashboard hasil. Memakai nilai yang sama untuk halaman kategori membuat template baru tidak menuntut komponen baru — cukup memilih salah satu bentuk yang ada |
+| Alamat kategori | `/kategori/[id]` diprerender dari daftar template | Daftar template adalah konstanta di kode, jadi seluruh alamatnya sudah pasti saat build. Halaman ini dibuat untuk dibagikan, jadi judul dan deskripsinya harus benar sejak balasan pertama, dan kategori yang tidak ada dibalas 404 sungguhan alih-alih halaman kosong berstatus 200 |
 | Penyimpanan berkas | Supabase Storage, bucket publik | Banner dan kode QRIS harus permanen dan bisa dibuka tanpa login |
 | Unggahan | Base64 lewat API route | Secret key tetap di server, tanpa parser multipart tambahan |
 | Rangka halaman | `PageShell` untuk aplikasi, `LandingShell` untuk halaman depan | Halaman kerja butuh rail samping dan kolom sempit agar form terbaca; halaman depan butuh lebar penuh dan navigasi biasa. Memaksakan satu rangka membuat salah satunya terasa keliru |

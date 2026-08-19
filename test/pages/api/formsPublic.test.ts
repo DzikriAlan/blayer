@@ -55,6 +55,8 @@ beforeEach(() => {
       title: 'Ujian Matematika',
       description: 'Ujian bab satu',
       templateId: 'exam',
+      bannerUrl: null,
+      priceAmount: null,
       createdAt: new Date('2026-08-01T00:00:00.000Z'),
       _count: { fields: 5, responses: 12 },
     },
@@ -83,9 +85,11 @@ describe('katalog form publik', () => {
 
     const [form] = res.body as Record<string, unknown>[]
     expect(Object.keys(form).sort()).toEqual([
+      'bannerUrl',
       'createdAt',
       'description',
       'id',
+      'priceAmount',
       'templateId',
       'title',
       'totalField',
@@ -96,6 +100,8 @@ describe('katalog form publik', () => {
     const select = prismaMock.form.findMany.mock.calls[0][0].select
     expect(select.purpose).toBeUndefined()
     expect(select.qrisUrl).toBeUndefined()
+    expect(select.meetingUrl).toBeUndefined()
+    expect(select.videoUrl).toBeUndefined()
     expect(select.userId).toBeUndefined()
   })
 })
