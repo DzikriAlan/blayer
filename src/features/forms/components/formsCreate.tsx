@@ -47,6 +47,8 @@ const OPTION_TYPES: FormsFieldType[] = [
 const PAID_VIEWS = ['order', 'course']
 
 const fieldSchema = z.object({
+  /** Kosong untuk field baru; terisi untuk field yang sedang disunting. */
+  id: z.string().optional(),
   label: z.string().min(1, 'Pertanyaan wajib diisi'),
   description: z.string(),
   placeholder: z.string(),
@@ -115,6 +117,7 @@ const schema = z
 type FormValues = z.infer<typeof schema>
 
 const emptyField = {
+  id: '',
   label: '',
   description: '',
   placeholder: '',
@@ -124,17 +127,23 @@ const emptyField = {
 }
 
 interface Props {
+  /** Terisi berarti builder sedang menyunting form yang sudah ada. */
+  formId?: string
   onEditFormsTitle?: (title: string) => void
 }
 
-export default function FormsCreate({ onEditFormsTitle }: Props) {
+export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   const router = useRouter()
-  const { formsCreated } = useFormsStates()
-  const { storeForms } = useFormsControllers()
+  const { formsCreated, formsDetail, setGetFormsDetail } = useFormsStates()
+  const { storeForms, updateForms } = useFormsControllers()
+
+  const isEditing = !!formId
 
   const [filters, setFilters] = useState({
     optionError: '',
     activeTemplateId: '',
+    /** Id form yang isiannya sudah dimuat ke builder. */
+    loadedId: '',
   })
 
   const form = useForm<FormValues>({
@@ -200,7 +209,10 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
 
     return {
       data: mappedList,
-      isLoading: storeForms.isPending || formsCreated.status === 'loading',
+      isLoading:
+        storeForms.isPending ||
+        updateForms.isPending ||
+        formsCreated.status === 'loading',
       isError: formsCreated.status === 'error',
       isEmpty: !mappedList.length,
       emptyTitle: 'No Fields Yet',
@@ -248,6 +260,7 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
     watchedFieldTypes,
     form.formState.errors,
     storeForms.isPending,
+    updateForms.isPending,
     formsCreated.status,
     filters.optionError,
     filters.activeTemplateId,
@@ -384,6 +397,9 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
           : 0,
       isPublished: values.isPublished,
       fields: values.fields.map((field) => ({
+        // id ikut hanya saat menyunting; tanpa itu server menganggapnya field
+        // baru dan jawaban lama kehilangan pertanyaannya.
+        id: field.id || undefined,
         label: field.label,
         description: field.description,
         placeholder: field.placeholder,
@@ -393,6 +409,8 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
       })),
     }
 
+    if (isEditing) return updateForms.mutate({ id: formId, ...payload })
+
     storeForms.mutate(payload)
   })
 
@@ -400,8 +418,10 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
     onEditFormsTitle?.(watchedTitle)
   }, [watchedTitle, onEditFormsTitle])
 
-  // Template yang dipilih dari beranda datang lewat ?template=<id>.
+  // Template yang dipilih dari beranda datang lewat ?template=<id>. Saat
+  // menyunting, isian datang dari form yang tersimpan — bukan dari template.
   useEffect(() => {
+    if (isEditing) return
     if (!router.isReady) return
 
     const templateId =
@@ -422,13 +442,59 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
       optionError: '',
       activeTemplateId: templateId,
     }))
-  }, [router.isReady, router.query.template, filters.activeTemplateId, form])
+  }, [isEditing, router.isReady, router.query.template, filters.activeTemplateId, form])
 
   useEffect(() => {
     if (formsCreated.status === 'success' && formsCreated.data?.id) {
       router.push(`/forms/${formsCreated.data.id}`)
     }
   }, [formsCreated.status, formsCreated.data, router])
+
+  // Saat menyunting, isian ditarik dari form yang tersimpan.
+  useEffect(() => {
+    if (!isEditing) return
+    setGetFormsDetail({ id: formId })
+  }, [isEditing, formId, setGetFormsDetail])
+
+  useEffect(() => {
+    if (!isEditing) return
+
+    const detail = formsDetail.data
+    if (!detail || detail.id !== formId) return
+    // Reset hanya sekali per form: pemuatan ulang di tengah pengetikan akan
+    // membuang suntingan yang belum tersimpan.
+    if (filters.loadedId === formId) return
+
+    form.reset({
+      title: detail.title,
+      description: detail.description,
+      isAiEnabled: IS_AI_VISIBLE && !!detail.purpose,
+      purpose: detail.purpose,
+      bannerUrl: detail.bannerUrl,
+      meetingUrl: detail.meetingUrl,
+      videoUrl: detail.videoUrl,
+      qrisUrl: detail.qrisUrl,
+      priceAmount: detail.priceAmount ? String(detail.priceAmount) : '',
+      isPublished: detail.isPublished,
+      fields: detail.fields.map((field) => ({
+        id: field.id,
+        label: field.label,
+        description: field.description,
+        placeholder: field.placeholder,
+        type: field.type,
+        isRequired: field.isRequired,
+        // Builder menyunting pilihan sebagai teks per baris; database
+        // menyimpannya sebagai array.
+        optionText: field.options.join('\n'),
+      })),
+    })
+
+    setFilters((prev) => ({
+      ...prev,
+      loadedId: formId,
+      activeTemplateId: detail.templateId,
+    }))
+  }, [isEditing, formId, formsDetail.data, filters.loadedId, form])
 
   return (
     <form

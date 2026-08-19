@@ -3,12 +3,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStates } from '@/features/auth/states/authStates'
 import { useFormsStates } from '../states/formsStates'
 import {
+  deleteForms,
   getForms,
   getFormsDetail,
   getFormsPublic,
   postForms,
+  putForms,
 } from '../services/formsServices'
-import type { PayloadPostForms } from '../types/formsTypes'
+import type {
+  PayloadDeleteForms,
+  PayloadPostForms,
+  PayloadPutForms,
+} from '../types/formsTypes'
 
 export const useFormsControllers = () => {
   const queryClient = useQueryClient()
@@ -52,8 +58,39 @@ export const useFormsControllers = () => {
       setFormsCreated({ data: data ?? null, status: data ? 'success' : 'empty' })
       queryClient.invalidateQueries({ queryKey: ['forms'] })
     },
-    onError: () => {
-      setFormsCreated({ status: 'error' })
+    onError: (error: Error) => {
+      setFormsCreated({
+        status: 'error',
+        statusSubtitle: error.message || 'Please try again later.',
+      })
+    },
+  })
+
+  const updateForms = useMutation({
+    mutationFn: (payload: PayloadPutForms) => putForms(payload),
+    onMutate: () => {
+      setFormsCreated({ status: 'loading' })
+    },
+    onSuccess: (data) => {
+      setFormsCreated({ data: data ?? null, status: data ? 'success' : 'empty' })
+      queryClient.invalidateQueries({ queryKey: ['forms'] })
+      // Detail ikut disegarkan supaya halaman isi form tidak menampilkan
+      // pertanyaan versi lama setelah pemiliknya menyunting.
+      queryClient.invalidateQueries({ queryKey: ['formsDetail'] })
+    },
+    onError: (error: Error) => {
+      setFormsCreated({
+        status: 'error',
+        statusSubtitle: error.message || 'Please try again later.',
+      })
+    },
+  })
+
+  const destroyForms = useMutation({
+    mutationFn: (payload: PayloadDeleteForms) => deleteForms(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forms'] })
+      queryClient.invalidateQueries({ queryKey: ['formsPublic'] })
     },
   })
 
@@ -100,5 +137,12 @@ export const useFormsControllers = () => {
     setFormsDetail,
   ])
 
-  return { fetchForms, fetchFormsPublic, fetchFormsDetail, storeForms }
+  return {
+    fetchForms,
+    fetchFormsPublic,
+    fetchFormsDetail,
+    storeForms,
+    updateForms,
+    destroyForms,
+  }
 }

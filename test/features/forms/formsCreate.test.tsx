@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const push = vi.fn()
 const mutate = vi.fn()
+const updateMutate = vi.fn()
 
 // Router tiruan menyimpan query-nya sendiri supaya sinkronisasi ?template=
 // benar-benar teruji: replace harus mengubah nilai yang dibaca efeknya.
@@ -29,6 +30,13 @@ const state = {
     statusSubtitle: '',
     data: null,
   },
+  formsDetail: {
+    status: 'empty',
+    statusTitle: '',
+    statusSubtitle: '',
+    data: null,
+  },
+  setGetFormsDetail: vi.fn(),
 }
 
 vi.mock('@/features/forms/states/formsStates', () => ({
@@ -38,6 +46,7 @@ vi.mock('@/features/forms/states/formsStates', () => ({
 vi.mock('@/features/forms/controllers/formsControllers', () => ({
   useFormsControllers: () => ({
     storeForms: { mutate, isPending: false },
+    updateForms: { mutate: updateMutate, isPending: false },
   }),
 }))
 

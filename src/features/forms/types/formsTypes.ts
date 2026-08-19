@@ -16,6 +16,12 @@ export type FormsFieldType =
   | 'PAYMENT'
 
 export interface FormsFieldInput {
+  /**
+   * Hanya terisi saat menyunting form yang sudah ada. Jawaban yang masuk
+   * memakai id field sebagai kunci, jadi id lama harus ikut terkirim agar
+   * riwayat jawaban tidak kehilangan pertanyaannya.
+   */
+  id?: string
   label: string
   description: string
   placeholder: string
@@ -45,7 +51,15 @@ export interface PayloadPostForms {
   fields: FormsFieldInput[]
 }
 
+export interface PayloadPutForms extends PayloadPostForms {
+  id: string
+}
+
 export interface PayloadGetFormsDetail {
+  id: string
+}
+
+export interface PayloadDeleteForms {
   id: string
 }
 

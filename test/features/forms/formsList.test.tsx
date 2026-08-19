@@ -6,6 +6,7 @@ import type { DataForms } from '@/features/forms/types/formsTypes'
 
 const push = vi.fn()
 const refetch = vi.fn()
+const destroyMutate = vi.fn()
 
 vi.mock('next/router', () => ({
   useRouter: () => ({ push, query: {}, isReady: true }),
@@ -25,7 +26,10 @@ vi.mock('@/features/forms/states/formsStates', () => ({
 }))
 
 vi.mock('@/features/forms/controllers/formsControllers', () => ({
-  useFormsControllers: () => ({ fetchForms: { refetch } }),
+  useFormsControllers: () => ({
+    fetchForms: { refetch },
+    destroyForms: { mutate: destroyMutate },
+  }),
 }))
 
 const getForm = (overrides: Partial<DataForms> = {}): DataForms => ({
@@ -52,6 +56,7 @@ const loadList = async () => {
 beforeEach(() => {
   push.mockClear()
   refetch.mockClear()
+  destroyMutate.mockClear()
   state.forms = {
     status: 'success',
     statusTitle: '',
@@ -198,5 +203,62 @@ describe('riwayat form yang belum berisi', () => {
     expect(
       screen.getByRole('link', { name: /Create Form/ })
     ).toHaveAttribute('href', '/forms/create')
+  })
+})
+
+describe('menghapus form dari riwayat', () => {
+  it('TC-39g menghapus setelah konfirmasi disetujui', async () => {
+    const confirmSpy = vi
+      .spyOn(window, 'confirm')
+      .mockImplementation(() => true)
+
+    await loadList()
+    await userEvent.click(
+      screen.getAllByRole('button', { name: /Hapus form/i })[0]
+    )
+
+    expect(destroyMutate).toHaveBeenCalledWith(
+      { id: 'form-1' },
+      expect.anything()
+    )
+    confirmSpy.mockRestore()
+  })
+
+  it('TC-39h tidak menghapus apa pun kalau konfirmasi dibatalkan', async () => {
+    const confirmSpy = vi
+      .spyOn(window, 'confirm')
+      .mockImplementation(() => false)
+
+    await loadList()
+    await userEvent.click(
+      screen.getAllByRole('button', { name: /Hapus form/i })[0]
+    )
+
+    expect(destroyMutate).not.toHaveBeenCalled()
+    confirmSpy.mockRestore()
+  })
+
+  it('TC-39i menyebut jumlah jawaban yang ikut terhapus di konfirmasi', async () => {
+    const confirmSpy = vi
+      .spyOn(window, 'confirm')
+      .mockImplementation(() => false)
+
+    await loadList()
+    await userEvent.click(
+      screen.getAllByRole('button', { name: /Hapus form/i })[0]
+    )
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      expect.stringContaining('5 jawaban')
+    )
+    confirmSpy.mockRestore()
+  })
+
+  it('TC-39j menyediakan jalan menyunting tiap form', async () => {
+    await loadList()
+
+    expect(
+      screen.getAllByRole('link', { name: /Sunting form/i })[0]
+    ).toHaveAttribute('href', '/forms/form-1/edit')
   })
 })

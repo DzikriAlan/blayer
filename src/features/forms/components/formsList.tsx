@@ -19,10 +19,12 @@ import FormsTemplate, { FORMS_TEMPLATES } from './formsTemplate'
 export default function FormsList() {
   const router = useRouter()
   const { forms } = useFormsStates()
-  const { fetchForms } = useFormsControllers()
+  const { fetchForms, destroyForms } = useFormsControllers()
 
   const [filters, setFilters] = useState({
     search: '',
+    deletingId: '',
+    deleteError: '',
     templateId: '',
     pagination: {
       currentPage: 1,
@@ -105,6 +107,8 @@ export default function FormsList() {
       errorImage: '/no-data.svg',
       isFirstPage: currentPage <= 1,
       isLastPage: currentPage >= totalPage,
+      deletingId: filters.deletingId,
+      deleteError: filters.deleteError,
     }
   }, [filters, forms])
 
@@ -135,6 +139,37 @@ export default function FormsList() {
       templateId: '',
       pagination: { ...prev.pagination, currentPage: 1 },
     }))
+  }
+
+  /**
+   * Menghapus form ikut menghapus seluruh jawaban dan analisisnya lewat
+   * cascade di database, jadi jumlah jawaban disebut lebih dulu di konfirmasi
+   * — angka itu yang membuat orang berhenti sejenak sebelum menekan OK.
+   */
+  const clearForms = (id: string) => {
+    const target = forms.data.find((item) => item.id === id)
+    if (!target) return
+
+    const warning = target.totalResponse
+      ? `Hapus form "${target.title}"? ${target.totalResponse} jawaban yang sudah masuk ikut terhapus dan tidak bisa dikembalikan.`
+      : `Hapus form "${target.title}"? Tindakan ini tidak bisa dibatalkan.`
+
+    if (!window.confirm(warning)) return
+
+    setFilters((prev) => ({ ...prev, deletingId: id, deleteError: '' }))
+    destroyForms.mutate(
+      { id },
+      {
+        // Kegagalan hapus harus terlihat: tanpa ini kartunya sekadar tetap
+        // di tempat dan pengguna mengira aplikasinya menggantung.
+        onError: (error: Error) =>
+          setFilters((prev) => ({
+            ...prev,
+            deleteError: error.message || 'Form gagal dihapus. Coba lagi.',
+          })),
+        onSettled: () => setFilters((prev) => ({ ...prev, deletingId: '' })),
+      }
+    )
   }
 
   const editFormsSearch = (search: string) => {
@@ -228,6 +263,15 @@ export default function FormsList() {
         </div>
       ) : null}
 
+      {data.deleteError ? (
+        <p
+          role="alert"
+          className="brutal-eyebrow border-2 border-foreground bg-primary px-5 py-4 text-primary-foreground sm:px-7"
+        >
+          {data.deleteError}
+        </p>
+      ) : null}
+
       {/* Satu pintu untuk memuat, gagal, dan kosong; isian hanya dirender
           kalau memang ada datanya. */}
       <LoadData response={data} minHeight="30vh">
@@ -244,6 +288,8 @@ export default function FormsList() {
               totalField={item.totalField}
               totalResponse={item.totalResponse}
               createdAt={item.createdAt}
+              isDeleting={data.deletingId === item.id}
+              onClearForms={clearForms}
             />
           ))}
         </section>

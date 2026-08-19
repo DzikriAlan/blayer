@@ -1,8 +1,11 @@
 import type {
+  PayloadDeleteForms,
   PayloadGetFormsDetail,
   PayloadPostForms,
+  PayloadPutForms,
 } from '../types/formsTypes'
 import { getAuthHeaders } from '@/shared/lib/authClient'
+import { throwApiError } from '@/shared/lib/httpError'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
@@ -12,7 +15,7 @@ export const getForms = async () => {
       method: 'GET',
       headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
     })
-    if (!res.ok) throw new Error(res.statusText)
+    if (!res.ok) await throwApiError(res)
     return res.json()
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
@@ -28,7 +31,7 @@ export const getFormsPublic = async () => {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
-    if (!res.ok) throw new Error(res.statusText)
+    if (!res.ok) await throwApiError(res)
     return res.json()
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
@@ -43,7 +46,7 @@ export const postForms = async (payload: PayloadPostForms) => {
       headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
       body: JSON.stringify(payload),
     })
-    if (!res.ok) throw new Error(res.statusText)
+    if (!res.ok) await throwApiError(res)
     return res.json()
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
@@ -57,7 +60,42 @@ export const getFormsDetail = async (payload: PayloadGetFormsDetail) => {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
-    if (!res.ok) throw new Error(res.statusText)
+    if (!res.ok) await throwApiError(res)
+    return res.json()
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') return null
+    throw error
+  }
+}
+
+export const putForms = async ({ id, ...payload }: PayloadPutForms) => {
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/forms/detail/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) await throwApiError(res)
+    return res.json()
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') return null
+    throw error
+  }
+}
+
+export const deleteForms = async (payload: PayloadDeleteForms) => {
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/forms/detail/${payload.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(await getAuthHeaders()),
+      },
+    })
+    if (!res.ok) await throwApiError(res)
     return res.json()
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowUpRight, BarChart3 } from 'lucide-react'
+import { ArrowUpRight, BarChart3, Loader2, Pencil, Trash2 } from 'lucide-react'
 
 import { IS_AI_VISIBLE } from '@/shared/lib/features'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,8 @@ interface Props {
   totalField: number
   totalResponse: number
   createdAt: string
+  isDeleting?: boolean
+  onClearForms?: (id: string) => void
 }
 
 export default function FormsCard({
@@ -27,6 +29,8 @@ export default function FormsCard({
   totalField,
   totalResponse,
   createdAt,
+  isDeleting = false,
+  onClearForms,
 }: Props) {
   return (
     <article className="group border-b-2 border-foreground bg-paper px-5 py-6 transition-colors hover:bg-muted sm:px-7">
@@ -73,18 +77,35 @@ export default function FormsCard({
           </span>
         </div>
 
-        {/* Dua aksi wajib per form: buka formnya, dan buka dashboard hasilnya. */}
+        {/* Empat aksi per form: buka formnya, buka dashboard hasilnya,
+            sunting pertanyaannya, dan hapus. */}
         <div className="mt-5 flex flex-wrap gap-3">
           <Button asChild size="sm" variant="outline">
-            <Link href={`/forms/${id}`}>
+            <Link href={`/forms/${id}`} aria-label={`Buka form ${title}`}>
               <ArrowUpRight />
             </Link>
           </Button>
           <Button asChild size="sm">
-            <Link href={`/forms/${id}/result`}>
+            <Link href={`/forms/${id}/result`} aria-label={`Lihat hasil ${title}`}>
               <BarChart3 />
             </Link>
           </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/forms/${id}/edit`} aria-label={`Sunting form ${title}`}>
+              <Pencil />
+            </Link>
+          </Button>
+          {onClearForms ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isDeleting}
+              aria-label={`Hapus form ${title}`}
+              onClick={() => onClearForms(id)}
+            >
+              {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+            </Button>
+          ) : null}
         </div>
       </div>
     </article>
