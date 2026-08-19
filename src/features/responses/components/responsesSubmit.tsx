@@ -181,13 +181,18 @@ export default function ResponsesSubmit({ formId }: Props) {
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
       isAiEnabled: formsDetail.data?.isAiEnabled ?? false,
       hasEmailInput,
-      isProctored: getView() === 'exam',
+      // Ujian sekolah dan psikotes kerja sama-sama dinilai, jadi keduanya
+      // dikerjakan dalam layar terkunci.
+      isProctored: ['exam', 'psychometric'].includes(getView()),
       hasEventDetail: getView() === 'event',
       isEventDone: getView() === 'event',
       isOrderDone: getView() === 'order',
       isCourseDone: getView() === 'course',
-      // Banner dipakai sebagai poster acara, kelas, maupun restoran.
-      hasBanner: ['event', 'course', 'order'].includes(getView()),
+      // Banner dipakai sebagai poster acara, kelas, restoran, maupun logo
+      // perusahaan yang membuka lowongan.
+      hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
+        getView()
+      ),
       bannerUrl: formsDetail.data?.bannerUrl ?? '',
       meetingUrl: formsDetail.data?.meetingUrl ?? '',
       videoUrl: formsDetail.data?.videoUrl ?? '',

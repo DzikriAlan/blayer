@@ -218,8 +218,11 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
       hasEventDetail: getView() === 'event',
       hasCourseDetail: getView() === 'course',
       hasPaymentDetail: PAID_VIEWS.includes(getView()),
-      // Banner dipakai sebagai poster acara, kelas, maupun restoran.
-      hasBanner: ['event', 'course', 'order'].includes(getView()),
+      // Banner dipakai sebagai poster acara, kelas, restoran, maupun logo
+      // perusahaan yang membuka lowongan.
+      hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
+        getView()
+      ),
       bannerUrl: watchedBannerUrl,
       qrisUrl: watchedQrisUrl,
       // Harga tetap hanya relevan untuk form berbayar yang tidak punya menu:
