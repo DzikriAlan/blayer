@@ -209,6 +209,10 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-26w | F-26 | Token karangan sendiri dipasang di header | Dibalas 401 — tanda tangan token diverifikasi, bukan sekadar keberadaannya | Manual | — |
 | TC-26x | F-26 | Mendaftar dengan username yang sudah dipakai | Dibalas 409 dengan ajakan memilih username lain | Manual | — |
 | TC-26y | F-26 | Mengisi form lewat tautan publik setelah kepemilikan aktif | `GET /api/v1/forms/detail/[id]` dan pengiriman jawaban tetap jalan tanpa token | Manual | — |
+| TC-26z | F-26 | Membuka halaman depan tanpa login | Katalog form terisi — `GET /api/v1/forms/public` tidak menyentuh penjaga sesi sama sekali | Otomatis | `formsPublic.test.ts` |
+| TC-26aa | F-26 | Katalog publik dengan draf di database | Hanya form yang sudah dipublikasikan ikut terbaca; penyaringan ada di query | Otomatis | `formsPublic.test.ts` |
+| TC-26ab | F-26 | Isi kolom yang dikirim katalog publik | `purpose`, `qrisUrl`, dan `userId` tidak ikut diminta dari database maupun dikirim | Otomatis | `formsPublic.test.ts` |
+| TC-26ac | F-26 | Halaman depan dibuka pengunjung yang belum masuk | Tidak ada request ke endpoint terkunci — daftar form milik sendiri ditahan sampai ada sesi | Manual | — |
 | TC-29a | F-29 | Membuka halaman depan | Urutan section: navbar, hero, statistik, pita, kategori, footer | Manual | — |
 | TC-29b | F-29 | Membuka halaman depan di lebar ponsel | Navigasi berubah jadi tombol menu, isi tidak meluber ke samping | Manual | — |
 | TC-29c | F-29 | Menekan "Jelajahi Kategori" | Halaman menggulir mulus ke bagian kategori | Manual | — |
