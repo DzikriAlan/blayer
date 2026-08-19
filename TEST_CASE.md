@@ -7,9 +7,9 @@ harus dilakukan tangan.
 | | |
 | --- | --- |
 | **Versi PRD yang diuji** | 1.9 |
-| **Terakhir diperbarui** | 18 Agustus 2026 |
-| **Kasus otomatis** | 82 |
-| **Berkas uji** | 11 |
+| **Terakhir diperbarui** | 19 Agustus 2026 |
+| **Kasus otomatis** | 168 |
+| **Berkas uji** | 23 |
 
 ---
 
@@ -247,7 +247,53 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 
 ---
 
-## 8 · Belum diuji karena fiturnya belum ada
+## 8 · Mengelola, merahasiakan, dan menahan penyalahgunaan
+
+| ID | Kebutuhan | Langkah | Hasil yang diharapkan | Jenis | Berkas |
+| --- | --- | --- | --- | --- | --- |
+| TC-39a | F-39 | Mengirim PUT tanpa sesi | Dibalas 401; tidak ada tulisan ke database | Otomatis | `formsDetail.test.ts` |
+| TC-39b | F-39 | Mengirim PUT dari akun yang bukan pemilik | Dibalas 403; tidak ada tulisan ke database | Otomatis | `formsDetail.test.ts` |
+| TC-39c | F-39 | Menyunting form berisi field lama dan field baru | Field lama disunting di tempat dengan id tetap, field baru dibuat, field yang dibuang dihapus | Otomatis | `formsDetail.test.ts` |
+| TC-39d | F-39 | Mengirim PUT tanpa field | Dibalas 400 sebelum menyentuh database | Otomatis | `formsDetail.test.ts` |
+| TC-39e | F-39 | Menghapus form milik akun lain | Dibalas 403; form tetap ada | Otomatis | `formsDetail.test.ts` |
+| TC-39f | F-39 | Menghapus form sendiri | Form terhapus beserta field, jawaban, dan analisisnya lewat cascade | Otomatis | `formsDetail.test.ts` |
+| TC-39g | F-39 | Menyetujui konfirmasi hapus di riwayat form | Permintaan hapus dikirim untuk form yang dipilih | Otomatis | `formsList.test.tsx` |
+| TC-39h | F-39 | Membatalkan konfirmasi hapus | Tidak ada permintaan hapus yang dikirim | Otomatis | `formsList.test.tsx` |
+| TC-39i | F-39 | Menghapus form yang sudah punya jawaban | Konfirmasi menyebut jumlah jawaban yang ikut hilang | Otomatis | `formsList.test.tsx` |
+| TC-39j | F-39 | Melihat kartu form di riwayat | Tersedia tautan sunting ke `/forms/{id}/edit` | Otomatis | `formsList.test.tsx` |
+| TC-39k | F-39 | Membuka halaman sunting | Judul, deskripsi, dan pertanyaan tersimpan termuat ke builder | Otomatis | `formsEdit.test.tsx` |
+| TC-39l | F-39 | Menyimpan dari halaman sunting | Yang terkirim PUT ke form itu, bukan pembuatan form baru | Otomatis | `formsEdit.test.tsx` |
+| TC-39m | F-39 | Menyimpan suntingan pertanyaan lama | Id field lama ikut terkirim supaya jawaban lama tetap punya pertanyaannya | Otomatis | `formsEdit.test.tsx` |
+| TC-40a | F-40 | Membuka detail form tanpa sesi | `purpose`, `meetingUrl`, dan `videoUrl` kosong; `qrisUrl` tetap ikut | Otomatis | `formsDetail.test.ts` |
+| TC-40b | F-40 | Membuka detail form milik akun lain | Ketiga kolom rahasia tetap kosong walau pemanggilnya sudah masuk | Otomatis | `formsDetail.test.ts` |
+| TC-40c | F-40 | Pemilik membuka detail formnya | Seluruh kolom terkirim utuh | Otomatis | `formsDetail.test.ts` |
+| TC-40d | F-40 | Menebak tautan form yang masih draf | Dibalas 404, bukan 403 yang membocorkan keberadaannya | Otomatis | `formsDetail.test.ts` |
+| TC-40e | F-40 | Pemilik membuka drafnya sendiri | Tetap terbuka normal | Otomatis | `formsDetail.test.ts` |
+| TC-41a | F-41 | Mengirim jawaban ke form acara | Link acara datang lewat balasan pengiriman, bukan dari detail form | Otomatis | `responsesSubmit.test.ts` |
+| TC-41b | F-41 | Mengirim jawaban ke form yang masih draf | Dibalas 403; jawaban tidak tersimpan | Otomatis | `responsesSubmit.test.ts` |
+| TC-41c | F-41 | Menyertakan kunci jawaban yang bukan milik form itu | Kunci asing dibuang sebelum disimpan | Otomatis | `responsesSubmit.test.ts` |
+| TC-41d | F-41 | Mengirim jawaban teks sangat panjang | Dipotong pada batas panjang wajar | Otomatis | `responsesSubmit.test.ts` |
+| TC-41e | F-41 | Mengirim jawaban berulang melewati batas | Dibalas 429 dengan sisa waktu tunggu; jawaban berikutnya tidak tersimpan | Otomatis | `responsesSubmit.test.ts` |
+| TC-41f | F-41 | Mengirim ke form lain setelah satu form terkunci | Tetap diterima — batasnya per form | Otomatis | `responsesSubmit.test.ts` |
+| TC-41g | F-41 | Mengirim dari IP lain setelah satu IP terkunci | Tetap diterima — batasnya per pengirim | Otomatis | `responsesSubmit.test.ts` |
+| TC-42a | F-42 | Handler API melempar error tak tertangkap | Balasan 500 berbentuk JSON berisi kode penelusuran, tanpa detail internal | Otomatis | `apiHandler.test.ts` |
+| TC-42b | F-42 | Memeriksa log setelah kegagalan | Satu baris JSON berisi level, rute, method, dan pesan aslinya | Otomatis | `apiHandler.test.ts` |
+| TC-42c | F-42 | Error terjadi setelah sebagian balasan terkirim | Balasan yang sudah terkirim tidak ditimpa | Otomatis | `apiHandler.test.ts` |
+| TC-42d | F-42 | Handler berjalan normal | Balasannya diteruskan apa adanya | Otomatis | `apiHandler.test.ts` |
+| TC-42e | F-42 | Mengirim form berjudul kosong | Ditolak sebelum menyentuh database | Otomatis | `formsInput.test.ts` |
+| TC-42f | F-42 | Mengirim form tanpa field | Ditolak | Otomatis | `formsInput.test.ts` |
+| TC-42g | F-42 | Mengirim jenis field yang tidak dikenal | Ditolak dengan menyebut jenis yang salah | Otomatis | `formsInput.test.ts` |
+| TC-42h | F-42 | Mengirim field tanpa label | Ditolak | Otomatis | `formsInput.test.ts` |
+| TC-42i | F-42 | Mengirim harga negatif | Disimpan sebagai kosong, bukan tagihan negatif | Otomatis | `formsInput.test.ts` |
+| TC-42j | F-42 | Mengirim teks kosong pada kolom opsional | Disimpan sebagai null, bukan string kosong | Otomatis | `formsInput.test.ts` |
+| TC-42k | F-42 | Mengirim beberapa field sekaligus | Urutannya mengikuti urutan kirim | Otomatis | `formsInput.test.ts` |
+| TC-42l | F-42 | Mengirim field melampaui batas wajar | Ditolak | Otomatis | `formsInput.test.ts` |
+| TC-42m | F-42 | Komponen halaman gagal saat render | Layar pemulihan dengan tombol muat ulang, bukan halaman putih | Otomatis | `errorBoundary.test.tsx` |
+| TC-42n | F-42 | Halaman berjalan normal | Isinya tampil tanpa terganggu batas error | Otomatis | `errorBoundary.test.tsx` |
+
+---
+
+## 9 · Belum diuji karena fiturnya belum ada
 
 Kasus berikut sengaja belum ditulis. Kebutuhannya masih berstatus **Belum** di
 PRD, jadi menuliskan ujinya sekarang hanya akan menghasilkan uji yang selalu

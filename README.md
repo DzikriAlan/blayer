@@ -12,7 +12,7 @@ Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interak
 * Mengembangkan **analisis hasil berbasis AI** memakai **Anthropic Claude** dengan keluaran berskema, menghasilkan ringkasan, peringkat, dan rekomendasi yang merujuk pada jawaban konkret, lalu menyimpannya agar dashboard tetap berisi setelah halaman dimuat ulang.
 * Menerapkan **mode ujian berlapis** — dipakai ujian sekolah maupun psikotes kerja — yang menonaktifkan klik kanan, salin-tempel, seleksi teks, serta pintasan tab baru, pencarian, cetak, dan devtools, ditambah pencatatan lama pengerjaan tiap peserta.
 * Menyusun **penanganan keadaan data terpusat** lewat komponen `LoadData`, sehingga keadaan memuat, kosong, gagal, dan tidak terverifikasi ditangani satu tempat dan tiap permukaan tidak menyusun ulang logika yang sama.
-* Menjaga **kualitas lewat pengujian otomatis** dengan **Vitest dan Testing Library** — 126 uji yang menutup builder, halaman isi, guard halaman, layar kredensial, hingga kepemilikan data di API, dengan tiap kasus terpetakan ke ID kebutuhan di `TEST_CASE.md`.
+* Menjaga **kualitas lewat pengujian otomatis** dengan **Vitest dan Testing Library** — 168 uji yang menutup builder, halaman isi, guard halaman, layar kredensial, hingga kepemilikan data di API, dengan tiap kasus terpetakan ke ID kebutuhan di `TEST_CASE.md`.
 * Merawat **standar kode** memakai **ESLint, TypeScript strict mode, dan konvensi penamaan yang tertulis**, sehingga nama berkas, fungsi, dan prefix method bisa diturunkan langsung dari URL endpoint-nya.
 
 ---
@@ -95,8 +95,13 @@ Aktifkan Google OAuth di dashboard Supabase:
 
 ```bash
 npx prisma generate
-npx prisma db push
+npm run db:migrate
 ```
+
+`db:migrate` menjalankan migrasi yang tersimpan di `prisma/migrations` dan
+mencatat setiap perubahan skema. `db:push` masih ada untuk coba-coba cepat di
+basis data sekali pakai, tapi jangan dipakai pada basis data yang sudah berisi
+data sungguhan — perubahannya tidak punya jejak dan tidak bisa diputar balik.
 
 Verify the database connection:
 ```bash
@@ -226,10 +231,47 @@ npm run lint             # Run ESLint and fix issues
 npm run test             # Run the Vitest suite once
 npm run test:watch       # Run Vitest in watch mode
 npm run db:generate      # Regenerate Prisma client
-npm run db:push          # Push Prisma schema to database
+npm run typecheck        # Type-check the whole project without emitting
+npm run db:push          # Push schema without a migration (throwaway DB only)
+npm run db:migrate       # Create and apply a migration (development)
+npm run db:deploy        # Apply pending migrations (production)
 npm run db:seed          # Seed demo forms for every template
 npm run db:studio        # Open Prisma Studio (database GUI)
 ```
+
+---
+
+## Deploy Checklist
+
+Sebelum melepas ke publik:
+
+1. **Migrasi, bukan push.** Jalankan `npm run db:deploy` memakai koneksi
+   langsung ke Postgres. Migrasi tidak bisa lewat pooler:
+   ```bash
+   DATABASE_URL="$DIRECT_URL" npm run db:deploy
+   ```
+2. **Pooler untuk aplikasinya.** `DATABASE_URL` yang dipakai aplikasi harus URL
+   pooler (`?pgbouncer=true&connection_limit=1`). Tanpa itu, tiap instance
+   serverless membuka pool sendiri dan koneksi Postgres habis di bawah trafik.
+3. **Rahasia server tanpa prefix publik.** `SUPABASE_SERVICE_ROLE_KEY`,
+   `SUPABASE_SECRET_KEY`, dan `ANTHROPIC_API_KEY` tidak boleh pernah diberi
+   prefix `NEXT_PUBLIC_` — apa pun dengan prefix itu ikut terkirim ke browser.
+   Lihat `.env.example` untuk daftar lengkapnya.
+4. **CI hijau.** `.github/workflows/ci.yml` menjalankan lint, typecheck, test,
+   dan build di tiap PR. Jangan deploy dari branch yang merah.
+5. **Log terbaca.** Kegagalan API keluar sebagai satu baris JSON berisi
+   `requestId`, `route`, dan `errorMessage`. Pengguna menerima requestId yang
+   sama pada pesan errornya, jadi laporan bisa langsung dicocokkan ke log.
+
+### Batas yang diketahui
+
+- **Rate limit disimpan di memori instance.** Cukup untuk menahan banjir dari
+  satu sumber, tapi di banyak instance tiap instance punya jatah sendiri. Kalau
+  trafik tumbuh, ganti isi `src/shared/lib/rateLimit.ts` dengan penyimpanan
+  bersama (mis. Redis) — pemanggilnya tidak perlu diubah.
+- **Belum ada agregator error pihak ketiga.** Log terstruktur sudah siap
+  di-parse; menyambungkannya ke Sentry/Logtail tinggal menambahkan pengirim di
+  `src/shared/lib/logger.ts`.
 
 ---
 
