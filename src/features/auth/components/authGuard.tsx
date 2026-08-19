@@ -21,6 +21,7 @@ const PUBLIC_PATHNAMES = [
   '/register',
   '/auth/callback',
   '/forms/[id]',
+  '/kategori/[id]',
   '/404',
   '/500',
   '/_error',
