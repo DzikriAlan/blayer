@@ -46,7 +46,12 @@ export default function FormsProject({
         <Link
           key={project.id}
           href={`/forms/${project.id}`}
-          className="group flex flex-col border-2 border-foreground bg-paper transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
+          // min-w-0 wajib: kartu ini item grid, dan item grid menolak
+          // menyempit di bawah lebar min-content isinya. Baris chip yang
+          // whitespace-nowrap membuat min-content itu selebar seluruh chip,
+          // sehingga satu kartu memaksa seluruh halaman menggeser ke samping
+          // di layar ponsel — bukan menggulir di dalam barisan chipnya.
+          className="group flex min-w-0 flex-col border-2 border-foreground bg-paper transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
         >
           <div className="flex items-center justify-between gap-3 border-b-2 border-foreground bg-foreground px-5 py-3 text-background">
             <span className="brutal-eyebrow opacity-70">BUDGET</span>

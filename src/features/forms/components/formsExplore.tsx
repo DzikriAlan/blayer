@@ -214,7 +214,10 @@ export default function FormsExplore({ templateId }: Props) {
                 <Link
                   key={form.id}
                   href={`/forms/${form.id}`}
-                  className="group flex flex-col gap-4 border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
+                  // min-w-0 wajib, alasannya sama seperti di papan proyek:
+                  // tanpa itu baris chip yang tidak melipat menetapkan lebar
+                  // minimum kartu, dan halamannya ikut melebar.
+                  className="group flex min-w-0 flex-col gap-4 border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
                 >
                   <div className="flex items-start gap-4">
                     {/* Logo perusahaan kalau diunggah; kalau tidak, lambang

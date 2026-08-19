@@ -286,3 +286,39 @@ describe('halaman kategori', () => {
     expect(screen.getByText('Kategori Tidak Ada')).toBeInTheDocument()
   })
 })
+
+/**
+ * Lebar kartu tidak bisa diperiksa di jsdom — tidak ada mesin tata letak di
+ * sana. Yang dipatok di sini kelasnya: `min-w-0` adalah satu-satunya alasan
+ * kartu boleh menyempit di bawah lebar barisan chipnya, dan tanpa itu satu
+ * kartu menggeser seluruh halaman ke samping di layar ponsel. Pemeriksaan
+ * lebar sungguhan tetap lewat TC-32a.
+ */
+describe('kartu berchip tidak melebarkan halaman', () => {
+  it('TC-32e kartu proyek boleh menyempit di bawah lebar chipnya', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'freelance',
+        title: 'Penulisan 20 Artikel SEO Bidang Properti',
+        priceAmount: 12000000,
+      }),
+    ])
+
+    const { container } = render(<FormsExplore templateId="freelance" />)
+
+    const card = container.querySelector('a[href="/forms/form-1"]')
+    expect(card?.className).toContain('min-w-0')
+  })
+
+  it('TC-32f kartu lowongan boleh menyempit di bawah lebar chipnya', () => {
+    setCatalogue([
+      getForm({ templateId: 'psychometric', title: 'Backend Engineer — Kalbe' }),
+    ])
+
+    const { container } = render(<FormsExplore templateId="psychometric" />)
+
+    const card = container.querySelector('a[href="/forms/form-1"]')
+    expect(card?.className).toContain('min-w-0')
+  })
+})
+
