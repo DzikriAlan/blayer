@@ -229,6 +229,10 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
       // kalau ada menu, tagihannya datang dari item yang dipilih pengisi.
       hasFixedPrice:
         PAID_VIEWS.includes(getView()) && !watchedFieldTypes.includes('MENU'),
+      // Anggaran proyek bukan tagihan: yang membayar pemilik proyek, bukan
+      // freelancer yang mengisi. Jadi kolomnya berdiri sendiri, tanpa QRIS
+      // dan tanpa field pembayaran.
+      hasBudget: getView() === 'freelance',
       priceAmountError: form.formState.errors.priceAmount?.message ?? '',
       meetingUrlError: form.formState.errors.meetingUrl?.message ?? '',
       videoUrlError: form.formState.errors.videoUrl?.message ?? '',
@@ -374,7 +378,10 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
       meetingUrl: data.hasEventDetail ? values.meetingUrl.trim() : '',
       videoUrl: data.hasCourseDetail ? values.videoUrl.trim() : '',
       qrisUrl: data.hasPaymentDetail ? values.qrisUrl : '',
-      priceAmount: data.hasFixedPrice ? Number(values.priceAmount.trim()) || 0 : 0,
+      priceAmount:
+        data.hasFixedPrice || data.hasBudget
+          ? Number(values.priceAmount.trim()) || 0
+          : 0,
       isPublished: values.isPublished,
       fields: values.fields.map((field) => ({
         label: field.label,
@@ -481,7 +488,7 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
         </div>
       </div>
 
-      {data.hasBanner || data.hasPaymentDetail ? (
+      {data.hasBanner || data.hasPaymentDetail || data.hasBudget ? (
         <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
           <span className="brutal-index">
             {data.hasPaymentDetail ? (
@@ -539,6 +546,28 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
                 {data.videoUrlError ? (
                   <p className="brutal-eyebrow text-primary">
                     {data.videoUrlError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {data.hasBudget ? (
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="form-budget-amount">Budget Proyek (Rp)</Label>
+                <Input
+                  id="form-budget-amount"
+                  inputMode="numeric"
+                  placeholder="4500000"
+                  {...form.register('priceAmount')}
+                />
+                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                  Tulis angka polos tanpa titik. Angka ini tampil sebagai budget
+                  di papan proyek. Kosongkan kalau anggarannya masih terbuka
+                  untuk dinegosiasi.
+                </p>
+                {data.priceAmountError ? (
+                  <p className="brutal-eyebrow text-primary">
+                    {data.priceAmountError}
                   </p>
                 ) : null}
               </div>

@@ -8,6 +8,7 @@ import {
   Eye,
   FilePlus2,
   GraduationCap,
+  Hammer,
   PlayCircle,
   Star,
   UtensilsCrossed,
@@ -65,6 +66,7 @@ export interface FormsTemplateValues {
  * | `event`        | banner acara    | tiket acara    | daftar peserta | nama + email |
  * | `order`        | menu + bayar    | struk pesanan  | daftar pesanan | nama saja    |
  * | `course`       | harga + bayar   | akses video    | daftar peserta | nama + email |
+ * | `freelance`    | biasa           | konfirmasi     | skor+peringkat | nama + email |
  *
  * Kolom email hanya ditanyakan kalau memang ada yang dikirim ke sana — tiket
  * acara, akses kelas. Pesanan di meja selesai di tempat, jadi tidak usah.
@@ -77,6 +79,7 @@ export type FormsTemplateView =
   | 'event'
   | 'order'
   | 'course'
+  | 'freelance'
 
 /**
  * Naskah halaman kategori, ditulis dari sisi orang yang datang untuk ikut.
@@ -174,6 +177,17 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
     emptySubtitle:
       'Belum ada menu yang bisa dipesan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
   },
+  freelance: {
+    heading: 'Proyek Yang Bisa Kamu Garap',
+    lead: 'Proyek yang sedang mencari orang. Baca kebutuhannya, ajukan penawaranmu beserta rencana pengerjaan — pemilik proyek memilih dari penawaran yang masuk.',
+    availabilityLabel: 'PROYEK DIBUKA',
+    countLabel: 'PENAWARAN',
+    fieldLabel: 'ISIAN',
+    action: 'Ajukan Penawaran',
+    emptyTitle: 'Belum Ada Proyek Dibuka',
+    emptySubtitle:
+      'Belum ada proyek yang bisa digarap sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
   course: {
     heading: 'Kelas Yang Bisa Kamu Ambil',
     lead: 'Kelas yang pendaftarannya sedang dibuka. Setelah pembayaranmu masuk, video kelasnya langsung bisa dibuka.',
@@ -240,57 +254,91 @@ const getField = (
   optionText,
 })
 
+/**
+ * Urutan di sini adalah urutan yang dilihat orang.
+ *
+ * Halaman depan — daftar di hero maupun kartu kategori — dan daftar pilihan di
+ * builder sama-sama membacanya berurutan, jadi katalog ini satu-satunya tempat
+ * urutannya ditentukan: acara, kelas, psikotes, lalu proyek freelance untuk
+ * yang tampil di etalase; sisanya menyusul.
+ */
 export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
-    id: 'exam',
-    name: 'Ujian Sekolah',
-    tagline: 'Pilihan ganda + esai, dinilai dan diperingkat otomatis',
-    view: 'exam',
+    id: 'event',
+    name: 'Pendaftaran Acara',
+    tagline: 'Banner, link Google Meet, dan daftar peserta',
+    view: 'event',
     isVisible: true,
-    isFeatured: false,
-    icon: GraduationCap,
+    isFeatured: true,
+    icon: CalendarDays,
     values: {
-      title: 'Ujian Tengah Semester — Sejarah Kelas XI',
+      title: 'Pendaftaran Workshop',
       description:
-        'Kerjakan seluruh soal dalam waktu 60 menit. Jawaban esai dinilai dari ketepatan argumen dan bukti yang kamu sebutkan.',
-      isAiEnabled: true,
+        'Kuota terbatas. Konfirmasi kehadiran akan dikirim lewat email.',
+      isAiEnabled: false,
       isPublished: true,
-      purpose:
-        'Menilai pemahaman siswa terhadap materi ujian. Beri skor untuk setiap siswa berdasarkan ketepatan jawaban pilihan ganda dan kedalaman argumen pada jawaban esai. Urutkan siswa dari nilai tertinggi, lalu sebutkan siapa yang perlu remedial beserta topik yang belum dikuasai.',
+      purpose: '',
       bannerUrl: '',
       meetingUrl: '',
       videoUrl: '',
       qrisUrl: '',
       priceAmount: '',
       fields: [
+        getField('Asal Instansi atau Perusahaan', 'SHORT_TEXT'),
         getField(
-          'Kelas',
+          'Pilih Sesi',
           'SELECT',
           true,
-          'XI IPA 1\nXI IPA 2\nXI IPA 3\nXI IPS 1\nXI IPS 2'
+          'Sesi Pagi (09.00 - 12.00)\nSesi Siang (13.00 - 16.00)\nSesi Malam (19.00 - 21.00)'
         ),
-        getField('Nomor Absen', 'NUMBER', true),
+      ],
+    },
+  },
+  {
+    id: 'course',
+    name: 'Kursus Kelas',
+    tagline: 'Bayar biaya kelas, video materi terbuka setelah mendaftar',
+    view: 'course',
+    isVisible: true,
+    isFeatured: true,
+    icon: PlayCircle,
+    values: {
+      title: 'Kelas Online — Dasar Membangun Web',
+      description:
+        'Lengkapi data diri, lalu selesaikan pembayaran. Video materi langsung terbuka begitu formulir terkirim.',
+      isAiEnabled: false,
+      isPublished: true,
+      purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      // Kelasnya satu, jadi harganya ditetapkan pembuat form — bukan dipilih
+      // ulang oleh peserta yang sudah membuka tautan kelas ini.
+      priceAmount: '350000',
+      fields: [
+        getField('Nomor WhatsApp', 'PHONE', true, '', '', '08xx'),
         getField(
-          'Siapa tokoh yang membacakan teks Proklamasi Kemerdekaan Indonesia?',
+          'Level Pengalamanmu',
           'RADIO',
           true,
-          'Soekarno dan Mohammad Hatta\nJenderal Sudirman dan Tan Malaka\nSutan Syahrir dan Amir Syarifuddin\nPangeran Diponegoro dan Imam Bonjol'
+          'Belum pernah sama sekali\nSudah pernah belajar mandiri\nSudah bekerja di bidang ini'
         ),
         getField(
-          'Sebutkan dan jelaskan tiga faktor yang melatarbelakangi lahirnya pergerakan nasional.',
+          'Apa yang ingin kamu capai setelah kelas ini?',
           'LONG_TEXT',
+          false
+        ),
+        getField(
+          'Metode Pembayaran',
+          'PAYMENT',
           true,
-          '',
-          'Sertakan contoh peristiwa untuk setiap faktor.'
-        ),
-        getField(
-          'Jelaskan dampak Politik Etis terhadap munculnya kaum terpelajar pribumi.',
-          'LONG_TEXT',
-          true
-        ),
-        getField(
-          'Seberapa yakin kamu dengan jawabanmu secara keseluruhan?',
-          'SCALE'
+          [
+            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
+            'Transfer Bank|Transfer ke rekening yang tertera, simpan buktinya',
+            'Virtual Account|Bayar lewat VA di aplikasi bankmu',
+          ].join('\n'),
+          'Biaya kelas ditetapkan pengajar dan tampil di bawah ini.'
         ),
       ],
     },
@@ -307,9 +355,12 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Frontend Engineer — PT Nusantara Digital',
       // Kartu lowongan di halaman kategori hanya memuat judul dan deskripsi,
       // jadi keduanya ditulis seperti ringkasan lowongan di job portal: posisi
-      // dan perusahaan di judul, lokasi serta bentuk kerja di deskripsi.
+      // dan perusahaan di judul, sisanya di kepala deskripsi. Ruas yang
+      // dipisah "·" sampai titik pertama dipecah jadi chip di kartu — lokasi,
+      // bentuk kerja, status, gelar, pengalaman — jadi urutannya sengaja
+      // dijaga; kalimat setelahnya tetap jadi paragraf biasa.
       description:
-        'Jakarta Selatan · Hybrid · Penuh Waktu · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
+        'Jakarta Selatan · Hybrid · Penuh Waktu · S1 Teknik Informatika · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
       isAiEnabled: true,
       isPublished: true,
       purpose:
@@ -370,6 +421,188 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
           'CHECKBOX',
           false,
           'Performance\nAccessibility\nDesign System\nTesting\nDevOps'
+        ),
+      ],
+    },
+  },
+  {
+    id: 'freelance',
+    name: 'Proyek Freelance',
+    tagline: 'Proyek terbuka, freelancer mengajukan penawaran dan rencana kerja',
+    view: 'freelance',
+    isVisible: true,
+    isFeatured: true,
+    icon: Hammer,
+    values: {
+      title: 'Redesain Landing Page Company Profile',
+      // Kepala deskripsi memakai konvensi yang sama dengan lowongan: ruas
+      // yang dipisah "·" sampai titik pertama dipecah jadi chip di kartu —
+      // bidang, cara kerja, durasi, level — jadi urutannya sengaja dijaga.
+      description:
+        'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Kami butuh landing page baru yang lebih cepat dan enak dibaca di ponsel. Aset desain sudah tersedia dalam bentuk Figma.',
+      isAiEnabled: true,
+      isPublished: true,
+      purpose:
+        'Memilih freelancer untuk mengerjakan proyek ini. Nilai kesesuaian portofolio dengan kebutuhan, kejelasan rencana pengerjaan, kewajaran tawaran biaya terhadap ruang lingkup, dan kesiapan mulai. Urutkan penawaran dari yang paling meyakinkan, lalu sebutkan siapa yang layak diajak bicara lebih lanjut beserta alasannya.',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      // Anggaran ditetapkan pemilik proyek dan tampil sebagai budget di kartu;
+      // freelancer tetap menuliskan tawarannya sendiri lewat field di bawah.
+      priceAmount: '4500000',
+      fields: [
+        getField(
+          'Bidang Keahlian Utama',
+          'SELECT',
+          true,
+          'Web Development\nMobile Development\nUI/UX Design\nPenulisan Konten\nData & Otomasi'
+        ),
+        getField(
+          'Tautan Portofolio',
+          'URL',
+          true,
+          '',
+          'Cantumkan karya yang paling dekat dengan proyek ini.',
+          'https://'
+        ),
+        getField('Tawaran Biaya Pengerjaan (Rp)', 'NUMBER', true),
+        getField(
+          'Perkiraan Lama Pengerjaan',
+          'SELECT',
+          true,
+          'Kurang dari 1 minggu\n1-2 minggu\n3-4 minggu\nLebih dari 1 bulan'
+        ),
+        getField(
+          'Bagaimana rencanamu mengerjakan proyek ini?',
+          'LONG_TEXT',
+          true,
+          '',
+          'Sebutkan tahapannya, alat yang dipakai, dan apa yang kamu butuhkan dari kami.'
+        ),
+        getField(
+          'Pernah mengerjakan proyek serupa?',
+          'RADIO',
+          true,
+          'Sudah, lebih dari lima kali\nSudah, satu sampai lima kali\nBelum pernah, tapi bidangnya sama\nBelum sama sekali'
+        ),
+        getField('Kapan Bisa Mulai Mengerjakan', 'DATE', true),
+      ],
+    },
+  },
+  {
+    id: 'exam',
+    name: 'Ujian Sekolah',
+    tagline: 'Pilihan ganda + esai, dinilai dan diperingkat otomatis',
+    view: 'exam',
+    isVisible: true,
+    isFeatured: false,
+    icon: GraduationCap,
+    values: {
+      title: 'Ujian Tengah Semester — Sejarah Kelas XI',
+      description:
+        'Kerjakan seluruh soal dalam waktu 60 menit. Jawaban esai dinilai dari ketepatan argumen dan bukti yang kamu sebutkan.',
+      isAiEnabled: true,
+      isPublished: true,
+      purpose:
+        'Menilai pemahaman siswa terhadap materi ujian. Beri skor untuk setiap siswa berdasarkan ketepatan jawaban pilihan ganda dan kedalaman argumen pada jawaban esai. Urutkan siswa dari nilai tertinggi, lalu sebutkan siapa yang perlu remedial beserta topik yang belum dikuasai.',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
+      fields: [
+        getField(
+          'Kelas',
+          'SELECT',
+          true,
+          'XI IPA 1\nXI IPA 2\nXI IPA 3\nXI IPS 1\nXI IPS 2'
+        ),
+        getField('Nomor Absen', 'NUMBER', true),
+        getField(
+          'Siapa tokoh yang membacakan teks Proklamasi Kemerdekaan Indonesia?',
+          'RADIO',
+          true,
+          'Soekarno dan Mohammad Hatta\nJenderal Sudirman dan Tan Malaka\nSutan Syahrir dan Amir Syarifuddin\nPangeran Diponegoro dan Imam Bonjol'
+        ),
+        getField(
+          'Sebutkan dan jelaskan tiga faktor yang melatarbelakangi lahirnya pergerakan nasional.',
+          'LONG_TEXT',
+          true,
+          '',
+          'Sertakan contoh peristiwa untuk setiap faktor.'
+        ),
+        getField(
+          'Jelaskan dampak Politik Etis terhadap munculnya kaum terpelajar pribumi.',
+          'LONG_TEXT',
+          true
+        ),
+        getField(
+          'Seberapa yakin kamu dengan jawabanmu secara keseluruhan?',
+          'SCALE'
+        ),
+      ],
+    },
+  },
+  {
+    id: 'restaurant',
+    name: 'Menu Restoran',
+    tagline: 'Pilih makanan bergambar per meja, bayar QRIS di tempat',
+    view: 'order',
+    isVisible: true,
+    isFeatured: false,
+    icon: UtensilsCrossed,
+    values: {
+      title: 'Pesan Menu — Meja Restoran',
+      description:
+        'Pilih makanan dan minumanmu, lalu bayar lewat QRIS atau metode lain. Pesanan langsung masuk ke dapur setelah pembayaran dikonfirmasi.',
+      isAiEnabled: false,
+      isPublished: true,
+      purpose: '',
+      bannerUrl: '',
+      meetingUrl: '',
+      videoUrl: '',
+      qrisUrl: '',
+      priceAmount: '',
+      fields: [
+        getField(
+          'Nomor Meja',
+          'SELECT',
+          true,
+          'Meja 01\nMeja 02\nMeja 03\nMeja 04\nMeja 05\nMeja 06\nMeja 07\nMeja 08'
+        ),
+        getField(
+          'Pilih Menu',
+          'MENU',
+          true,
+          [
+            'Nasi Goreng Kampung|28000|/menu-nasi-goreng.svg',
+            'Ayam Bakar Madu|35000|/menu-ayam-bakar.svg',
+            'Sate Ayam Bumbu Kacang|32000|/menu-sate-ayam.svg',
+            'Mie Goreng Seafood|30000|/menu-mie-goreng.svg',
+            'Es Teh Manis|8000|/menu-es-teh.svg',
+            'Es Jeruk Peras|12000|/menu-es-jeruk.svg',
+          ].join('\n'),
+          'Ketuk gambar untuk menambah porsi. Total tagihan dihitung otomatis.'
+        ),
+        getField(
+          'Cara Penyajian',
+          'RADIO',
+          true,
+          'Makan di tempat\nBungkus dibawa pulang'
+        ),
+        getField('Catatan untuk Dapur', 'LONG_TEXT', false, '', '', 'Mis. tidak pedas, tanpa bawang'),
+        getField(
+          'Metode Pembayaran',
+          'PAYMENT',
+          true,
+          [
+            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
+            'Transfer Bank|Transfer ke rekening kasir, tunjukkan bukti ke pelayan',
+            'Kartu Debit/Kredit|Bayar di kasir memakai mesin EDC',
+            'Tunai|Bayar langsung di kasir setelah makan',
+          ].join('\n'),
+          'Tagihan dihitung dari menu yang kamu pilih di atas.'
         ),
       ],
     },
@@ -466,149 +699,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
           'Apa yang menurutmu paling perlu diperbaiki?',
           'LONG_TEXT',
           true
-        ),
-      ],
-    },
-  },
-  {
-    id: 'event',
-    name: 'Pendaftaran Acara',
-    tagline: 'Banner, link Google Meet, dan daftar peserta',
-    view: 'event',
-    isVisible: true,
-    isFeatured: true,
-    icon: CalendarDays,
-    values: {
-      title: 'Pendaftaran Workshop',
-      description:
-        'Kuota terbatas. Konfirmasi kehadiran akan dikirim lewat email.',
-      isAiEnabled: false,
-      isPublished: true,
-      purpose: '',
-      bannerUrl: '',
-      meetingUrl: '',
-      videoUrl: '',
-      qrisUrl: '',
-      priceAmount: '',
-      fields: [
-        getField('Asal Instansi atau Perusahaan', 'SHORT_TEXT'),
-        getField(
-          'Pilih Sesi',
-          'SELECT',
-          true,
-          'Sesi Pagi (09.00 - 12.00)\nSesi Siang (13.00 - 16.00)\nSesi Malam (19.00 - 21.00)'
-        ),
-      ],
-    },
-  },
-  {
-    id: 'restaurant',
-    name: 'Menu Restoran',
-    tagline: 'Pilih makanan bergambar per meja, bayar QRIS di tempat',
-    view: 'order',
-    isVisible: true,
-    isFeatured: true,
-    icon: UtensilsCrossed,
-    values: {
-      title: 'Pesan Menu — Meja Restoran',
-      description:
-        'Pilih makanan dan minumanmu, lalu bayar lewat QRIS atau metode lain. Pesanan langsung masuk ke dapur setelah pembayaran dikonfirmasi.',
-      isAiEnabled: false,
-      isPublished: true,
-      purpose: '',
-      bannerUrl: '',
-      meetingUrl: '',
-      videoUrl: '',
-      qrisUrl: '',
-      priceAmount: '',
-      fields: [
-        getField(
-          'Nomor Meja',
-          'SELECT',
-          true,
-          'Meja 01\nMeja 02\nMeja 03\nMeja 04\nMeja 05\nMeja 06\nMeja 07\nMeja 08'
-        ),
-        getField(
-          'Pilih Menu',
-          'MENU',
-          true,
-          [
-            'Nasi Goreng Kampung|28000|/menu-nasi-goreng.svg',
-            'Ayam Bakar Madu|35000|/menu-ayam-bakar.svg',
-            'Sate Ayam Bumbu Kacang|32000|/menu-sate-ayam.svg',
-            'Mie Goreng Seafood|30000|/menu-mie-goreng.svg',
-            'Es Teh Manis|8000|/menu-es-teh.svg',
-            'Es Jeruk Peras|12000|/menu-es-jeruk.svg',
-          ].join('\n'),
-          'Ketuk gambar untuk menambah porsi. Total tagihan dihitung otomatis.'
-        ),
-        getField(
-          'Cara Penyajian',
-          'RADIO',
-          true,
-          'Makan di tempat\nBungkus dibawa pulang'
-        ),
-        getField('Catatan untuk Dapur', 'LONG_TEXT', false, '', '', 'Mis. tidak pedas, tanpa bawang'),
-        getField(
-          'Metode Pembayaran',
-          'PAYMENT',
-          true,
-          [
-            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
-            'Transfer Bank|Transfer ke rekening kasir, tunjukkan bukti ke pelayan',
-            'Kartu Debit/Kredit|Bayar di kasir memakai mesin EDC',
-            'Tunai|Bayar langsung di kasir setelah makan',
-          ].join('\n'),
-          'Tagihan dihitung dari menu yang kamu pilih di atas.'
-        ),
-      ],
-    },
-  },
-  {
-    id: 'course',
-    name: 'Kursus Kelas',
-    tagline: 'Bayar biaya kelas, video materi terbuka setelah mendaftar',
-    view: 'course',
-    isVisible: true,
-    isFeatured: true,
-    icon: PlayCircle,
-    values: {
-      title: 'Kelas Online — Dasar Membangun Web',
-      description:
-        'Lengkapi data diri, lalu selesaikan pembayaran. Video materi langsung terbuka begitu formulir terkirim.',
-      isAiEnabled: false,
-      isPublished: true,
-      purpose: '',
-      bannerUrl: '',
-      meetingUrl: '',
-      videoUrl: '',
-      qrisUrl: '',
-      // Kelasnya satu, jadi harganya ditetapkan pembuat form — bukan dipilih
-      // ulang oleh peserta yang sudah membuka tautan kelas ini.
-      priceAmount: '350000',
-      fields: [
-        getField('Nomor WhatsApp', 'PHONE', true, '', '', '08xx'),
-        getField(
-          'Level Pengalamanmu',
-          'RADIO',
-          true,
-          'Belum pernah sama sekali\nSudah pernah belajar mandiri\nSudah bekerja di bidang ini'
-        ),
-        getField(
-          'Apa yang ingin kamu capai setelah kelas ini?',
-          'LONG_TEXT',
-          false
-        ),
-        getField(
-          'Metode Pembayaran',
-          'PAYMENT',
-          true,
-          [
-            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
-            'Transfer Bank|Transfer ke rekening yang tertera, simpan buktinya',
-            'Virtual Account|Bayar lewat VA di aplikasi bankmu',
-          ].join('\n'),
-          'Biaya kelas ditetapkan pengajar dan tampil di bawah ini.'
         ),
       ],
     },

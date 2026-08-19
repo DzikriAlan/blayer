@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowUpRight, Briefcase, Clock3, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
+import FormsProject from './formsProject'
 import type { DataFormsPublic } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
 import { useFormsControllers } from '../controllers/formsControllers'
@@ -25,19 +26,21 @@ import {
  * layar setelah kirim, dan dashboard hasil — jadi menambah template baru tidak
  * menuntut komponen baru di sini.
  *
- * | view           | bentuk   | alasan                                              |
- * | -------------- | -------- | --------------------------------------------------- |
- * | `event`        | `poster` | acara dijual lewat posternya, bukan lewat judul saja |
- * | `course`       | `poster` | katalog kelas selalu memajang sampul dan harga       |
- * | `order`        | `menu`   | menu dibaca sekilas dan berdampingan, bukan berderet |
- * | `psychometric` | `job`    | lowongan dibaca seperti di job portal: logo, posisi, |
- * |                |          | keterangan singkat, lalu tombol melamar              |
- * | lainnya        | `list`   | ujian dan survei dibaca berurutan seperti daftar     |
+ * | view           | bentuk    | alasan                                              |
+ * | -------------- | --------- | --------------------------------------------------- |
+ * | `event`        | `poster`  | acara dijual lewat posternya, bukan lewat judul saja |
+ * | `course`       | `poster`  | katalog kelas selalu memajang sampul dan harga       |
+ * | `order`        | `menu`    | menu dibaca sekilas dan berdampingan, bukan berderet |
+ * | `psychometric` | `job`     | lowongan dibaca seperti di job portal: logo, posisi, |
+ * |                |           | keterangan singkat, lalu tombol melamar              |
+ * | `freelance`    | `project` | papan proyek: anggaran dulu, baru pekerjaannya       |
+ * | lainnya        | `list`    | ujian dan survei dibaca berurutan seperti daftar     |
  */
 const getLayout = (view: FormsTemplateView) => {
   if (view === 'event' || view === 'course') return 'poster'
   if (view === 'order') return 'menu'
   if (view === 'psychometric') return 'job'
+  if (view === 'freelance') return 'project'
   return 'list'
 }
 
@@ -193,7 +196,14 @@ export default function FormsExplore({ templateId }: Props) {
 
       <div className="mt-8">
         <LoadData response={data} minHeight="40vh">
-          {data.layout === 'job' ? (
+          {data.layout === 'project' ? (
+            <FormsProject
+              data={data.data}
+              actionLabel={data.actionLabel}
+              countLabel={data.countLabel}
+              fieldLabel={data.fieldLabel}
+            />
+          ) : data.layout === 'job' ? (
             // Papan lowongan: tiap kartu memuat logo perusahaan, posisi, umur
             // lowongan, lalu tombol melamar — sama seperti di job portal. Tiga
             // kolom di layar lebar, sebaris dengan poster dan menu, supaya

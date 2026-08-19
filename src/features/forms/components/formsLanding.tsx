@@ -16,7 +16,7 @@ import { FORMS_TEMPLATES } from './formsTemplate'
 const MARQUEE_WORDS = [
   'PSIKOTES KERJA',
   'PENDAFTARAN ACARA',
-  'MENU RESTORAN',
+  'PROYEK FREELANCE',
   'KELAS BERBAYAR',
   'SKOR OTOMATIS',
   'BAYAR QRIS',
@@ -38,6 +38,7 @@ export default function FormsLanding() {
         survey: 'RINGKASAN SURVEI',
         event: 'DAFTAR PESERTA',
         order: 'PESANAN & BAYAR',
+        freelance: 'PENAWARAN PROYEK',
         course: 'KELAS BERBAYAR',
       })[view] ?? 'FORM'
 
@@ -46,9 +47,9 @@ export default function FormsLanding() {
     const getTotalForm = (templateId: string) =>
       formsPublic.data.filter((raw) => raw.templateId === templateId).length
 
-    // Etalase depan memakai `isFeatured`, bukan `isVisible`: ujian sekolah
-    // tetap bisa dipakai di builder dan halaman kategorinya tetap hidup,
-    // tapi tempatnya di halaman depan diisi psikotes kerja.
+    // Etalase depan memakai `isFeatured`, bukan `isVisible`: ujian sekolah dan
+    // menu restoran tetap bisa dipakai di builder dan halaman kategorinya tetap
+    // hidup, tapi tempatnya di halaman depan diisi psikotes dan freelance.
     const visibleTemplates = FORMS_TEMPLATES.filter(
       (template) => template.isFeatured
     )
@@ -99,9 +100,9 @@ export default function FormsLanding() {
   }
 
   // Daftar form kategori dibuka di halamannya sendiri, karena tiap kategori
-  // punya bentuk sajian yang berbeda — poster untuk acara, menu untuk restoran,
-  // papan lowongan untuk psikotes — dan itu tidak muat di dalam kartu di
-  // halaman depan.
+  // punya bentuk sajian yang berbeda — poster untuk acara, papan lowongan
+  // untuk psikotes, papan proyek untuk freelance — dan itu tidak muat di dalam
+  // kartu di halaman depan.
   const loadFormsExplore = (templateId: string) => {
     router.push(`/kategori/${templateId}`)
   }

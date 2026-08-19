@@ -47,9 +47,9 @@ export default function FormsHero({
           </h1>
 
           <p className="mt-6 max-w-xl font-mono text-sm leading-relaxed text-foreground/80">
-            Satu form bisa jadi ujian, pendaftaran acara, menu restoran, atau
-            kelas berbayar. Pilih kategorinya — pertanyaan dan bentuk hasilnya
-            ikut tersusun sendiri.
+            Satu form bisa jadi psikotes kerja, pendaftaran acara, papan proyek
+            freelance, atau kelas berbayar. Pilih kategorinya — pertanyaan dan
+            bentuk hasilnya ikut tersusun sendiri.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-4">
