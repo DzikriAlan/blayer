@@ -6,6 +6,8 @@ import {
   supabase,
 } from '@/shared/lib/supabase'
 import { getAuthGuard } from '@/shared/lib/authServer'
+import { withApi } from '@/shared/lib/apiHandler'
+import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
 const ALLOWED_TYPES = [
   'image/jpeg',
@@ -22,10 +24,7 @@ export const config = {
   api: { bodyParser: { sizeLimit: '6mb' } },
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
@@ -34,6 +33,19 @@ export default async function handler(
   // Unggahan hanya dipakai builder, jadi tidak ada alasan menerimanya tanpa sesi.
   const user = await getAuthGuard(req, res)
   if (!user) {
+    return
+  }
+
+  // Tiap unggahan menempati storage permanen, jadi lajunya dibatasi walau
+  // pemanggilnya sudah punya sesi yang sah.
+  if (
+    !enforceRateLimit(req, res, {
+      name: 'uploads-banner',
+      limit: 20,
+      windowMs: 10 * 60_000,
+      scope: user.id,
+    })
+  ) {
     return
   }
 
@@ -109,3 +121,5 @@ export default async function handler(
 
   return res.status(201).json({ url: data.publicUrl, path: objectPath })
 }
+
+export default withApi('uploads-banner', handler)

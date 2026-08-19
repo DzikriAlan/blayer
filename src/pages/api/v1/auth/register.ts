@@ -1,4 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { withApi } from '@/shared/lib/apiHandler'
+import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import {
   getSupabaseSetupMessage,
   isSupabaseReady,
@@ -20,13 +22,22 @@ import {
  * ditandai terkonfirmasi, jadi pengguna bisa masuk begitu selesai mendaftar
  * tanpa perlu mematikan konfirmasi email untuk seluruh project.
  */
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
+  }
+
+  // Pendaftaran terbuka untuk siapa saja, jadi tanpa batas ini satu skrip
+  // bisa membuat ribuan akun dan menghabiskan kuota Supabase.
+  if (
+    !enforceRateLimit(req, res, {
+      name: 'auth-register',
+      limit: 5,
+      windowMs: 10 * 60_000,
+    })
+  ) {
+    return
   }
 
   if (!isSupabaseReady || !supabase) {
@@ -68,3 +79,5 @@ export default async function handler(
 
   return res.status(201).json({ id: data.user?.id ?? '', username: name })
 }
+
+export default withApi('auth-register', handler)

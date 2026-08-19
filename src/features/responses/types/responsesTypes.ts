@@ -16,6 +16,13 @@ export interface DataResponses {
   /** Jumlah pendaftar setelah jawaban ini masuk. */
   totalResponse: number
   createdAt: string
+  /**
+   * Link acara dan video kelas datang bersama balasan pengiriman, bukan dari
+   * detail form: detail form dibaca siapa saja yang punya tautannya, sedangkan
+   * dua link ini hanya untuk yang benar-benar sudah mendaftar.
+   */
+  meetingUrl: string
+  videoUrl: string
 }
 
 export interface Responses {

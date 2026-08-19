@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { anthropic } from '@/shared/lib/anthropic'
 import { getAuthGuard } from '@/shared/lib/authServer'
+import { withApi } from '@/shared/lib/apiHandler'
+import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
 const analysisSchema = {
   type: 'object',
@@ -58,10 +60,7 @@ const analysisSchema = {
   additionalProperties: false,
 } as const
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { formId } = req.query
 
   // Baca maupun jalankan analisis sama-sama menuntut pemilik form. Selain soal
@@ -107,6 +106,20 @@ export default async function handler(
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['GET', 'POST'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
+  }
+
+  // Tiap analisis memanggil model berbayar dengan seluruh jawaban sebagai
+  // prompt. Pemiliknya sendiri pun dibatasi supaya klik beruntun tidak
+  // berubah jadi tagihan yang tak terduga.
+  if (
+    !enforceRateLimit(req, res, {
+      name: 'analysis-run',
+      limit: 5,
+      windowMs: 10 * 60_000,
+      scope: user.id,
+    })
+  ) {
+    return
   }
 
   const form = await prisma.form.findUnique({
@@ -250,3 +263,5 @@ export default async function handler(
       .json({ message: `Gagal menjalankan analisis AI: ${detail}` })
   }
 }
+
+export default withApi('analysis', handler)

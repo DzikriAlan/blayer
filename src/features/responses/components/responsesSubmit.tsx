@@ -194,8 +194,10 @@ export default function ResponsesSubmit({ formId }: Props) {
         getView()
       ),
       bannerUrl: formsDetail.data?.bannerUrl ?? '',
-      meetingUrl: formsDetail.data?.meetingUrl ?? '',
-      videoUrl: formsDetail.data?.videoUrl ?? '',
+      // Sesudah terkirim, keduanya datang dari balasan pengiriman. Sebelum itu
+      // detail form memang mengirimnya kosong untuk pengisi.
+      meetingUrl: responses.data?.meetingUrl || formsDetail.data?.meetingUrl || '',
+      videoUrl: responses.data?.videoUrl || formsDetail.data?.videoUrl || '',
       qrisUrl: formsDetail.data?.qrisUrl ?? '',
       orderItems,
       orderAmount,
