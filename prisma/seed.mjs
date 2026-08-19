@@ -462,6 +462,126 @@ const ORDER_ROWS = [
   ],
 ]
 
+const FREELANCE_FIELDS = [
+  {
+    label: 'Bidang Keahlian Utama',
+    type: 'SELECT',
+    isRequired: true,
+    options: [
+      'Web Development',
+      'Mobile Development',
+      'UI/UX Design',
+      'Penulisan Konten',
+      'Data & Otomasi',
+    ],
+  },
+  { label: 'Tautan Portofolio', type: 'URL', isRequired: true },
+  { label: 'Tawaran Biaya Pengerjaan (Rp)', type: 'NUMBER', isRequired: true },
+  {
+    label: 'Perkiraan Lama Pengerjaan',
+    type: 'SELECT',
+    isRequired: true,
+    options: [
+      'Kurang dari 1 minggu',
+      '1-2 minggu',
+      '3-4 minggu',
+      'Lebih dari 1 bulan',
+    ],
+  },
+  {
+    label: 'Bagaimana rencanamu mengerjakan proyek ini?',
+    type: 'LONG_TEXT',
+    isRequired: true,
+  },
+  {
+    label: 'Pernah mengerjakan proyek serupa?',
+    type: 'RADIO',
+    isRequired: true,
+    options: [
+      'Sudah, lebih dari lima kali',
+      'Sudah, satu sampai lima kali',
+      'Belum pernah, tapi bidangnya sama',
+      'Belum sama sekali',
+    ],
+  },
+  { label: 'Kapan Bisa Mulai Mengerjakan', type: 'DATE', isRequired: true },
+]
+
+// answers diurutkan sama dengan FREELANCE_FIELDS; nama dan email tidak ikut
+// karena keduanya mengisi respondentName dan respondentEmail.
+const BIDDERS = [
+  {
+    name: 'Fikri Ardiansyah',
+    email: 'fikri.ardiansyah@mail.com',
+    durationSeconds: 1260,
+    answers: [
+      'Web Development',
+      'https://fikri.dev/portofolio',
+      '4200000',
+      '3-4 minggu',
+      'Minggu pertama saya pakai untuk audit halaman lama: ukur Lighthouse, catat aset yang membengkak, lalu susun struktur komponen dari Figma yang sudah ada. Minggu kedua implementasi, minggu ketiga penyesuaian di ponsel dan perbaikan hasil review. Dari kalian saya butuh akses Figma dan satu orang yang bisa dimintai keputusan cepat soal copy.',
+      'Sudah, lebih dari lima kali',
+      '2026-08-25',
+    ],
+  },
+  {
+    name: 'Tania Marlina',
+    email: 'tania.marlina@mail.com',
+    durationSeconds: 1580,
+    answers: [
+      'UI/UX Design',
+      'https://dribbble.com/taniamarlina',
+      '5000000',
+      '3-4 minggu',
+      'Saya mulai dari menyusun ulang alur halaman supaya bagian penawaran tidak tenggelam di bawah, lalu bikin dua alternatif tata letak untuk dipilih. Setelah disepakati, saya rapikan komponennya jadi satu berkas Figma yang siap diserahkan ke developer.',
+      'Sudah, satu sampai lima kali',
+      '2026-09-01',
+    ],
+  },
+  {
+    name: 'Bram Nugraha',
+    email: 'bram.nugraha@mail.com',
+    durationSeconds: 720,
+    answers: [
+      'Web Development',
+      'https://github.com/bramnugraha',
+      '3000000',
+      '1-2 minggu',
+      'Saya kerjakan pakai template yang sudah saya punya, tinggal disesuaikan warna dan isinya supaya cepat selesai.',
+      'Belum pernah, tapi bidangnya sama',
+      '2026-08-22',
+    ],
+  },
+  {
+    name: 'Laras Widyaningrum',
+    email: 'laras.widya@mail.com',
+    durationSeconds: 1940,
+    answers: [
+      'Penulisan Konten',
+      'https://laraswrites.id',
+      '2800000',
+      '1-2 minggu',
+      'Saya susun ulang naskahnya berdasarkan pertanyaan yang paling sering ditanyakan calon klien, bukan berdasarkan urutan produk. Setiap bagian saya beri satu ajakan yang jelas, lalu saya siapkan dua versi judul untuk diuji.',
+      'Sudah, lebih dari lima kali',
+      '2026-08-27',
+    ],
+  },
+  {
+    name: 'Yudha Prasetya',
+    email: 'yudha.prasetya@mail.com',
+    durationSeconds: 1120,
+    answers: [
+      'Data & Otomasi',
+      'https://yudhap.notion.site/portofolio',
+      '6500000',
+      'Lebih dari 1 bulan',
+      'Pipeline saya bangun bertahap: tarik data dari sumbernya dulu dengan penjadwalan harian, simpan mentah, baru dibersihkan di lapisan terpisah supaya kalau definisinya berubah tidak perlu tarik ulang. Dashboardnya menyusul setelah angkanya stabil.',
+      'Sudah, satu sampai lima kali',
+      '2026-09-08',
+    ],
+  },
+]
+
 // Kelasnya satu, jadi harganya melekat pada form — bukan dipilih ulang peserta.
 const COURSE_PRICE = 350000
 
@@ -648,6 +768,32 @@ const RESTAURANT_FORMS = [
     description:
       'Pesan dari meja tanpa antre di kasir. Cocok dipakai saat jam makan siang ramai.',
     orders: ORDER_ROWS.slice(2),
+  },
+]
+
+const FREELANCE_FORMS = [
+  {
+    title: '[DEMO] Redesain Landing Page Company Profile',
+    description:
+      'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Kami butuh landing page baru yang lebih cepat dan enak dibaca di ponsel. Aset desain sudah tersedia dalam bentuk Figma.',
+    // Anggaran pemilik proyek; freelancer tetap menawar sendiri lewat field.
+    priceAmount: 4500000,
+    bidders: BIDDERS,
+  },
+  {
+    title: '[DEMO] Aplikasi Kasir Sederhana untuk Warung',
+    description:
+      'Mobile Development · Kerja Jarak Jauh · Estimasi 6 Minggu · Level Senior. Butuh aplikasi kasir Android yang tetap jalan saat sinyal hilang dan menyimpan penjualan harian.',
+    priceAmount: 12000000,
+    bidders: BIDDERS.slice(0, 3),
+  },
+  {
+    title: '[DEMO] Penulisan 20 Artikel SEO Bidang Properti',
+    description:
+      'Penulisan Konten · Kerja Jarak Jauh · Estimasi 4 Minggu · Terbuka untuk Pemula. Dua puluh artikel siap tayang, riset kata kunci sudah kami sediakan.',
+    // Anggarannya masih terbuka, jadi papan proyek menandainya "Nego".
+    priceAmount: 0,
+    bidders: BIDDERS.slice(2),
   },
 ]
 
@@ -847,6 +993,45 @@ const seedRestaurant = async () => {
   return ids[0]
 }
 
+const seedFreelance = async () => {
+  const ids = []
+
+  for (const demo of FREELANCE_FORMS) {
+    const form = await prisma.form.create({
+      data: {
+        userId: ownerId,
+        title: demo.title,
+        description: demo.description,
+        purpose: null,
+        templateId: 'freelance',
+        // Anggaran proyek memakai kolom yang sama dengan harga kelas; nol
+        // berarti masih terbuka untuk dinegosiasi.
+        priceAmount: demo.priceAmount,
+        isPublished: true,
+        fields: { create: getCreatedFields(FREELANCE_FIELDS) },
+      },
+      include: { fields: { orderBy: { order: 'asc' } } },
+    })
+
+    for (const bidder of demo.bidders) {
+      await prisma.formResponse.create({
+        data: {
+          formId: form.id,
+          respondentName: getDemoName(bidder.name),
+          respondentEmail: bidder.email,
+          answers: getAnswers(form.fields, bidder.answers),
+          durationSeconds: bidder.durationSeconds,
+        },
+      })
+    }
+
+    ids.push(form.id)
+  }
+
+  console.log(`• ${FREELANCE_FORMS.length} form freelance dibuat`)
+  return ids[0]
+}
+
 const seedCourse = async () => {
   const ids = []
 
@@ -907,6 +1092,7 @@ const main = async () => {
           'psychometric',
           'event',
           'restaurant',
+          'freelance',
           'course',
           ...OBSOLETE_TEMPLATE_IDS,
         ],
@@ -920,6 +1106,7 @@ const main = async () => {
   const psychometricId = await seedPsychometric()
   const eventId = await seedEvent()
   const restaurantId = await seedRestaurant()
+  const freelanceId = await seedFreelance()
   const courseId = await seedCourse()
 
   console.log('\nSelesai. Buka:')
@@ -930,6 +1117,9 @@ const main = async () => {
   console.log(`  acara    : /forms/${eventId}  →  /forms/${eventId}/result`)
   console.log(
     `  restoran : /forms/${restaurantId}  →  /forms/${restaurantId}/result`
+  )
+  console.log(
+    `  freelance: /forms/${freelanceId}  →  /forms/${freelanceId}/result`
   )
   console.log(`  kursus   : /forms/${courseId}  →  /forms/${courseId}/result`)
 }
