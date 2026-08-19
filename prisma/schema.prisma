@@ -10,19 +10,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // Di serverless, DATABASE_URL harus menunjuk ke pooler (pgbouncer) supaya
+  // koneksi tidak habis. Migrasi dijalankan terpisah memakai koneksi langsung:
+  // lihat DIRECT_URL di .env.example.
   url      = env("DATABASE_URL")
-}
-
-model Task {
-  id          String   @id @default(cuid())
-  title       String
-  description String?  @db.Text
-  status      Status   @default(PENDING)
-  priority    Priority @default(MEDIUM)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("tasks")
 }
 
 model Form {
@@ -124,18 +115,4 @@ enum FieldType {
   MENU
   /// Pilihan metode pembayaran. Tiap opsi: "Metode|Petunjuk".
   PAYMENT
-}
-
-enum Status {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
 }
