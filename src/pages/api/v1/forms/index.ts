@@ -1,20 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { getAuthGuard } from '@/shared/lib/authServer'
+import { withApi } from '@/shared/lib/apiHandler'
+import { enforceRateLimit } from '@/shared/lib/rateLimit'
+import { getFormsInput } from '@/shared/lib/formsInput'
 
-interface FieldInput {
-  label: string
-  description?: string
-  placeholder?: string
-  type: string
-  isRequired?: boolean
-  options?: string[]
-}
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
     const user = await getAuthGuard(req, res)
     if (!user) return
@@ -49,70 +40,32 @@ export default async function handler(
     const user = await getAuthGuard(req, res)
     if (!user) return
 
-    const {
-      title,
-      description,
-      purpose,
-      templateId,
-      bannerUrl,
-      meetingUrl,
-      videoUrl,
-      qrisUrl,
-      priceAmount,
-      isPublished,
-      fields,
-    } = req.body as {
-      title?: string
-      description?: string
-      purpose?: string
-      templateId?: string
-      bannerUrl?: string
-      meetingUrl?: string
-      videoUrl?: string
-      qrisUrl?: string
-      priceAmount?: number
-      isPublished?: boolean
-      fields?: FieldInput[]
+    // Satu akun tidak punya alasan membuat lebih dari 20 form per menit.
+    // Batas ini menahan skrip yang memenuhi database lewat akun sungguhan.
+    if (
+      !enforceRateLimit(req, res, {
+        name: 'forms-create',
+        limit: 20,
+        windowMs: 60_000,
+        scope: user.id,
+      })
+    ) {
+      return
     }
 
-    if (!title || !fields?.length) {
-      return res
-        .status(400)
-        .json({ message: 'title dan minimal satu field wajib diisi.' })
-    }
+    const { data, error } = getFormsInput(req.body ?? {})
+    if (error) return res.status(400).json({ message: error.message })
 
     const form = await prisma.form.create({
       data: {
         // Pemilik diambil dari token, bukan dari body — pengirim request tidak
         // bisa mengaku sebagai akun lain.
         userId: user.id,
-        title,
-        description: description || null,
-        // Kosong berarti pembuat form mematikan analisis AI.
-        purpose: purpose?.trim() || null,
-        templateId: templateId?.trim() || null,
-        bannerUrl: bannerUrl?.trim() || null,
-        meetingUrl: meetingUrl?.trim() || null,
-        videoUrl: videoUrl?.trim() || null,
-        qrisUrl: qrisUrl?.trim() || null,
-        // Harga negatif atau bukan angka diabaikan supaya tagihan tetap masuk akal.
-        priceAmount:
-          typeof priceAmount === 'number' &&
-          Number.isFinite(priceAmount) &&
-          priceAmount > 0
-            ? Math.round(priceAmount)
-            : null,
-        isPublished: isPublished ?? true,
+        ...data,
         fields: {
-          create: fields.map((field, index) => ({
-            label: field.label,
-            description: field.description || null,
-            placeholder: field.placeholder || null,
-            type: field.type as never,
-            isRequired: field.isRequired ?? false,
-            options: field.options?.length ? field.options : undefined,
-            order: index,
-          })),
+          // id dari body diabaikan saat membuat: field baru selalu dapat id
+          // sendiri dari database.
+          create: data.fields.map((field) => ({ ...field, id: undefined })),
         },
       },
       select: { id: true, title: true },
@@ -124,3 +77,5 @@ export default async function handler(
   res.setHeader('Allow', ['GET', 'POST'])
   return res.status(405).json({ message: `Method ${req.method} not allowed` })
 }
+
+export default withApi('forms', handler)
