@@ -8,7 +8,7 @@ harus dilakukan tangan.
 | --- | --- |
 | **Versi PRD yang diuji** | 1.9 |
 | **Terakhir diperbarui** | 19 Agustus 2026 |
-| **Kasus otomatis** | 168 |
+| **Kasus otomatis** | 170 |
 | **Berkas uji** | 23 |
 
 ---
@@ -244,6 +244,9 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-32b | F-32 | Memeriksa elemen di lebar ponsel | Tidak ada elemen yang melewati tepi kecuali di dalam wadah yang memang menggulir | Manual | — |
 | TC-32c | F-32 | Memeriksa tombol dan tautan di lebar ponsel | Semua sasaran sentuh minimal 32 px; kotak centang dibantu label yang bisa ditekan | Manual | — |
 | TC-32d | F-32 | Membuka halaman depan di bawah 640 px | Navigasi berubah jadi tombol menu yang bisa dibuka dan ditutup | Manual | — |
+| TC-32e | F-32 | Membuka kategori proyek di 320 px | Kartu proyek menyempit mengikuti layar; chip menggulir di dalam kartunya, halaman tidak ikut menggeser | Otomatis | `formsExplore.test.tsx` |
+| TC-32f | F-32 | Membuka kategori psikotes di 320 px | Kartu lowongan menyempit mengikuti layar dengan cara yang sama | Otomatis | `formsExplore.test.tsx` |
+| TC-32g | F-32 | Membuka alamat yang tidak dikenal di 320 px | Label tombol melipat, tidak meluber keluar kartu | Manual | — |
 
 ---
 
