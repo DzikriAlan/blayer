@@ -76,6 +76,104 @@ export type FormsTemplateView =
   | 'order'
   | 'course'
 
+/**
+ * Naskah halaman kategori, ditulis dari sisi orang yang datang untuk ikut.
+ *
+ * Nama dan tagline template menjelaskan apa yang didapat *pembuat* form —
+ * "Banner, link Google Meet, dan daftar peserta" hanya berarti bagi orang yang
+ * sedang menyusun acara. Pengunjung halaman kategori datang untuk mencari acara
+ * yang bisa didaftari, kelas yang bisa diambil, atau makanan yang bisa dipesan,
+ * jadi permukaan itu memakai naskahnya sendiri dan tidak menawarkan template.
+ *
+ * Diambil per `view`, bukan per template, karena yang menentukan apa yang bisa
+ * dilakukan pengunjung adalah bentuk formnya — bukan nama templatenya.
+ */
+export interface FormsViewCopy {
+  /** Judul halaman; menyebut yang bisa dilakukan, bukan nama template. */
+  heading: string
+  /** Satu kalimat: apa yang terjadi setelah ikut. */
+  lead: string
+  /** Satuan jumlah yang sedang terbuka, mis. "03 ACARA TERBUKA". */
+  availabilityLabel: string
+  /** Satuan jumlah orang yang sudah masuk, mis. "12 TERDAFTAR". */
+  countLabel: string
+  /** Satuan jumlah isian, mis. "06 SOAL". */
+  fieldLabel: string
+  /** Ajakan di tiap kartu. */
+  action: string
+  emptyTitle: string
+  emptySubtitle: string
+}
+
+export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
+  exam: {
+    heading: 'Ujian Yang Sedang Dibuka',
+    lead: 'Pilih ujiannya, kerjakan langsung dari halaman ini. Layar terkunci selama pengerjaan dan nilainya dihitung begitu dikirim.',
+    availabilityLabel: 'UJIAN DIBUKA',
+    countLabel: 'PESERTA',
+    fieldLabel: 'SOAL',
+    action: 'Kerjakan Ujian',
+    emptyTitle: 'Belum Ada Ujian Dibuka',
+    emptySubtitle:
+      'Belum ada ujian yang bisa dikerjakan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
+  scoring: {
+    heading: 'Form Yang Bisa Kamu Isi',
+    lead: 'Form yang sedang menerima jawaban. Jawabanmu dinilai dan diperingkat otomatis untuk penyelenggaranya.',
+    availabilityLabel: 'FORM TERBUKA',
+    countLabel: 'PESERTA',
+    fieldLabel: 'PERTANYAAN',
+    action: 'Isi Form',
+    emptyTitle: 'Belum Ada Form Dibuka',
+    emptySubtitle:
+      'Belum ada form yang bisa diisi sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
+  survey: {
+    heading: 'Survei Yang Bisa Kamu Isi',
+    lead: 'Survei yang sedang mengumpulkan pendapat. Isi sekali, jawabanmu langsung masuk ke ringkasan penyelenggaranya.',
+    availabilityLabel: 'SURVEI TERBUKA',
+    countLabel: 'RESPONDEN',
+    fieldLabel: 'PERTANYAAN',
+    action: 'Isi Survei',
+    emptyTitle: 'Belum Ada Survei Dibuka',
+    emptySubtitle:
+      'Belum ada survei yang bisa diisi sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
+  event: {
+    heading: 'Acara Yang Bisa Kamu Ikuti',
+    lead: 'Acara yang pendaftarannya sedang dibuka. Isi datamu sekali, tiket dan tautan acaranya langsung terbit.',
+    availabilityLabel: 'ACARA TERBUKA',
+    countLabel: 'TERDAFTAR',
+    fieldLabel: 'ISIAN',
+    action: 'Daftar Acara',
+    emptyTitle: 'Belum Ada Acara Dibuka',
+    emptySubtitle:
+      'Belum ada acara yang pendaftarannya dibuka sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
+  order: {
+    heading: 'Menu Yang Bisa Kamu Pesan',
+    lead: 'Pilih makanannya langsung dari meja, kirim pesanan, lalu bayar dengan QRIS di tempat.',
+    availabilityLabel: 'MENU TERBUKA',
+    countLabel: 'PESANAN',
+    fieldLabel: 'PILIHAN',
+    action: 'Pesan Sekarang',
+    emptyTitle: 'Belum Ada Menu Dibuka',
+    emptySubtitle:
+      'Belum ada menu yang bisa dipesan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
+  course: {
+    heading: 'Kelas Yang Bisa Kamu Ambil',
+    lead: 'Kelas yang pendaftarannya sedang dibuka. Setelah pembayaranmu masuk, video kelasnya langsung bisa dibuka.',
+    availabilityLabel: 'KELAS TERBUKA',
+    countLabel: 'PESERTA',
+    fieldLabel: 'ISIAN',
+    action: 'Ikut Kelas',
+    emptyTitle: 'Belum Ada Kelas Dibuka',
+    emptySubtitle:
+      'Belum ada kelas yang bisa diikuti sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
+}
+
 /** Dipakai kalau form tidak punya template, misal form lama atau buatan tangan. */
 export const FORMS_TEMPLATE_DEFAULT_VIEW: FormsTemplateView = 'scoring'
 

@@ -3,20 +3,26 @@ import Head from 'next/head'
 
 import LandingShell from '@/components/landing-shell'
 import FormsExplore from '@/features/forms/components/formsExplore'
-import { FORMS_TEMPLATES } from '@/features/forms/components/formsTemplate'
+import {
+  FORMS_TEMPLATES,
+  FORMS_VIEW_COPY,
+} from '@/features/forms/components/formsTemplate'
 
 interface Props {
   templateId: string
-  name: string
-  tagline: string
+  heading: string
+  lead: string
 }
 
-const Kategori: NextPage<Props> = ({ templateId, name, tagline }) => {
+const Kategori: NextPage<Props> = ({ templateId, heading, lead }) => {
   return (
     <>
       <Head>
-        <title>{`${name} — BLAYER`}</title>
-        <meta name="description" content={tagline} />
+        {/* Judul tab memakai kalimat yang sama dengan halamannya — orang yang
+            membagikan tautan ini sedang menawarkan sesuatu untuk diikuti,
+            bukan memamerkan nama template. */}
+        <title>{`${heading} — BLAYER`}</title>
+        <meta name="description" content={lead} />
       </Head>
       <LandingShell>
         <FormsExplore templateId={templateId} />
@@ -45,11 +51,13 @@ export const getStaticProps: GetStaticProps<Props> = ({ params }) => {
 
   if (!template) return { notFound: true }
 
+  const copy = FORMS_VIEW_COPY[template.view]
+
   return {
     props: {
       templateId,
-      name: template.name,
-      tagline: template.tagline,
+      heading: copy.heading,
+      lead: copy.lead,
     },
   }
 }

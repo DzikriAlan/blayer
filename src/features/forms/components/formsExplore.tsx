@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, ArrowUpRight, Sparkles, Users } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Users } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import { useFormsControllers } from '../controllers/formsControllers'
 import {
   FORMS_TEMPLATES,
   FORMS_TEMPLATE_DEFAULT_VIEW,
+  FORMS_VIEW_COPY,
   type FormsTemplateView,
 } from './formsTemplate'
 
@@ -35,34 +36,6 @@ const getLayout = (view: FormsTemplateView) => {
   if (view === 'event' || view === 'course') return 'poster'
   if (view === 'order') return 'menu'
   return 'list'
-}
-
-const VIEW_ACTION: Record<FormsTemplateView, string> = {
-  exam: 'Kerjakan Ujian',
-  scoring: 'Isi Form',
-  survey: 'Isi Survei',
-  event: 'Daftar Acara',
-  order: 'Pesan Sekarang',
-  course: 'Ikut Kelas',
-}
-
-/** Satuan yang benar untuk tiap kategori — "responses" tidak berarti apa-apa. */
-const VIEW_COUNT_LABEL: Record<FormsTemplateView, string> = {
-  exam: 'PESERTA',
-  scoring: 'PESERTA',
-  survey: 'RESPONDEN',
-  event: 'TERDAFTAR',
-  order: 'PESANAN',
-  course: 'PESERTA',
-}
-
-const VIEW_FIELD_LABEL: Record<FormsTemplateView, string> = {
-  exam: 'SOAL',
-  scoring: 'PERTANYAAN',
-  survey: 'PERTANYAAN',
-  event: 'ISIAN',
-  order: 'PILIHAN',
-  course: 'ISIAN',
 }
 
 const getPriceText = (amount: number) =>
@@ -99,6 +72,7 @@ export default function FormsExplore({ templateId }: Props) {
 
     const isUnknown = !template
     const isLoading = formsPublic.status === 'loading'
+    const copy = FORMS_VIEW_COPY[view]
 
     return {
       data: mappedList,
@@ -109,17 +83,17 @@ export default function FormsExplore({ templateId }: Props) {
       // Kategori yang tidak dikenal diperlakukan sebagai kosong, bukan gagal —
       // yang keliru alamatnya, bukan servernya.
       isEmpty: isUnknown || (!isLoading && !mappedList.length),
-      name: template?.name ?? 'Kategori Tidak Dikenal',
-      tagline: template?.tagline ?? '',
-      actionLabel: VIEW_ACTION[view],
-      countLabel: VIEW_COUNT_LABEL[view],
-      fieldLabel: VIEW_FIELD_LABEL[view],
-      isTemplateAvailable: !!template,
+      heading: isUnknown ? 'Kategori Tidak Dikenal' : copy.heading,
+      lead: isUnknown ? '' : copy.lead,
+      actionLabel: copy.action,
+      countLabel: copy.countLabel,
+      fieldLabel: copy.fieldLabel,
+      availabilityLabel: copy.availabilityLabel,
       totalForm: mappedList.length,
-      emptyTitle: isUnknown ? 'Kategori Tidak Ada' : 'Belum Ada Yang Terbuka',
+      emptyTitle: isUnknown ? 'Kategori Tidak Ada' : copy.emptyTitle,
       emptySubtitle: isUnknown
         ? 'Alamat kategori ini tidak dikenal. Kembali ke halaman depan untuk melihat kategori yang tersedia.'
-        : `Belum ada ${(template?.name ?? 'form').toLowerCase()} yang bisa diikuti sekarang. Pakai templatenya untuk membuka yang pertama.`,
+        : copy.emptySubtitle,
       errorTitle: 'Something Broke',
       errorSubtitle: formsPublic.statusSubtitle,
     }
@@ -140,30 +114,19 @@ export default function FormsExplore({ templateId }: Props) {
         <span aria-hidden className="brutal-hatch flex-1 opacity-20" />
       </div>
 
-      <div className="mt-7 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-        <div className="min-w-0">
-          <h1 className="max-w-2xl break-words font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
-            {data.name}
-            <span className="text-primary">.</span>
-          </h1>
-          {data.tagline ? (
-            <p className="mt-4 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-              {data.tagline}
-            </p>
-          ) : null}
-        </div>
+      <h1 className="mt-7 max-w-2xl break-words font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
+        {data.heading}
+        <span className="text-primary">.</span>
+      </h1>
 
-        {data.isTemplateAvailable ? (
-          <Button asChild size="sm">
-            <Link href={`/forms/create?template=${templateId}`}>
-              <Sparkles /> Use Template
-            </Link>
-          </Button>
-        ) : null}
-      </div>
+      {data.lead ? (
+        <p className="mt-5 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
+          {data.lead}
+        </p>
+      ) : null}
 
       <p className="brutal-eyebrow mt-6 text-muted-foreground">
-        {String(data.totalForm).padStart(2, '0')} TERSEDIA
+        {String(data.totalForm).padStart(2, '0')} {data.availabilityLabel}
       </p>
 
       <div className="mt-8">
@@ -222,6 +185,12 @@ export default function FormsExplore({ templateId }: Props) {
                       menggulir, jadi gambarnya diberi ruang lebih dulu. */}
                   {data.layout === 'poster' ? (
                     <div className="relative aspect-[16/9] w-full overflow-hidden border-b-2 border-foreground bg-muted">
+                      {/* Latar bergaris menutup sisa ruang saat poster tidak
+                          sebangun dengan bingkainya. */}
+                      <span
+                        aria-hidden
+                        className="brutal-hatch absolute inset-0 opacity-20"
+                      />
                       {form.bannerUrl ? (
                         <Image
                           src={form.bannerUrl}
@@ -234,15 +203,14 @@ export default function FormsExplore({ templateId }: Props) {
                           // terdaftar di remotePatterns; optimizer dilewati
                           // seperti pada halaman isi form.
                           unoptimized
-                          sizes="(min-width: 640px) 50vw, 100vw"
-                          className="object-cover"
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          // Banner acara kerap jauh lebih lebar dari bingkainya
+                          // dan memuat tanggal serta tempat di tepi. object-cover
+                          // memotongnya persis di bagian itu, jadi posternya
+                          // dimuat utuh dan sisa ruangnya diisi latar bergaris.
+                          className="object-contain"
                         />
-                      ) : (
-                        <span
-                          aria-hidden
-                          className="brutal-hatch absolute inset-0 opacity-20"
-                        />
-                      )}
+                      ) : null}
                       {form.isPaid ? (
                         <span className="brutal-eyebrow absolute left-0 top-0 bg-foreground px-3 py-2 text-background">
                           {form.priceText}
@@ -294,15 +262,6 @@ export default function FormsExplore({ templateId }: Props) {
           </div>
         ) : null}
 
-        {data.isEmpty && data.isTemplateAvailable ? (
-          <div className="mt-6 flex justify-center">
-            <Button asChild size="sm">
-              <Link href={`/forms/create?template=${templateId}`}>
-                <Sparkles /> Use Template
-              </Link>
-            </Button>
-          </div>
-        ) : null}
       </div>
     </section>
   )
