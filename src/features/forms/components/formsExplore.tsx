@@ -60,6 +60,35 @@ const getPostedText = (createdAt: string) => {
   return `${months} BULAN LALU`
 }
 
+/**
+ * Keterangan kartu yang dipisah jadi chip.
+ *
+ * Papan lowongan dan papan proyek sama-sama memajang lokasi, bentuk kerja,
+ * durasi, dan tingkat pengalaman sebagai potongan pendek yang bisa dipindai
+ * sekilas — bukan sebagai kalimat yang harus dibaca sampai habis. Semuanya
+ * tidak punya kolom sendiri di basis data, jadi diambil dari kepala deskripsi:
+ * ruas-ruas yang dipisah "·" sampai kalimat pertama berakhir. Deskripsi yang
+ * tidak menuruti bentuk itu ditinggal utuh sebagai paragraf, jadi form buatan
+ * siapa pun tetap aman.
+ */
+const getCardDetail = (description: string) => {
+  const parts = description
+    .split('·')
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  if (parts.length < 2) return { tags: [], text: description }
+
+  const last = parts[parts.length - 1]
+  const end = last.search(/\.(\s|$)/)
+  const tags = [...parts.slice(0, -1), end === -1 ? last : last.slice(0, end)]
+
+  return {
+    tags: tags.filter(Boolean),
+    text: end === -1 ? '' : last.slice(end + 1).trim(),
+  }
+}
+
 const getPriceText = (amount: number) =>
   amount > 0
     ? `Rp${new Intl.NumberFormat('id-ID').format(amount)}`
@@ -77,21 +106,27 @@ export default function FormsExplore({ templateId }: Props) {
     const template = FORMS_TEMPLATES.find((item) => item.id === templateId)
     const view = template?.view ?? FORMS_TEMPLATE_DEFAULT_VIEW
 
-    const getMappedForm = (item: DataFormsPublic) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      bannerUrl: item.bannerUrl,
-      priceText: getPriceText(item.priceAmount),
-      isPaid: item.priceAmount > 0,
-      postedText: getPostedText(item.createdAt),
-      // Judul kartu dipangkas supaya barisannya rata, jadi judul utuhnya
-      // disediakan lewat tooltip bawaan peramban. Hanya judulnya — keterangan
-      // sudah terbaca di kartunya sendiri.
-      tooltip: item.title,
-      totalField: item.totalField,
-      totalResponse: item.totalResponse,
-    })
+    const getMappedForm = (item: DataFormsPublic) => {
+      const detail = getCardDetail(item.description)
+
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        bannerUrl: item.bannerUrl,
+        priceText: getPriceText(item.priceAmount),
+        isPaid: item.priceAmount > 0,
+        postedText: getPostedText(item.createdAt),
+        // Judul kartu dipangkas supaya barisannya rata, jadi judul utuhnya
+        // disediakan lewat tooltip bawaan peramban. Hanya judulnya — keterangan
+        // sudah terbaca di kartunya sendiri.
+        tooltip: item.title,
+        tags: detail.tags,
+        summary: detail.text,
+        totalField: item.totalField,
+        totalResponse: item.totalResponse,
+      }
+    }
 
     const mappedList = formsPublic.data
       .filter((raw) => raw.templateId === templateId)
@@ -206,9 +241,30 @@ export default function FormsExplore({ templateId }: Props) {
                     </div>
                   </div>
 
-                  {form.description ? (
+                  {/* Chip dibiarkan satu baris dan digeser ke samping, bukan
+                      dilipat: kartunya sempit, dan chip yang melipat membuat
+                      tinggi tiap kartu berbeda-beda tergantung panjang nama
+                      kotanya. */}
+                  <div className="brutal-scroll-thin flex gap-2 overflow-x-auto pb-1">
+                    {/* Yang wajib diketahui pelamar sebelum membuka: psikotesnya
+                        dikerjakan dalam layar terkunci. */}
+                    <Badge className="shrink-0 whitespace-nowrap">
+                      Psikotes Terkunci
+                    </Badge>
+                    {form.tags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {form.summary ? (
                     <p className="line-clamp-3 font-mono text-xs leading-relaxed text-muted-foreground">
-                      {form.description}
+                      {form.summary}
                     </p>
                   ) : null}
 
@@ -219,11 +275,9 @@ export default function FormsExplore({ templateId }: Props) {
                     {String(form.totalField).padStart(2, '0')} {data.fieldLabel}
                   </p>
 
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    {/* Harga tidak pernah berlaku untuk lowongan; yang perlu
-                        diketahui pelamar sebelum membuka adalah psikotesnya
-                        dikerjakan dalam layar terkunci. */}
-                    <Badge variant="outline">Psikotes Terkunci</Badge>
+                  {/* Harga tidak pernah berlaku untuk lowongan, jadi kakinya
+                      hanya berisi ajakan melamar. */}
+                  <div className="flex justify-end">
                     <span className="brutal-eyebrow flex items-center gap-2 border-2 border-foreground px-3 py-2 transition-colors group-hover:bg-foreground group-hover:text-background">
                       {data.actionLabel}
                       <ArrowUpRight className="h-4 w-4" />

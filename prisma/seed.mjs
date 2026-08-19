@@ -583,21 +583,21 @@ const PSYCHOMETRIC_FORMS = [
   {
     title: '[DEMO] Frontend Engineer — PT Nusantara Digital',
     description:
-      'Jakarta Selatan · Hybrid · Penuh Waktu · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
+      'Jakarta Selatan · Hybrid · Penuh Waktu · S1 Teknik Informatika · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
     bannerUrl: '/job-logo-nusantara.svg',
     applicants: APPLICANTS,
   },
   {
     title: '[DEMO] Product Designer — Arunika Labs',
     description:
-      'Bandung · Kerja Jarak Jauh · Penuh Waktu · 3-5 tahun pengalaman. Psikotes berisi soal situasional seputar kerja lintas tim dan cara mengambil keputusan desain saat waktunya sempit.',
+      'Bandung · Kerja Jarak Jauh · Penuh Waktu · S1 Desain Komunikasi Visual · 3-5 tahun pengalaman. Psikotes berisi soal situasional seputar kerja lintas tim dan cara mengambil keputusan desain saat waktunya sempit.',
     bannerUrl: '/job-logo-arunika.svg',
     applicants: APPLICANTS.slice(0, 3),
   },
   {
     title: '[DEMO] Data Analyst — Sentra Data Group',
     description:
-      'Surabaya · Kerja di Kantor · Kontrak 12 Bulan · Terbuka untuk lulusan baru. Psikotes menakar ketelitian, cara membaca angka yang janggal, dan ketahanan mengerjakan hal berulang.',
+      'Surabaya · Kerja di Kantor · Kontrak 12 Bulan · D3/S1 Statistika · Terbuka untuk lulusan baru. Psikotes menakar ketelitian, cara membaca angka yang janggal, dan ketahanan mengerjakan hal berulang.',
     bannerUrl: '/job-logo-sentra.svg',
     applicants: APPLICANTS.slice(3),
   },
