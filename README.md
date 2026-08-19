@@ -1,205 +1,251 @@
-# Next Starter
+# Blayer - Form Builder dengan Dashboard Hasil
 
-Production-ready template for building modern fullstack web applications with Next.js 14, React 18, TypeScript, Prisma ORM, and PostgreSQL.
+**Take Exactly What You Need**
 
-## 🎯 Overview
+Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interaktif sesuai kebutuhan dan hasil yang ingin dicapai. Dibangun di atas Next.js 14, TypeScript, Prisma, dan Supabase, dengan konvensi arsitektur yang konsisten di seluruh fitur.
 
-**Next Starter** is a comprehensive web application template that combines modern frontend with backend capabilities:
-- **Frontend**: Next.js 14 (Pages Router) + React 18 + TypeScript with Tailwind CSS & Shadcn/UI components
-- **Backend**: Built-in API routes for server-side logic and database operations
-- **Database**: Prisma ORM + PostgreSQL for robust data management
-- **State Management**: Zustand for client state, TanStack Query for server state
-- **Forms**: React Hook Form + Zod for form handling and validation
-- **Internationalization**: i18next for multi-language support
-- **Animations**: Framer Motion for smooth user interactions
+## What i do
 
-Use this starter for:
-- Fullstack web applications with server-side rendering
-- Rapid prototyping and MVP development
-- Teams wanting React ecosystem best practices built-in
+* Merancang **arsitektur full-stack berlapis** dengan **Next.js 14, React 18, TypeScript, Tailwind CSS, dan Shadcn/UI**, memisahkan tiap fitur menjadi `types → states → services → controllers → components` sehingga penambahan fitur baru mengikuti jalur yang sudah tetap dan tidak menyusun ulang pola dari nol.
+* Membangun **satu form builder yang melayani enam bentuk produk berbeda** — ujian, survei, pendaftaran acara, pemesanan, kursus, dan penilaian — diturunkan dari satu field `view` pada template, sehingga halaman isi, layar setelah kirim, dan dashboard hasil menyesuaikan diri tanpa cabang kode per produk.
+* Mengimplementasikan **autentikasi dan kepemilikan data** dengan **Supabase Auth**, mendukung masuk lewat username-kata sandi maupun Google OAuth, dengan penolakan ditegakkan di API (401 tanpa token, 403 untuk milik akun lain) — bukan sekadar menyembunyikan halaman di browser.
+* Mengembangkan **analisis hasil berbasis AI** memakai **Anthropic Claude** dengan keluaran berskema, menghasilkan ringkasan, peringkat, dan rekomendasi yang merujuk pada jawaban konkret, lalu menyimpannya agar dashboard tetap berisi setelah halaman dimuat ulang.
+* Menerapkan **mode ujian berlapis** yang menonaktifkan klik kanan, salin-tempel, seleksi teks, serta pintasan tab baru, pencarian, cetak, dan devtools, ditambah pencatatan lama pengerjaan tiap peserta.
+* Menyusun **penanganan keadaan data terpusat** lewat komponen `LoadData`, sehingga keadaan memuat, kosong, gagal, dan tidak terverifikasi ditangani satu tempat dan tiap permukaan tidak menyusun ulang logika yang sama.
+* Menjaga **kualitas lewat pengujian otomatis** dengan **Vitest dan Testing Library** — 102 uji yang menutup builder, halaman isi, guard halaman, layar kredensial, hingga kepemilikan data di API, dengan tiap kasus terpetakan ke ID kebutuhan di `TEST_CASE.md`.
+* Merawat **standar kode** memakai **ESLint, TypeScript strict mode, dan konvensi penamaan yang tertulis**, sehingga nama berkas, fungsi, dan prefix method bisa diturunkan langsung dari URL endpoint-nya.
 
 ---
 
-## 📚 Tech Stack
+## Tech Stack
 
-| Concern | Package |
-|---------|---------|
-| Framework | Next.js 14 (Pages Router) + React 18 + TypeScript |
-| Styling | Tailwind CSS + Shadcn/UI |
-| Server State | TanStack Query (@tanstack/react-query) |
-| Client State | Zustand |
-| Forms | React Hook Form + Zod |
-| ORM | Prisma |
-| Database Driver | PostgreSQL (pg) |
-| Internationalization | i18next + react-i18next |
-| Animations | Framer Motion |
-| Icons | Lucide React |
-| Node Version | v20+ |
-
----
-
-## 📋 Prerequisites
-
-- **Node.js**: v20 or higher
-- **npm**: v10+ or yarn/pnpm
-- **PostgreSQL**: v12+ (local or cloud)
-- **Git**: for version control
+| Concern | Technology | Purpose |
+|---|---|---|
+| **Framework** | Next.js 14 (Pages Router) + React 18 | Satu basis kode untuk antarmuka dan API |
+| **Language** | TypeScript | Pengembangan bertipe dengan strict mode |
+| **Styling** | Tailwind CSS + Shadcn/UI | Utility-first CSS dan komponen yang bisa dipakai ulang |
+| **State Management (Client)** | Zustand | State tampilan yang ringan dan dapat diprediksi |
+| **State Management (Server)** | TanStack Query | Cache, sinkronisasi, dan keadaan permintaan data |
+| **Forms** | React Hook Form + Zod | Validasi berskema di klien, dipakai ulang di server |
+| **Authentication** | Supabase Auth | Username-kata sandi dan Google OAuth tanpa menyimpan kata sandi sendiri |
+| **Database** | PostgreSQL (Supabase) | Basis data relasional yang andal dan bisa diskalakan |
+| **ORM** | Prisma | Akses basis data bertipe dan sinkronisasi skema |
+| **File Storage** | Supabase Storage | Banner acara dan kode QRIS yang permanen dan bisa dibuka tanpa login |
+| **AI** | Anthropic Claude SDK | Ringkasan, peringkat, dan rekomendasi hasil form |
+| **Testing** | Vitest + Testing Library | Uji unit dan komponen yang selaras dengan struktur fitur |
+| **Icons** | Lucide React | Pustaka ikon yang konsisten dan aksesibel |
+| **Code Quality** | ESLint + TypeScript Strict | Linting dan pemeriksaan tipe demi keterawatan |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1. Clone Repository
+### Prerequisites
+
+- [Node.js](https://nodejs.org) v20+ (verify: `node --version`)
+- [PostgreSQL](https://www.postgresql.org) (lokal atau Supabase, verify: `psql --version`)
+- Akun [Supabase](https://supabase.com) untuk Auth dan Storage
+- Package manager: npm (included with Node.js)
+
+### 1. Clone & Install
 
 ```bash
-git clone <repository-url>
-cd next-starter
-```
-
-### 2. Install Dependencies
-
-```bash
+git clone <repo-url>
+cd blayer
 npm install
 ```
 
-> Note: Database migration runs automatically via postinstall script.
+If installation fails, use:
+```bash
+npm ci
+```
 
-### 3. Setup Environment
-
-Copy environment example file and adjust for your local configuration:
+### 2. Setup Environment Variables
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your values:
-```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/next_starter"
+Edit `.env.local` with your configuration:
 
-# Supabase Auth — login Google. Key publik, aman terkirim ke browser.
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/blayer"
+
+# Supabase Auth — key publik, aman terkirim ke browser
 NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="your-publishable-or-anon-key"
 
-# Supabase Storage — dipakai untuk upload banner acara.
-# Service role key hanya dibaca di API route, tidak pernah dikirim ke browser.
+# Supabase Storage & verifikasi token — hanya dibaca di API route
 SUPABASE_URL="https://xxxx.supabase.co"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 SUPABASE_BANNER_BUCKET="form-banners"
+
+# Analisis AI
+ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-> Login Google butuh provider Google diaktifkan di dashboard Supabase
-> (Authentication → Providers → Google) dan `http://localhost:3000/auth/callback`
-> terdaftar di Authentication → URL Configuration → Redirect URLs. Tanpa dua env
-> `NEXT_PUBLIC_SUPABASE_*` di atas, halaman terkunci akan menampilkan pesan
-> bahwa sesi tidak bisa dibaca.
+Aktifkan Google OAuth di dashboard Supabase:
+```bash
+# Authentication → Providers → Google  : isi Client ID + Secret
+# Authentication → URL Configuration   : tambahkan http://localhost:3000/auth/callback
+# Google Cloud Console → Credentials   : tambahkan https://xxxx.supabase.co/auth/v1/callback
+```
 
-> Masuk bisa lewat username-kata sandi atau Google. Username disimpan sebagai
-> alamat internal `username@blayer.id`; pendaftaran berjalan lewat
-> `POST /api/v1/auth/register` yang memakai Admin API supaya akun langsung aktif
-> tanpa tautan konfirmasi. Karena itu `SUPABASE_SERVICE_ROLE_KEY` wajib terisi —
-> tanpa itu registrasi dan verifikasi token di API akan gagal.
-
-> **Kepemilikan data.** Tiap form menyimpan `userId` pemiliknya. Daftar form,
-> jawaban peserta, dan analisis AI hanya terbuka bagi pemiliknya, dan penolakan
-> terjadi di API (401 tanpa token, 403 untuk milik akun lain) — bukan sekadar
-> disembunyikan di tampilan. Halaman isi form `/forms/[id]` dan pengiriman
-> jawaban sengaja tetap publik supaya responden tidak perlu punya akun.
-
-> Banner acara butuh bucket **publik** bernama `form-banners` di dashboard
-> Supabase (Storage → New bucket → centang *Public bucket*). Tanpa env ini
-> aplikasi tetap jalan, hanya tombol unggah banner yang menolak dengan pesan
-> jelas.
-
-### 4. Setup Database
+### 3. Setup Database
 
 ```bash
-npx prisma db push
 npx prisma generate
+npx prisma db push
 ```
 
-### 5. Run Development Server
+Verify the database connection:
+```bash
+npx prisma studio
+```
+
+Isi data contoh (butuh akun `blayeradmin` sudah terdaftar, atau set `SEED_OWNER_ID`):
+```bash
+npm run db:seed
+```
+
+### 4. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
-
----
-
-## 📁 Project Structure
-
-```
-src/
-├── pages/                    # Next.js Pages Router
-│   ├── _app.tsx             # App wrapper (TanStack Query provider)
-│   ├── _document.tsx        # HTML document setup
-│   └── index.tsx            # Home page
-├── features/
-│   └── {featureName}/
-│       ├── types/           # TypeScript interfaces & types
-│       ├── states/          # Zustand stores
-│       ├── services/        # API call functions
-│       ├── controllers/     # TanStack Query hooks
-│       └── components/      # React components
-├── shared/
-│   ├── lib/
-│   │   ├── prisma.ts       # Prisma client singleton
-│   │   └── utils.ts        # cn() utility & helper functions
-│   ├── styles/
-│   │   └── globals.css     # Tailwind base & CSS variables
-│   └── locales/
-│       ├── en.json         # English translations
-│       └── id.json         # Indonesian translations
-└── public/                 # Static files
+Verify the app is running:
+```bash
+curl http://localhost:3000
 ```
 
----
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 💻 Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server with hot-reload |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run type-check` | Run TypeScript type checking |
-| `npm run db:push` | Push Prisma schema to database (prototyping) |
-| `npm run db:studio` | Open Prisma Studio (database GUI) |
+Halaman `/`, `/forms/[id]`, `/login`, dan `/register` terbuka tanpa login. Halaman `/forms`, `/forms/create`, dan `/forms/[id]/result` menuntut sesi lebih dulu.
 
 ---
 
-## 🏗️ Architecture Guide
+## Troubleshooting
 
-Complete documentation for architecture, naming conventions, and best practices is available in [CODE.md](./CODE.md).
+### Database connection error
 
-**Key Topics:**
-- Naming conventions (functions, files, folders)
-- Layer structure (Types, States, Services, Controllers, Components)
-- React component best practices
-- TanStack Query (React Query) patterns
-- Zustand store management
-- Zod validation schema
-- API integration patterns
+**Error:** `Error: Can't reach database server`
 
----
+**Solution:**
+```bash
+# Verify PostgreSQL is running
+psql --version
+psql -U postgres -c "SELECT 1"
+```
 
-## 🤝 Contributing
-
-1. Fork this repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m 'feat: add your feature'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request
+Jika memakai Supabase, gunakan **connection pooler** (`aws-*.pooler.supabase.com`), bukan host `db.*.supabase.co` yang IPv6-only:
+```bash
+# Password dengan karakter "@" wajib ditulis %40, kalau tidak URL terpotong
+DATABASE_URL="postgresql://user:pass%40word@aws-0-region.pooler.supabase.com:5432/postgres"
+```
 
 ---
 
-## 📄 License
+### Port 3000 already in use
 
-MIT License - see [LICENSE](./LICENSE) file for details.
+**Error:** `error: listen EADDRINUSE: address already in use :::3000`
+
+**Solution:**
+```bash
+# Find process on port 3000
+lsof -i :3000
+
+# Kill the process
+kill -9 <PID>
+
+# Or use a different port
+npm run dev -- -p 3001
+```
+
+Callback Google terdaftar di port 3000, jadi login gagal bila aplikasi berjalan di port lain.
 
 ---
 
-Developed by Dzikri Alan's Team
+### Prisma schema out of sync
+
+**Error:** `The Prisma schema validation warnings should not block the Prisma CLI`
+
+**Solution:**
+```bash
+# Regenerate Prisma client
+npx prisma generate
+
+# Push schema to database
+npx prisma db push
+```
+
+Project ini memakai `db push`, bukan folder migrasi. Hindari `prisma migrate reset` pada basis data yang berisi data sungguhan — perintah itu mengosongkan seluruh tabel.
+
+---
+
+### npm install fails with peer dependency errors
+
+**Error:** `npm ERR! peer dep missing`
+
+**Solution:**
+```bash
+# Install with legacy peer deps
+npm install --legacy-peer-deps
+
+# Or use npm ci
+npm ci
+```
+
+---
+
+### TypeScript compilation errors
+
+**Error:** `TS2305: Module not found` or type errors
+
+**Solution:**
+```bash
+# Regenerate types
+npx prisma generate
+
+# Clear Next.js cache
+rm -rf .next
+
+# Rebuild
+npm run build
+```
+
+---
+
+## Scripts
+
+```bash
+npm run dev              # Development server with hot-reload
+npm run build            # Build for production
+npm run start            # Start production server
+npm run lint             # Run ESLint and fix issues
+npm run test             # Run the Vitest suite once
+npm run test:watch       # Run Vitest in watch mode
+npm run db:generate      # Regenerate Prisma client
+npm run db:push          # Push Prisma schema to database
+npm run db:seed          # Seed demo forms for every template
+npm run db:studio        # Open Prisma Studio (database GUI)
+```
+
+---
+
+## Documentation
+
+- **[CODE.md](./CODE.md)** — Architecture guide, naming conventions, component patterns, and project structure rules
+- **[PRD.md](./PRD.md)** — Product requirements, feature status, and architecture decisions
+- **[TEST_CASE.md](./TEST_CASE.md)** — Test cases mapped to requirement IDs, automated and manual
+- **[Prisma Docs](https://www.prisma.io/docs)** — Database ORM documentation
+- **[Next.js Docs](https://nextjs.org/docs)** — Framework documentation
+- **[Supabase Docs](https://supabase.com/docs)** — Auth, Storage, and Postgres documentation
+- **[Tailwind CSS](https://tailwindcss.com/docs)** — Utility-first CSS framework
+- **[Shadcn/UI](https://ui.shadcn.com)** — Component library documentation
+
+---
+
+## License
+
+MIT
