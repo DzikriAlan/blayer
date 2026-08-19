@@ -285,6 +285,17 @@ export default function FormsCreate({ onEditFormsTitle }: Props) {
       optionError: '',
       activeTemplateId: templateId,
     }))
+
+    // URL ikut menyebut template yang sedang dipakai. Tanpa ini, efek pembaca
+    // ?template= melihat nilai lama dan langsung menarik isian kembali ke
+    // template sebelumnya — jadi template lain tidak pernah bisa dipilih.
+    if (router.query.template !== templateId) {
+      router.replace(
+        { pathname: router.pathname, query: { template: templateId } },
+        undefined,
+        { shallow: true }
+      )
+    }
   }
 
   const loadFieldsOrder = (index: number, direction: number) => {

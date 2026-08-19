@@ -2,6 +2,7 @@ import type {
   PayloadGetResponsesList,
   PayloadPostResponses,
 } from '../types/responsesTypes'
+import { getAuthHeaders } from '@/shared/lib/authClient'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
@@ -26,7 +27,7 @@ export const getResponsesList = async (payload: PayloadGetResponsesList) => {
       `${baseUrl}/api/v1/responses/list/${payload.formId}`,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
       }
     )
     if (!res.ok) throw new Error(res.statusText)

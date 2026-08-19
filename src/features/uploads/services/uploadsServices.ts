@@ -1,4 +1,5 @@
 import type { PayloadPostUploadsBanner } from '../types/uploadsTypes'
+import { getAuthHeaders } from '@/shared/lib/authClient'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
@@ -8,7 +9,7 @@ export const postUploadsBanner = async (
   try {
     const res = await fetch(`${baseUrl}/api/v1/uploads/banner`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
       body: JSON.stringify(payload),
     })
     // Pesan dari server ikut dibaca supaya alasan gagalnya sampai ke UI.

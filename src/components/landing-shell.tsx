@@ -7,6 +7,7 @@ import { Menu, Plus, X } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/components/ui/button'
+import AuthAccount from '@/features/auth/components/authAccount'
 
 const NAV_ITEMS = [{ href: '#kategori', label: 'Kategori' }]
 
@@ -76,6 +77,7 @@ export default function LandingShell({ className, children }: Props) {
                 <Plus /> Buat Form
               </Link>
             </Button>
+            <AuthAccount />
           </div>
 
           <Button
@@ -115,6 +117,7 @@ export default function LandingShell({ className, children }: Props) {
                   <Plus /> Buat Form
                 </Link>
               </Button>
+              <AuthAccount />
             </div>
           </div>
         ) : null}

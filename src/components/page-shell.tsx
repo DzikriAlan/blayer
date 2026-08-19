@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { ArrowDown } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
+import AuthAccount from '@/features/auth/components/authAccount'
 
 interface Props {
   /** Giant word set vertically down the left rail. */
@@ -89,7 +90,10 @@ export default function PageShell({
           <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
           {/* Aksi bilah atas — mis. tombol Save di builder — harus tetap
               terjangkau di ponsel dan terbaca pembaca layar. */}
-          {action ? <div className="ml-auto shrink-0">{action}</div> : null}
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            {action}
+            <AuthAccount tone="dark" />
+          </div>
         </header>
 
         <main className={cn('flex-1 px-4 py-8 sm:px-8 sm:py-10', className)}>

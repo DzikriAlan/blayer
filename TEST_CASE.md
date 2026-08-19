@@ -8,7 +8,7 @@ harus dilakukan tangan.
 | --- | --- |
 | **Versi PRD yang diuji** | 1.9 |
 | **Terakhir diperbarui** | 18 Agustus 2026 |
-| **Kasus otomatis** | 80 |
+| **Kasus otomatis** | 82 |
 | **Berkas uji** | 11 |
 
 ---
@@ -70,6 +70,8 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-34a | F-34 | Mengetik di kolom Form Title | Bilah atas ikut berubah seketika mengikuti judulnya | Otomatis | `formsCreate.test.tsx` |
 | TC-34b | F-34 | Mengosongkan kembali kolom judul | Bilah atas kembali ke label bawaan UNTITLED FORM | Otomatis | `formsCreate.test.tsx` |
 | TC-34c | F-34 | Memakai template dari builder | Judul dari template ikut mengubah bilah atas | Otomatis | `formsCreate.test.tsx` |
+| TC-35a | F-01 | Datang lewat `?template=` lalu memilih template lain | Isian berpindah ke template baru dan tidak ditarik kembali ke yang lama | Otomatis | `formsCreate.test.tsx` |
+| TC-35b | F-01 | Memilih template di builder | `?template=` di URL ikut berubah mengikuti pilihan terakhir | Otomatis | `formsCreate.test.tsx` |
 | TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `survey`, `event`, `order`, atau `course` | Otomatis | `formsTemplate.test.ts` |
 | TC-13a | F-13 | Menekan **See** pada kartu template | Riwayat form hanya menampilkan form dari template itu, dan baris filter aktif muncul | Otomatis | `formsList.test.tsx` |
 | TC-13b | F-13 | Menekan **Shown** (klik kedua) | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
@@ -182,6 +184,31 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-33b | F-33 | Memeriksa halaman 404 | Ada jalan keluar ke beranda, daftar form, dan builder | Otomatis | `errorPages.test.tsx` |
 | TC-33c | F-33 | Membuka halaman 500 | Dibedakan dari 404 dan tetap menyediakan jalan kembali | Otomatis | `errorPages.test.tsx` |
 | TC-33d | F-33 | Membuka alamat tak dikenal di peramban | Server membalas status 404, bukan 200 | Manual | — |
+| TC-26a | F-26 | Membuka halaman terkunci tanpa sesi | Dilempar ke `/login` dengan tujuan asal ikut di `?next=` | Otomatis | `authGuard.test.tsx` |
+| TC-26b | F-26 | Sesi masih dibaca | Isi halaman belum dirender sama sekali; hanya indikator memuat | Otomatis | `authGuard.test.tsx` |
+| TC-26c | F-26 | Membuka halaman terkunci dengan sesi | Isi halaman tampil dan tidak ada pengalihan | Otomatis | `authGuard.test.tsx` |
+| TC-26d | F-26 | Membuka `/forms/[id]` tanpa login | Halaman isi form tetap terbuka — responden tidak dipaksa punya akun | Otomatis | `authGuard.test.tsx` |
+| TC-26e | F-26 | Membuka halaman depan tanpa login | Halaman depan tetap terbuka | Otomatis | `authGuard.test.tsx` |
+| TC-26f | F-26 | Login Google sampai kembali ke tujuan | Setelah izin diberikan, pengguna mendarat di halaman yang tadi dituju, bukan beranda | Manual | — |
+| TC-26g | F-26 | Membatalkan izin di layar Google | Halaman callback menjelaskan login tidak selesai, tidak menggantung memuat | Manual | — |
+| TC-26h | F-26 | Menekan tombol keluar | Sesi dihapus dan pengguna dikembalikan ke halaman depan | Manual | — |
+| TC-26i | F-26 | Username diubah jadi alamat internal | Huruf besar dan spasi tersisa menghasilkan alamat yang sama; email Google tidak ikut dipotong | Otomatis | `authIdentity.test.ts` |
+| TC-26j | F-26 | Username atau kata sandi tidak masuk akal | Ditolak dengan alasan yang menyebut batasannya | Otomatis | `authIdentity.test.ts` |
+| TC-26k | F-26 | Membuka halaman masuk | Dua jalan tersedia: kolom username-kata sandi dan tombol Google | Otomatis | `authForm.test.tsx` |
+| TC-26l | F-26 | Mengisi username dan kata sandi lalu menekan Masuk | Nilai yang diketik diteruskan ke jalur masuk, bukan jalur daftar | Otomatis | `authForm.test.tsx` |
+| TC-26m | F-26 | Kata sandi kurang dari 8 karakter | Ditahan di klien; server tidak pernah dipanggil | Otomatis | `authForm.test.tsx` |
+| TC-26n | F-26 | Menekan tombol Google dengan `?next=` terisi | Tujuan asal ikut dibawa ke alur OAuth | Otomatis | `authForm.test.tsx` |
+| TC-26o | F-26 | `?next=` diisi alamat domain luar | Diabaikan dan diganti tujuan bawaan — halaman masuk tidak jadi alat pengalihan | Otomatis | `authForm.test.tsx` |
+| TC-26p | F-26 | Membuka halaman daftar | Memakai jalur pendaftaran, tetap menawarkan Google, dan menyediakan tautan ke halaman masuk | Otomatis | `authForm.test.tsx` |
+| TC-26q | F-26 | `GET /api/v1/forms` tanpa token | Dibalas 401; database tidak pernah disentuh | Otomatis | `formsOwnership.test.ts` |
+| TC-26r | F-26 | `GET /api/v1/forms` dengan token | Penyaringan pemilik ada di query, jadi form akun lain tidak ikut terbaca | Otomatis | `formsOwnership.test.ts` |
+| TC-26s | F-26 | `POST /api/v1/forms` tanpa token | Dibalas 401; tidak ada form yang tercipta | Otomatis | `formsOwnership.test.ts` |
+| TC-26t | F-26 | `POST /api/v1/forms` membawa `userId` palsu di body | Pemilik diambil dari token; `userId` di body diabaikan | Otomatis | `formsOwnership.test.ts` |
+| TC-26u | F-26 | Akun lain membuka jawaban atau analisis form yang bukan miliknya | Dibalas 403 dengan alasan yang jelas | Manual | — |
+| TC-26v | F-26 | `POST /api/v1/uploads/banner` tanpa token | Dibalas 401 sebelum berkas diproses | Manual | — |
+| TC-26w | F-26 | Token karangan sendiri dipasang di header | Dibalas 401 — tanda tangan token diverifikasi, bukan sekadar keberadaannya | Manual | — |
+| TC-26x | F-26 | Mendaftar dengan username yang sudah dipakai | Dibalas 409 dengan ajakan memilih username lain | Manual | — |
+| TC-26y | F-26 | Mengisi form lewat tautan publik setelah kepemilikan aktif | `GET /api/v1/forms/detail/[id]` dan pengiriman jawaban tetap jalan tanpa token | Manual | — |
 | TC-29a | F-29 | Membuka halaman depan | Urutan section: navbar, hero, statistik, pita, kategori, footer | Manual | — |
 | TC-29b | F-29 | Membuka halaman depan di lebar ponsel | Navigasi berubah jadi tombol menu, isi tidak meluber ke samping | Manual | — |
 | TC-29c | F-29 | Menekan "Jelajahi Kategori" | Halaman menggulir mulus ke bagian kategori | Manual | — |
@@ -206,7 +233,6 @@ merah.
 | F-23 Verifikasi pembayaran otomatis | Status pembayaran berubah karena notifikasi gateway, bukan klaim pengisi |
 | F-24 Penilaian ujian berbasis kunci jawaban | Skor dihitung dari ketepatan jawaban terhadap kunci |
 | F-25 Detail acara oleh penyelenggara | Tanggal dan jam acara diambil dari builder, bukan jawaban pendaftar |
-| F-26 Akun dan kepemilikan form | Pembuatan form menuntut login lebih dulu; halaman hasil menolak pembuka yang bukan pemiliknya |
 | F-27 Rekap pendapatan | Total pemasukan dan rinciannya per metode pembayaran |
 
 ---

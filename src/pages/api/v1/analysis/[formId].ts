@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { anthropic } from '@/shared/lib/anthropic'
+import { getAuthGuard } from '@/shared/lib/authServer'
 
 const analysisSchema = {
   type: 'object',
@@ -62,6 +63,25 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { formId } = req.query
+
+  // Baca maupun jalankan analisis sama-sama menuntut pemilik form. Selain soal
+  // kerahasiaan jawaban, menjalankan analisis memanggil model berbayar — tanpa
+  // pemeriksaan ini siapa pun bisa menagihkan biaya ke pemilik project.
+  const user = await getAuthGuard(req, res)
+  if (!user) return
+
+  const owner = await prisma.form.findUnique({
+    where: { id: String(formId) },
+    select: { userId: true },
+  })
+
+  if (!owner) return res.status(404).json({ message: 'Form tidak ditemukan.' })
+
+  if (owner.userId !== user.id) {
+    return res
+      .status(403)
+      .json({ message: 'Form ini bukan milik akun yang sedang masuk.' })
+  }
 
   // Ambil hasil analisis terakhir yang tersimpan, supaya dashboard tetap
   // berisi setelah halaman di-refresh tanpa harus menjalankan AI lagi.

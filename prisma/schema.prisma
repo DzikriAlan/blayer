@@ -27,6 +27,9 @@ model Task {
 
 model Form {
   id          String   @id @default(cuid())
+  /// Pemilik form — id pengguna Supabase Auth. Daftar form dan dashboard hasil
+  /// disaring dengan kolom ini, jadi satu akun tidak bisa membuka milik akun lain.
+  userId      String
   title       String
   description String?  @db.Text
   /// Tujuan form untuk AI. Null/kosong berarti analisis AI dimatikan.
@@ -51,6 +54,7 @@ model Form {
   responses FormResponse[]
   analyses  FormAnalysis[]
 
+  @@index([userId])
   @@map("forms")
 }
 

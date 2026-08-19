@@ -1,7 +1,47 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
 
 const prisma = new PrismaClient()
+
+// Form demo harus punya pemilik seperti form biasa, kalau tidak seed gagal di
+// kolom userId yang sekarang wajib. Pemiliknya akun admin, jadi data demo ikut
+// terlihat saat masuk sebagai admin.
+const SEED_OWNER_EMAIL = 'blayeradmin@blayer.id'
+let ownerId = ''
+
+const getOwnerId = async () => {
+  // Jalan pintas untuk lingkungan tanpa akses Supabase, mis. CI.
+  const explicit = process.env.SEED_OWNER_ID?.trim()
+  if (explicit) return explicit
+
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
+  const key = (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    ''
+  ).trim()
+
+  if (!url || !key) {
+    throw new Error(
+      'Seed butuh pemilik form. Isi SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY di .env, atau set SEED_OWNER_ID dengan id pengguna Supabase.'
+    )
+  }
+
+  const supabase = createClient(url, key, { auth: { persistSession: false } })
+  const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 })
+  if (error) throw error
+
+  const owner = data?.users?.find((user) => user.email === SEED_OWNER_EMAIL)
+
+  if (!owner) {
+    throw new Error(
+      `Akun ${SEED_OWNER_EMAIL} belum ada di Supabase Auth. Daftarkan lebih dulu lewat /register, atau set SEED_OWNER_ID.`
+    )
+  }
+
+  return owner.id
+}
 
 /**
  * Satu template = beberapa form demo.
@@ -449,6 +489,7 @@ const seedExam = async () => {
   for (const demo of EXAM_FORMS) {
     const form = await prisma.form.create({
       data: {
+        userId: ownerId,
         title: demo.title,
         description: demo.description,
         purpose: null,
@@ -484,6 +525,7 @@ const seedEvent = async () => {
   for (const demo of EVENT_FORMS) {
     const form = await prisma.form.create({
       data: {
+        userId: ownerId,
         title: demo.title,
         description: demo.description,
         purpose: null,
@@ -523,6 +565,7 @@ const seedRestaurant = async () => {
   for (const demo of RESTAURANT_FORMS) {
     const form = await prisma.form.create({
       data: {
+        userId: ownerId,
         title: demo.title,
         description: demo.description,
         purpose: null,
@@ -577,6 +620,7 @@ const seedCourse = async () => {
   for (const demo of COURSE_FORMS) {
     const form = await prisma.form.create({
       data: {
+        userId: ownerId,
         title: demo.title,
         description: demo.description,
         purpose: null,
@@ -618,6 +662,9 @@ const seedCourse = async () => {
 }
 
 const main = async () => {
+  ownerId = await getOwnerId()
+  console.log(`• pemilik form demo: ${SEED_OWNER_EMAIL} (${ownerId})`)
+
   // Relasi pakai onDelete: Cascade, jadi field/jawaban/analisis ikut terhapus.
   const removed = await prisma.form.deleteMany({
     where: {

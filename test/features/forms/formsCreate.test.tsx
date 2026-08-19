@@ -5,8 +5,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const push = vi.fn()
 const mutate = vi.fn()
 
+// Router tiruan menyimpan query-nya sendiri supaya sinkronisasi ?template=
+// benar-benar teruji: replace harus mengubah nilai yang dibaca efeknya.
+const router = {
+  pathname: '/forms/create',
+  query: {} as Record<string, string>,
+  isReady: true,
+  push,
+  replace: vi.fn((url: { query: Record<string, string> }) => {
+    router.query = { ...url.query }
+    return Promise.resolve(true)
+  }),
+}
+
 vi.mock('next/router', () => ({
-  useRouter: () => ({ push, query: {}, isReady: true }),
+  useRouter: () => router,
 }))
 
 const state = {
@@ -47,9 +60,14 @@ const loadCreate = async (onEditFormsTitle?: (title: string) => void) => {
   return render(<FormsCreate onEditFormsTitle={onEditFormsTitle} />)
 }
 
+const getTemplateCard = (name: string) =>
+  screen.getByRole('heading', { name }).closest('div')?.parentElement as HTMLElement
+
 beforeEach(() => {
   push.mockClear()
   mutate.mockClear()
+  router.replace.mockClear()
+  router.query = {}
 })
 
 describe('judul form di builder', () => {
@@ -79,17 +97,61 @@ describe('judul form di builder', () => {
     const user = userEvent.setup()
     await loadCreate(onEditFormsTitle)
 
-    const examCard = screen
-      .getByRole('heading', { name: 'Ujian Sekolah' })
-      .closest('div')?.parentElement as HTMLElement
-
-    await user.click(within(examCard).getByRole('button', { name: 'Use' }))
+    await user.click(
+      within(getTemplateCard('Ujian Sekolah')).getByRole('button', {
+        name: 'Use',
+      })
+    )
 
     await waitFor(() => {
       expect(onEditFormsTitle).toHaveBeenLastCalledWith(
         'Ujian Tengah Semester — Sejarah Kelas XI'
       )
     })
+  })
+
+  it('TC-35 template lain tetap bisa dipilih setelah datang lewat ?template=', async () => {
+    const user = userEvent.setup()
+    router.query = { template: 'exam' }
+    await loadCreate()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Form Title')).toHaveValue(
+        'Ujian Tengah Semester — Sejarah Kelas XI'
+      )
+    })
+
+    await user.click(
+      within(getTemplateCard('Menu Restoran')).getByRole('button', {
+        name: 'Use',
+      })
+    )
+
+    // Isian berpindah ke template baru dan tidak ditarik kembali ke yang lama.
+    await waitFor(() => {
+      expect(screen.getByLabelText('Form Title')).toHaveValue(
+        'Pesan Menu — Meja Restoran'
+      )
+    })
+  })
+
+  it('TC-35 memilih template memperbarui query di URL', async () => {
+    const user = userEvent.setup()
+    router.query = { template: 'exam' }
+    await loadCreate()
+
+    await user.click(
+      within(getTemplateCard('Kursus Kelas')).getByRole('button', {
+        name: 'Use',
+      })
+    )
+
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: '/forms/create', query: { template: 'course' } },
+      undefined,
+      { shallow: true }
+    )
+    expect(router.query.template).toBe('course')
   })
 
   it('TC-01 builder tidak menampilkan tombol See karena tidak punya riwayat', async () => {

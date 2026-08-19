@@ -5,6 +5,7 @@ import {
   isSupabaseReady,
   supabase,
 } from '@/shared/lib/supabase'
+import { getAuthGuard } from '@/shared/lib/authServer'
 
 const ALLOWED_TYPES = [
   'image/jpeg',
@@ -28,6 +29,12 @@ export default async function handler(
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
+  }
+
+  // Unggahan hanya dipakai builder, jadi tidak ada alasan menerimanya tanpa sesi.
+  const user = await getAuthGuard(req, res)
+  if (!user) {
+    return
   }
 
   if (!isSupabaseReady || !supabase) {

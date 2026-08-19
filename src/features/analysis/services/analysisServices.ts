@@ -2,6 +2,7 @@ import type {
   PayloadGetAnalysis,
   PayloadPostAnalysis,
 } from '../types/analysisTypes'
+import { getAuthHeaders } from '@/shared/lib/authClient'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
@@ -9,7 +10,7 @@ export const getAnalysis = async (payload: PayloadGetAnalysis) => {
   try {
     const res = await fetch(`${baseUrl}/api/v1/analysis/${payload.formId}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
     })
     if (!res.ok) throw new Error(res.statusText)
     return res.json()
@@ -23,7 +24,7 @@ export const postAnalysis = async (payload: PayloadPostAnalysis) => {
   try {
     const res = await fetch(`${baseUrl}/api/v1/analysis/${payload.formId}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
       body: JSON.stringify(payload),
     })
     if (!res.ok) {

@@ -1,12 +1,29 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { describe, expect, it, vi } from 'vitest'
 
 import NotFoundPage from '@/pages/404'
 import ServerErrorPage from '@/pages/500'
 
+// Rangka halaman publik memuat kontrol akun, yang membaca rute aktif untuk
+// menyusun tautan "Masuk" dan sesi lewat TanStack Query.
+vi.mock('next/router', () => ({
+  useRouter: () => ({ asPath: '/tidak-ada', replace: vi.fn() }),
+}))
+
+const renderPage = (ui: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  )
+}
+
 describe('halaman tidak ditemukan', () => {
   it('TC-33 menyebut kode dan penjelasan yang bisa ditindaklanjuti', () => {
-    render(<NotFoundPage />)
+    renderPage(<NotFoundPage />)
 
     expect(screen.getByText('ERROR 404')).toBeInTheDocument()
     expect(
@@ -16,7 +33,7 @@ describe('halaman tidak ditemukan', () => {
   })
 
   it('TC-33 menawarkan jalan keluar, bukan jalan buntu', () => {
-    render(<NotFoundPage />)
+    renderPage(<NotFoundPage />)
 
     expect(
       screen.getByRole('link', { name: /Kembali ke Beranda/ })
@@ -32,7 +49,7 @@ describe('halaman tidak ditemukan', () => {
   })
 
   it('TC-33 memakai rangka halaman publik lengkap dengan navigasinya', () => {
-    render(<NotFoundPage />)
+    renderPage(<NotFoundPage />)
 
     expect(screen.getAllByRole('link', { name: /Buat Form/ }).length).toBeGreaterThan(1)
     expect(screen.getByText(/BLAYER® STUDIO/)).toBeInTheDocument()
@@ -41,7 +58,7 @@ describe('halaman tidak ditemukan', () => {
 
 describe('halaman kesalahan server', () => {
   it('TC-33 membedakan dirinya dari halaman tidak ditemukan', () => {
-    render(<ServerErrorPage />)
+    renderPage(<ServerErrorPage />)
 
     expect(screen.getByText('ERROR 500')).toBeInTheDocument()
     expect(
@@ -51,7 +68,7 @@ describe('halaman kesalahan server', () => {
   })
 
   it('TC-33 tetap menyediakan jalan kembali ke aplikasi', () => {
-    render(<ServerErrorPage />)
+    renderPage(<ServerErrorPage />)
 
     expect(
       screen.getByRole('link', { name: /Kembali ke Beranda/ })
