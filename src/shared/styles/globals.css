@@ -126,9 +126,52 @@
     }
   }
 
+  /* Teks yang berganti dengan cara digulir ke atas, satu baris sekali.
+     Entri pertama diulang di akhir supaya putarannya menyambung tanpa
+     lompatan — begitu sampai salinan itu, animasi kembali ke awal dan
+     tulisannya sudah sama. */
+  .brutal-rotator {
+    display: inline-block;
+    /* Tinggi jendela dikunci sama dengan tinggi barisnya, kalau tidak huruf
+       berekor seperti "y" ikut terpotong garis potong jendelanya. */
+    height: 1.6em;
+    line-height: 1.6em;
+    overflow: hidden;
+    vertical-align: bottom;
+  }
+  .brutal-rotator-track {
+    display: grid;
+    grid-auto-rows: 1.6em;
+    align-items: center;
+    animation: brutal-rotator 10s infinite;
+  }
+  .brutal-rotator-track > * {
+    white-space: nowrap;
+  }
+
+  @keyframes brutal-rotator {
+    0%,
+    22% {
+      transform: translateY(0);
+    }
+    28%,
+    55% {
+      transform: translateY(-25%);
+    }
+    61%,
+    88% {
+      transform: translateY(-50%);
+    }
+    94%,
+    100% {
+      transform: translateY(-75%);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .brutal-marquee,
-    .brutal-hatch-run {
+    .brutal-hatch-run,
+    .brutal-rotator-track {
       animation: none;
     }
   }

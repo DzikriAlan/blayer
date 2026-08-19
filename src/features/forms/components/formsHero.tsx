@@ -3,6 +3,9 @@ import { ArrowDown, ArrowRight, type LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
+/** Ditulis di sini karena hanya hero yang memakainya. */
+const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
+
 export interface FormsHeroCategory {
   id: string
   name: string
@@ -36,7 +39,16 @@ export default function FormsHero({
       <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-5 pb-8 pt-10 sm:px-8 sm:pb-10 sm:pt-14 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
         <div>
           <span className="brutal-eyebrow inline-block bg-primary px-3 py-2 text-primary-foreground">
-            PLATFORM FORM SERBAGUNA
+            {/* Ketiganya bergantian digulir ke atas: yang pertama menyebut
+                alatnya, dua sisanya menyebut alasan orang datang. */}
+            <span className="brutal-rotator">
+              <span aria-hidden className="brutal-rotator-track">
+                {[...TAGLINES, TAGLINES[0]].map((tagline, index) => (
+                  <span key={`${tagline}-${index}`}>{tagline}</span>
+                ))}
+              </span>
+            </span>
+            <span className="sr-only">{TAGLINES.join(' — ')}</span>
           </span>
 
           <h1 className="mt-5 hyphens-auto break-words font-display text-[clamp(2.25rem,5.6vw,4rem)] font-black uppercase leading-[0.86] tracking-[-0.03em]">
@@ -47,9 +59,7 @@ export default function FormsHero({
           </h1>
 
           <p className="mt-6 max-w-xl font-mono text-sm leading-relaxed text-foreground/80">
-            Satu form bisa jadi psikotes kerja, pendaftaran acara, papan proyek
-            freelance, atau kelas berbayar. Pilih kategorinya — pertanyaan dan
-            bentuk hasilnya ikut tersusun sendiri.
+            bukan hanya form builder, Blayer memungkinkan bisnis membangun berbagai pengalaman interaktif untuk mencapai hasil yang mereka inginkan.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-4">
