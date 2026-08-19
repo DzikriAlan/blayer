@@ -437,6 +437,7 @@ export default function ResponsesSubmit({ formId }: Props) {
 
       <SectionHead
         tag="SECTION 01"
+        size="content"
         title={data.title}
         description={data.description}
         className="bg-paper px-5 pt-6 sm:px-7"

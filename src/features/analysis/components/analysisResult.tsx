@@ -97,6 +97,7 @@ export default function AnalysisResult({ formId }: Props) {
       <section className="border-2 border-foreground bg-paper">
         <SectionHead
           tag="RESULTS"
+        size="content"
           title={data.formTitle}
           className="px-5 pt-6 sm:px-7"
         />

@@ -4,6 +4,15 @@ interface Props {
   tag: string
   title: string
   description?: string
+  /**
+   * `display` untuk kalimat tetap yang memang ditulis besar dan sudah
+   * dipatahkan sendiri per baris, mis. "Build it.\nRank it".
+   *
+   * `content` untuk judul yang datang dari pengguna. Panjangnya tidak bisa
+   * ditebak, dan pada ukuran display satu judul form bisa memakan seluruh
+   * layar sebelum isinya sempat terlihat.
+   */
+  size?: 'display' | 'content'
   className?: string
 }
 
@@ -11,6 +20,7 @@ export default function SectionHead({
   tag,
   title,
   description,
+  size = 'display',
   className,
 }: Props) {
   return (
@@ -23,7 +33,14 @@ export default function SectionHead({
         <span aria-hidden className="w-16 self-center border-t-[5px] border-foreground" />
       </div>
 
-      <h1 className="mt-6 hyphens-auto whitespace-pre-line break-words font-display text-[clamp(1.9rem,8vw,4.75rem)] font-black uppercase leading-[0.86] tracking-[-0.03em]">
+      <h1
+        className={cn(
+          'mt-6 hyphens-auto whitespace-pre-line break-words font-display font-black uppercase tracking-[-0.03em]',
+          size === 'display'
+            ? 'text-[clamp(1.9rem,8vw,4.75rem)] leading-[0.86]'
+            : 'text-[clamp(1.6rem,4vw,2.75rem)] leading-[0.95]'
+        )}
+      >
         {title}
         <span className="text-primary">.</span>
       </h1>
