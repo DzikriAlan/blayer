@@ -82,6 +82,10 @@ export interface DataFormsPublic {
   title: string
   description: string
   templateId: string
+  /** Banner acara atau kelas; kosong berarti kartu memakai bentuk tanpa gambar. */
+  bannerUrl: string
+  /** Harga tetap kelas; 0 berarti form ini tidak berbayar di muka. */
+  priceAmount: number
   totalField: number
   totalResponse: number
   createdAt: string

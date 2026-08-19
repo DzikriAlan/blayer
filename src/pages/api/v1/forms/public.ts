@@ -9,9 +9,14 @@ import { prisma } from '@/shared/lib/prisma'
  * untuk ikut form yang sudah dibuka orang lain, jadi daftarnya memang harus
  * terbaca tanpa akun.
  *
- * Yang dikirim hanya secukupnya untuk kartu di halaman depan. `purpose` tidak
- * ikut karena isinya perintah untuk AI milik pembuat form, dan sisa kolom
- * seperti `qrisUrl` maupun `meetingUrl` baru relevan setelah form dibuka.
+ * Yang dikirim hanya secukupnya untuk kartu di halaman depan dan halaman
+ * kategori. `bannerUrl` dan `priceAmount` ikut karena keduanya memang sudah
+ * tampil di halaman isi form — poster acara dan harga kelas tidak ada gunanya
+ * disembunyikan dari katalog yang mengajak orang mendaftar.
+ *
+ * Yang tidak pernah ikut: `purpose` karena isinya perintah untuk AI milik
+ * pembuat form, serta `qrisUrl`, `meetingUrl`, dan `videoUrl` yang baru boleh
+ * terlihat setelah seseorang benar-benar mendaftar atau membayar.
  */
 export default async function handler(
   req: NextApiRequest,
@@ -32,6 +37,8 @@ export default async function handler(
       title: true,
       description: true,
       templateId: true,
+      bannerUrl: true,
+      priceAmount: true,
       createdAt: true,
       _count: { select: { fields: true, responses: true } },
     },
@@ -43,6 +50,8 @@ export default async function handler(
       title: form.title,
       description: form.description ?? '',
       templateId: form.templateId ?? '',
+      bannerUrl: form.bannerUrl ?? '',
+      priceAmount: form.priceAmount ?? 0,
       totalField: form._count.fields,
       totalResponse: form._count.responses,
       createdAt: form.createdAt.toISOString(),
