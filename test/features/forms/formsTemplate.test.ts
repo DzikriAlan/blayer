@@ -37,6 +37,7 @@ describe('katalog template', () => {
       'event',
       'order',
       'course',
+      'freelance',
     ]
 
     FORMS_TEMPLATES.forEach((template) => {
@@ -82,6 +83,57 @@ describe('katalog kategori halaman depan', () => {
 
   it('TC-36 ujian sekolah tetap bisa dipakai membuat form', () => {
     expect(getTemplate('exam')?.isVisible).toBe(true)
+  })
+
+  it('TC-38 freelance menggantikan menu restoran di etalase depan', () => {
+    const featuredIds = FORMS_TEMPLATES.filter(
+      (template) => template.isFeatured
+    ).map((template) => template.id)
+
+    expect(featuredIds).toContain('freelance')
+    expect(featuredIds).not.toContain('restaurant')
+  })
+
+  it('TC-38 kategori etalase tampil dalam urutan yang ditetapkan katalog', () => {
+    const featuredIds = FORMS_TEMPLATES.filter(
+      (template) => template.isFeatured
+    ).map((template) => template.id)
+
+    expect(featuredIds).toEqual([
+      'event',
+      'course',
+      'psychometric',
+      'freelance',
+    ])
+  })
+
+  it('TC-38 menu restoran tetap bisa dipakai membuat form', () => {
+    expect(getTemplate('restaurant')?.isVisible).toBe(true)
+  })
+})
+
+describe('template proyek freelance', () => {
+  const freelance = getTemplate('freelance')
+
+  it('TC-38 memakai view freelance dan tampil di daftar pilihan', () => {
+    expect(freelance?.view).toBe('freelance')
+    expect(freelance?.isVisible).toBe(true)
+  })
+
+  it('TC-38 anggaran proyek ditetapkan pemilik proyek sebagai angka positif', () => {
+    expect(Number(freelance?.values.priceAmount)).toBeGreaterThan(0)
+  })
+
+  it('TC-38 penawar diminta portofolio, tawaran biaya, dan rencana kerja', () => {
+    expect(getFieldLabels('freelance')).toEqual([
+      'Bidang Keahlian Utama',
+      'Tautan Portofolio',
+      'Tawaran Biaya Pengerjaan (Rp)',
+      'Perkiraan Lama Pengerjaan',
+      'Bagaimana rencanamu mengerjakan proyek ini?',
+      'Pernah mengerjakan proyek serupa?',
+      'Kapan Bisa Mulai Mengerjakan',
+    ])
   })
 })
 

@@ -144,6 +144,92 @@ describe('halaman kategori', () => {
     expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
   })
 
+  it('TC-36p keterangan lowongan dipecah jadi chip yang bisa dipindai', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'psychometric',
+        title: 'Data Analyst — Sentra Data Group',
+        description:
+          'Surabaya · Kerja di Kantor · Kontrak 12 Bulan · D3/S1 Statistika · Terbuka untuk lulusan baru. Psikotes menakar ketelitian.',
+      }),
+    ])
+
+    render(<FormsExplore templateId="psychometric" />)
+
+    ;[
+      'Psikotes Terkunci',
+      'Surabaya',
+      'Kerja di Kantor',
+      'Kontrak 12 Bulan',
+      'D3/S1 Statistika',
+      'Terbuka untuk lulusan baru',
+    ].forEach((tag) => {
+      expect(screen.getByText(tag)).toBeInTheDocument()
+    })
+
+    // Kalimat setelah ruas chip tetap jadi paragraf, tidak ikut jadi chip.
+    expect(screen.getByText('Psikotes menakar ketelitian.')).toBeInTheDocument()
+  })
+
+  it('TC-36q deskripsi biasa tidak dipaksa jadi chip', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'psychometric',
+        title: 'Backend Engineer — Tanpa Ruas',
+        description: 'Lowongan ini ditulis sebagai satu kalimat utuh saja.',
+      }),
+    ])
+
+    render(<FormsExplore templateId="psychometric" />)
+
+    expect(
+      screen.getByText('Lowongan ini ditulis sebagai satu kalimat utuh saja.')
+    ).toBeInTheDocument()
+  })
+
+  it('TC-38a proyek freelance memajang anggarannya di kepala kartu', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'freelance',
+        title: 'Redesain Landing Page',
+        description:
+          'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Aset desain sudah tersedia.',
+        priceAmount: 4500000,
+        totalField: 7,
+      }),
+    ])
+
+    render(<FormsExplore templateId="freelance" />)
+
+    expect(
+      screen.getByRole('heading', {
+        name: /Proyek Yang Bisa Kamu Garap/i,
+        level: 1,
+      })
+    ).toBeInTheDocument()
+    expect(screen.getByText('BUDGET')).toBeInTheDocument()
+    expect(screen.getByText('Rp4.500.000')).toBeInTheDocument()
+    expect(screen.getByText('Web Development')).toBeInTheDocument()
+    expect(screen.getByText(/03 PENAWARAN/)).toBeInTheDocument()
+    expect(screen.getByText(/07 ISIAN/)).toBeInTheDocument()
+    expect(screen.getAllByText('Ajukan Penawaran').length).toBeGreaterThan(0)
+  })
+
+  it('TC-38b proyek tanpa anggaran ditandai masih bisa dinego', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'freelance',
+        title: 'Penulisan Artikel SEO',
+        priceAmount: 0,
+      }),
+    ])
+
+    render(<FormsExplore templateId="freelance" />)
+
+    expect(screen.getByText('Nego')).toBeInTheDocument()
+    expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
+  })
+
   it('TC-36e hanya form dari kategori itu yang tampil', () => {
     setCatalogue([
       getForm({ id: 'a', templateId: 'exam', title: 'Ujian Matematika' }),
