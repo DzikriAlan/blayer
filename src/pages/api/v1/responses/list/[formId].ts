@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
+import { getAuthGuard } from '@/shared/lib/authServer'
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,6 +10,9 @@ export default async function handler(
     res.setHeader('Allow', ['GET'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
   }
+
+  const user = await getAuthGuard(req, res)
+  if (!user) return
 
   const { formId } = req.query
 
@@ -21,6 +25,13 @@ export default async function handler(
   })
 
   if (!form) return res.status(404).json({ message: 'Form tidak ditemukan.' })
+
+  // Jawaban peserta hanya boleh dibaca pemilik formnya.
+  if (form.userId !== user.id) {
+    return res
+      .status(403)
+      .json({ message: 'Form ini bukan milik akun yang sedang masuk.' })
+  }
 
   return res.status(200).json({
     formId: form.id,

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
+import { getAuthGuard } from '@/shared/lib/authServer'
 
 interface FieldInput {
   label: string
@@ -15,7 +16,13 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === 'GET') {
+    const user = await getAuthGuard(req, res)
+    if (!user) return
+
     const forms = await prisma.form.findMany({
+      // Penyaringan pemilik dilakukan di query, bukan setelah data diambil —
+      // form milik akun lain tidak pernah ikut terbaca dari database.
+      where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: { select: { fields: true, responses: true } },
@@ -39,6 +46,9 @@ export default async function handler(
   }
 
   if (req.method === 'POST') {
+    const user = await getAuthGuard(req, res)
+    if (!user) return
+
     const {
       title,
       description,
@@ -73,6 +83,9 @@ export default async function handler(
 
     const form = await prisma.form.create({
       data: {
+        // Pemilik diambil dari token, bukan dari body — pengirim request tidak
+        // bisa mengaku sebagai akun lain.
+        userId: user.id,
         title,
         description: description || null,
         // Kosong berarti pembuat form mematikan analisis AI.
