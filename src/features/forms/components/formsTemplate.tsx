@@ -113,7 +113,7 @@ export interface FormsViewCopy {
 export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
   exam: {
     heading: 'Ujian Yang Sedang Dibuka',
-    lead: 'Pilih ujiannya, kerjakan langsung dari halaman ini. Layar terkunci selama pengerjaan dan nilainya dihitung begitu dikirim.',
+    lead: 'Ujian yang sedang dibuka. Kerjakan langsung dari halaman ini, dan nilainya dihitung begitu jawabanmu dikirim.',
     availabilityLabel: 'UJIAN DIBUKA',
     countLabel: 'PESERTA',
     fieldLabel: 'SOAL',
@@ -124,7 +124,7 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
   },
   psychometric: {
     heading: 'Lowongan Yang Sedang Membuka Psikotes',
-    lead: 'Lowongan yang seleksinya sedang berjalan. Pilih posisinya, kerjakan psikotesnya sekarang juga — layar terkunci selama pengerjaan dan hasilnya langsung masuk ke rekruternya.',
+    lead: 'Lowongan yang seleksinya sedang berjalan. Kerjakan psikotesnya sekarang juga, dan hasilmu langsung sampai ke perekrutnya.',
     availabilityLabel: 'LOWONGAN DIBUKA',
     countLabel: 'PELAMAR',
     fieldLabel: 'SOAL',
@@ -157,7 +157,7 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
   },
   event: {
     heading: 'Acara Yang Bisa Kamu Ikuti',
-    lead: 'Acara yang pendaftarannya sedang dibuka. Isi datamu sekali, tiket dan tautan acaranya langsung terbit.',
+    lead: 'Acara yang pendaftarannya sedang dibuka. Daftar sekali, dan bukti ikut beserta aksesnya langsung terbit.',
     availabilityLabel: 'ACARA TERBUKA',
     countLabel: 'TERDAFTAR',
     fieldLabel: 'ISIAN',
@@ -168,7 +168,7 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
   },
   order: {
     heading: 'Menu Yang Bisa Kamu Pesan',
-    lead: 'Pilih makanannya langsung dari meja, kirim pesanan, lalu bayar dengan QRIS di tempat.',
+    lead: 'Menu yang sedang menerima pesanan. Pilih makananmu, kirim pesanannya, lalu selesaikan pembayarannya di tempat.',
     availabilityLabel: 'MENU TERBUKA',
     countLabel: 'PESANAN',
     fieldLabel: 'PILIHAN',
@@ -179,7 +179,7 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
   },
   freelance: {
     heading: 'Proyek Yang Bisa Kamu Garap',
-    lead: 'Proyek yang sedang mencari orang. Baca kebutuhannya, ajukan penawaranmu beserta rencana pengerjaan — pemilik proyek memilih dari penawaran yang masuk.',
+    lead: 'Proyek yang sedang mencari orang. Ajukan penawaran beserta rencana kerjamu, dan pemilik proyek memilih dari yang masuk.',
     availabilityLabel: 'PROYEK DIBUKA',
     countLabel: 'PENAWARAN',
     fieldLabel: 'ISIAN',
@@ -190,7 +190,7 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
   },
   course: {
     heading: 'Kelas Yang Bisa Kamu Ambil',
-    lead: 'Kelas yang pendaftarannya sedang dibuka. Setelah pembayaranmu masuk, video kelasnya langsung bisa dibuka.',
+    lead: 'Kelas yang pendaftarannya sedang dibuka. Selesaikan pembayarannya, dan materinya langsung terbuka untukmu.',
     availabilityLabel: 'KELAS TERBUKA',
     countLabel: 'PESERTA',
     fieldLabel: 'ISIAN',
@@ -266,7 +266,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'event',
     name: 'Pendaftaran Acara',
-    tagline: 'Banner, link Google Meet, dan daftar peserta',
+    tagline: 'Pajang acaramu di daftar acara yang pendaftarannya sedang dibuka, lalu terima peserta beserta bukti ikutnya yang tersusun sendiri.',
     view: 'event',
     isVisible: true,
     isFeatured: true,
@@ -297,7 +297,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'course',
     name: 'Kursus Kelas',
-    tagline: 'Bayar biaya kelas, video materi terbuka setelah mendaftar',
+    tagline: 'Pajang kelasmu di katalog kelas yang bisa langsung diambil pengunjung, dengan materi yang terbuka sendiri setelah mereka mendaftar.',
     view: 'course',
     isVisible: true,
     isFeatured: true,
@@ -346,7 +346,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'psychometric',
     name: 'Psikotes Kerja',
-    tagline: 'Lowongan lengkap dengan psikotes terkunci dan peringkat pelamar',
+    tagline: 'Pasang lowonganmu di papan lowongan yang dijelajahi pencari kerja, lengkap dengan tesnya dan pelamar yang sudah dinilai dan diurutkan.',
     view: 'psychometric',
     isVisible: true,
     isFeatured: true,
@@ -428,7 +428,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'freelance',
     name: 'Proyek Freelance',
-    tagline: 'Proyek terbuka, freelancer mengajukan penawaran dan rencana kerja',
+    tagline: 'Pasang proyekmu di papan proyek yang dijelajahi freelancer, lalu bandingkan penawaran dan rencana kerja yang masuk berdampingan.',
     view: 'freelance',
     isVisible: true,
     isFeatured: true,
@@ -493,7 +493,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'exam',
     name: 'Ujian Sekolah',
-    tagline: 'Pilihan ganda + esai, dinilai dan diperingkat otomatis',
+    tagline: 'Buka ujianmu di daftar ujian yang bisa dikerjakan peserta, lalu terima nilai, peringkat, dan catatan pengerjaannya tanpa memeriksa sendiri.',
     view: 'exam',
     isVisible: true,
     isFeatured: false,
@@ -547,7 +547,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'restaurant',
     name: 'Menu Restoran',
-    tagline: 'Pilih makanan bergambar per meja, bayar QRIS di tempat',
+    tagline: 'Pajang menumu di daftar menu yang bisa dipesan langsung pengunjung, lalu terima pesanan beserta pembayarannya di tempat.',
     view: 'order',
     isVisible: true,
     isFeatured: false,
@@ -806,7 +806,10 @@ export default function FormsTemplate({
                 <h3 className="mt-4 break-words font-display text-xl font-black uppercase leading-none tracking-tight">
                   {template.name}
                 </h3>
-                <p className="mt-2.5 font-mono text-xs leading-relaxed opacity-80">
+                {/* Kartu di carousel jauh lebih sempit daripada kartu
+                    kategori, jadi keterangan yang sama dipotong di baris
+                    ketiga supaya tinggi tiap kartunya tetap sama. */}
+                <p className="mt-2.5 line-clamp-3 font-mono text-xs leading-relaxed opacity-80">
                   {template.tagline}
                 </p>
               </div>

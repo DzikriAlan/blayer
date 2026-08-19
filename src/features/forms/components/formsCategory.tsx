@@ -1,4 +1,4 @@
-import { Compass, Sparkles, type LucideIcon } from 'lucide-react'
+import { ArrowUpRight, type LucideIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -6,22 +6,29 @@ import { Button } from '@/components/ui/button'
 export interface FormsCategoryItem {
   id: string
   name: string
-  tagline: string
+  /** Naskah dari sisi pengunjung; tagline builder tidak dipakai di sini. */
+  description: string
   viewLabel: string
   icon: LucideIcon
-  totalField: number
-  totalForm: number
+  /** Satuan isi kategorinya, mis. "03 LOWONGAN TERBUKA". */
+  availabilityText: string
 }
 
 interface Props {
   data: FormsCategoryItem[]
-  onLoadFormsTemplate: (templateId: string) => void
   onLoadFormsExplore: (templateId: string) => void
 }
 
+/**
+ * Etalase kategori di halaman depan.
+ *
+ * Ditulis untuk yang datang mencari sesuatu untuk diikuti, bukan untuk yang
+ * datang membangun: yang ditawarkan isi kategorinya — berapa yang sedang
+ * terbuka dan berapa orang yang sudah masuk — bukan templatenya. Pintu ke
+ * builder tetap ada di navigasi atas, jadi tidak perlu diulang di sini.
+ */
 export default function FormsCategory({
   data,
-  onLoadFormsTemplate,
   onLoadFormsExplore,
 }: Props) {
   return (
@@ -48,27 +55,20 @@ export default function FormsCategory({
                 </div>
               </div>
 
-              <p className="font-mono text-sm leading-relaxed text-muted-foreground">
-                {item.tagline}
+              {/* Lebarnya ditahan supaya tiap keterangan jatuh ke dua baris.
+                  Dibiarkan selebar kartu, kalimat sepanjang ini jadi satu
+                  baris panjang yang tidak enak dipindai. */}
+              <p className="max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground">
+                {item.description}
               </p>
 
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
                 <p className="brutal-eyebrow text-muted-foreground">
-                  {String(item.totalField).padStart(2, '0')} FIELDS ·{' '}
-                  {String(item.totalForm).padStart(2, '0')} TERSEDIA
+                  {item.availabilityText}
                 </p>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onLoadFormsExplore(item.id)}
-                  >
-                    <Compass /> Eksplor Kategori
-                  </Button>
-                  <Button size="sm" onClick={() => onLoadFormsTemplate(item.id)}>
-                    <Sparkles /> Use Template
-                  </Button>
-                </div>
+                <Button size="sm" onClick={() => onLoadFormsExplore(item.id)}>
+                  Lihat Yang Terbuka <ArrowUpRight />
+                </Button>
               </div>
             </div>
 
