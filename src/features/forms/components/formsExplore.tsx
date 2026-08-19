@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, ArrowUpRight, Users } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Briefcase, Clock3, Users } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,17 +25,39 @@ import {
  * layar setelah kirim, dan dashboard hasil — jadi menambah template baru tidak
  * menuntut komponen baru di sini.
  *
- * | view      | bentuk   | alasan                                              |
- * | --------- | -------- | --------------------------------------------------- |
- * | `event`   | `poster` | acara dijual lewat posternya, bukan lewat judul saja |
- * | `course`  | `poster` | katalog kelas selalu memajang sampul dan harga       |
- * | `order`   | `menu`   | menu dibaca sekilas dan berdampingan, bukan berderet |
- * | lainnya   | `list`   | ujian dan survei dibaca berurutan seperti daftar     |
+ * | view           | bentuk   | alasan                                              |
+ * | -------------- | -------- | --------------------------------------------------- |
+ * | `event`        | `poster` | acara dijual lewat posternya, bukan lewat judul saja |
+ * | `course`       | `poster` | katalog kelas selalu memajang sampul dan harga       |
+ * | `order`        | `menu`   | menu dibaca sekilas dan berdampingan, bukan berderet |
+ * | `psychometric` | `job`    | lowongan dibaca seperti di job portal: logo, posisi, |
+ * |                |          | keterangan singkat, lalu tombol melamar              |
+ * | lainnya        | `list`   | ujian dan survei dibaca berurutan seperti daftar     |
  */
 const getLayout = (view: FormsTemplateView) => {
   if (view === 'event' || view === 'course') return 'poster'
   if (view === 'order') return 'menu'
+  if (view === 'psychometric') return 'job'
   return 'list'
+}
+
+/**
+ * Umur lowongan, ditulis seperti di job portal.
+ *
+ * Pelamar memakai ini untuk menakar peluang: lowongan yang baru dibuka masih
+ * sepi pesaing, yang sudah sebulan biasanya sudah menutup diri diam-diam.
+ */
+const getPostedText = (createdAt: string) => {
+  const days = Math.floor(
+    (Date.now() - new Date(createdAt).getTime()) / 86400000
+  )
+
+  if (!Number.isFinite(days) || days <= 0) return 'BARU HARI INI'
+  if (days === 1) return 'KEMARIN'
+  if (days < 30) return `${days} HARI LALU`
+
+  const months = Math.floor(days / 30)
+  return `${months} BULAN LALU`
 }
 
 const getPriceText = (amount: number) =>
@@ -62,6 +84,11 @@ export default function FormsExplore({ templateId }: Props) {
       bannerUrl: item.bannerUrl,
       priceText: getPriceText(item.priceAmount),
       isPaid: item.priceAmount > 0,
+      postedText: getPostedText(item.createdAt),
+      // Judul kartu dipangkas supaya barisannya rata, jadi judul utuhnya
+      // disediakan lewat tooltip bawaan peramban. Hanya judulnya — keterangan
+      // sudah terbaca di kartunya sendiri.
+      tooltip: item.title,
       totalField: item.totalField,
       totalResponse: item.totalResponse,
     })
@@ -131,7 +158,81 @@ export default function FormsExplore({ templateId }: Props) {
 
       <div className="mt-8">
         <LoadData response={data} minHeight="40vh">
-          {data.layout === 'list' ? (
+          {data.layout === 'job' ? (
+            // Papan lowongan: tiap kartu memuat logo perusahaan, posisi, umur
+            // lowongan, lalu tombol melamar — sama seperti di job portal. Tiga
+            // kolom di layar lebar, sebaris dengan poster dan menu, supaya
+            // pelamar bisa memindai banyak posisi tanpa menggulir jauh.
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {data.data.map((form) => (
+                <Link
+                  key={form.id}
+                  href={`/forms/${form.id}`}
+                  className="group flex flex-col gap-4 border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Logo perusahaan kalau diunggah; kalau tidak, lambang
+                        posisi supaya barisan kartunya tetap sejajar. */}
+                    <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border-2 border-foreground bg-muted">
+                      {form.bannerUrl ? (
+                        <Image
+                          src={form.bannerUrl}
+                          alt={`Logo ${form.title}`}
+                          fill
+                          unoptimized
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <Briefcase className="h-5 w-5" />
+                      )}
+                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      {/* Judul lowongan memuat posisi sekaligus perusahaan,
+                          jadi ukurannya ditahan lebih kecil dari kartu lain
+                          dan dipotong di baris kedua — kalau tidak, satu judul
+                          panjang mendorong sisa kartunya turun sendirian. */}
+                      <h2
+                        title={form.tooltip}
+                        className="line-clamp-2 break-words font-display text-base font-black uppercase leading-tight tracking-tight sm:text-lg"
+                      >
+                        {form.title}
+                      </h2>
+                      <p className="brutal-eyebrow mt-2 flex items-center gap-1.5 text-muted-foreground">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {form.postedText}
+                      </p>
+                    </div>
+                  </div>
+
+                  {form.description ? (
+                    <p className="line-clamp-3 font-mono text-xs leading-relaxed text-muted-foreground">
+                      {form.description}
+                    </p>
+                  ) : null}
+
+                  <p className="brutal-eyebrow mt-auto flex items-center gap-2 text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" />
+                    {String(form.totalResponse).padStart(2, '0')}{' '}
+                    {data.countLabel} ·{' '}
+                    {String(form.totalField).padStart(2, '0')} {data.fieldLabel}
+                  </p>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    {/* Harga tidak pernah berlaku untuk lowongan; yang perlu
+                        diketahui pelamar sebelum membuka adalah psikotesnya
+                        dikerjakan dalam layar terkunci. */}
+                    <Badge variant="outline">Psikotes Terkunci</Badge>
+                    <span className="brutal-eyebrow flex items-center gap-2 border-2 border-foreground px-3 py-2 transition-colors group-hover:bg-foreground group-hover:text-background">
+                      {data.actionLabel}
+                      <ArrowUpRight className="h-4 w-4" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : data.layout === 'list' ? (
             <div className="border-x-2 border-t-2 border-foreground">
               {data.data.map((form, index) => (
                 <Link
@@ -144,7 +245,10 @@ export default function FormsExplore({ templateId }: Props) {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <h2 className="break-words font-display text-xl font-black uppercase leading-tight tracking-tight">
+                    <h2
+                      title={form.tooltip}
+                      className="break-words font-display text-xl font-black uppercase leading-tight tracking-tight"
+                    >
                       {form.title}
                     </h2>
                     {form.description ? (
@@ -220,7 +324,10 @@ export default function FormsExplore({ templateId }: Props) {
                   ) : null}
 
                   <div className="flex flex-1 flex-col gap-3 p-5">
-                    <h2 className="break-words font-display text-xl font-black uppercase leading-tight tracking-tight">
+                    <h2
+                      title={form.tooltip}
+                      className="break-words font-display text-xl font-black uppercase leading-tight tracking-tight"
+                    >
                       {form.title}
                     </h2>
                     {form.description ? (
