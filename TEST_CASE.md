@@ -72,7 +72,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-34c | F-34 | Memakai template dari builder | Judul dari template ikut mengubah bilah atas | Otomatis | `formsCreate.test.tsx` |
 | TC-35a | F-01 | Datang lewat `?template=` lalu memilih template lain | Isian berpindah ke template baru dan tidak ditarik kembali ke yang lama | Otomatis | `formsCreate.test.tsx` |
 | TC-35b | F-01 | Memilih template di builder | `?template=` di URL ikut berubah mengikuti pilihan terakhir | Otomatis | `formsCreate.test.tsx` |
-| TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `psychometric`, `survey`, `event`, `order`, atau `course` | Otomatis | `formsTemplate.test.ts` |
+| TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `psychometric`, `survey`, `event`, `order`, `course`, atau `freelance` | Otomatis | `formsTemplate.test.ts` |
 | TC-13a | F-13 | Menekan **See** pada kartu template | Riwayat form hanya menampilkan form dari template itu, dan baris filter aktif muncul | Otomatis | `formsList.test.tsx` |
 | TC-13b | F-13 | Menekan **Shown** (klik kedua) | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
 | TC-13c | F-13 | Menekan **Hapus Filter** | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
@@ -223,6 +223,12 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-36m | F-36 | Membuka kategori psikotes | Disajikan seperti papan lowongan job portal: logo perusahaan, umur lowongan, satuan pelamar dan soal, tombol melamar, tanpa label harga | Otomatis | `formsExplore.test.tsx` |
 | TC-36n | F-37 | Memeriksa katalog kategori halaman depan | Psikotes tampil, ujian sekolah tidak; ujian sekolah tetap tersedia di daftar template builder | Otomatis | `formsTemplate.test.ts` |
 | TC-36o | F-37 | Memeriksa template psikotes | Memakai `view: psychometric` dan menanyakan posisi yang dilamar serta tautan CV atau LinkedIn | Otomatis | `formsTemplate.test.ts` |
+| TC-36p | F-36 | Membuka kategori psikotes berdeskripsi berpola | Ruas sebelum kalimat pertama jadi chip terpisah — lokasi, bentuk kerja, status, gelar, pengalaman — sisanya tetap jadi paragraf | Otomatis | `formsExplore.test.tsx` |
+| TC-36q | F-36 | Membuka kategori psikotes berdeskripsi biasa | Deskripsi ditinggal utuh sebagai paragraf, tidak dipaksa jadi chip | Otomatis | `formsExplore.test.tsx` |
+| TC-38a | F-38 | Membuka kategori freelance | Anggaran tampil di kepala kartu dalam format rupiah, dengan satuan penawaran dan isian | Otomatis | `formsExplore.test.tsx` |
+| TC-38b | F-38 | Membuka proyek tanpa anggaran | Kepala kartu menandainya "Nego", bukan "Gratis" | Otomatis | `formsExplore.test.tsx` |
+| TC-38c | F-38 | Memeriksa katalog kategori halaman depan | Freelance tampil, menu restoran tidak; restoran tetap tersedia di daftar template builder | Otomatis | `formsTemplate.test.ts` |
+| TC-38d | F-38 | Memeriksa template freelance | Memakai `view: freelance`, beranggaran positif, dan menanyakan portofolio, tawaran biaya, serta rencana pengerjaan | Otomatis | `formsTemplate.test.ts` |
 | TC-36k | F-36 | Membuka `/kategori/[id]` di peramban | Judul tab memakai kalimat yang sama dengan halamannya sejak balasan pertama, bukan setelah JavaScript jalan | Manual | — |
 | TC-36l | F-36 | Membuka kategori acara berisi banner lebar | Tanggal dan tempat di tepi poster tetap terbaca, tidak terpangkas bingkai kartu | Manual | — |
 | TC-36h | F-36 | Membuka alamat kategori yang tidak ada | Server membalas 404, bukan 200 dengan halaman kosong | Manual | — |
