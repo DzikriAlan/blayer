@@ -230,6 +230,31 @@ describe('halaman kategori', () => {
     expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
   })
 
+  it('TC-39 jumlah yang sudah ikut dipajang sebagai tumpukan wajah', () => {
+    setCatalogue([
+      getForm({ templateId: 'event', title: 'Webinar Produk', totalResponse: 7 }),
+    ])
+
+    const { container } = render(<FormsExplore templateId="event" />)
+
+    // Empat wajah ditumpuk, sisanya dihitung jadi satu gelembung angka.
+    expect(container.querySelectorAll('[data-facepile-face]').length).toBe(4)
+    expect(screen.getByText('+3')).toBeInTheDocument()
+    expect(screen.getByText(/07 TERDAFTAR/)).toBeInTheDocument()
+  })
+
+  it('TC-39 form yang belum diisi tidak menampilkan wajah sama sekali', () => {
+    setCatalogue([
+      getForm({ templateId: 'event', title: 'Webinar Baru', totalResponse: 0 }),
+    ])
+
+    const { container } = render(<FormsExplore templateId="event" />)
+
+    expect(container.querySelectorAll('[data-facepile-face]').length).toBe(0)
+    expect(screen.queryByText(/^\+/)).not.toBeInTheDocument()
+    expect(screen.getByText(/00 TERDAFTAR/)).toBeInTheDocument()
+  })
+
   it('TC-36e hanya form dari kategori itu yang tampil', () => {
     setCatalogue([
       getForm({ id: 'a', templateId: 'exam', title: 'Ujian Matematika' }),

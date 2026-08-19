@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { ArrowUpRight, Clock3, Users } from 'lucide-react'
+import { ArrowUpRight, Clock3 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import FormsFacepile from './formsFacepile'
 
 export interface FormsProjectItem {
   id: string
@@ -87,11 +88,16 @@ export default function FormsProject({
               </p>
             ) : null}
 
-            <p className="brutal-eyebrow mt-auto flex items-center gap-2 text-muted-foreground">
-              <Users className="h-3.5 w-3.5" />
-              {String(project.totalResponse).padStart(2, '0')} {countLabel} ·{' '}
-              {String(project.totalField).padStart(2, '0')} {fieldLabel}
-            </p>
+            <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
+              <FormsFacepile
+                total={project.totalResponse}
+                seed={project.id}
+                label={countLabel}
+              />
+              <span className="brutal-eyebrow text-muted-foreground">
+                · {String(project.totalField).padStart(2, '0')} {fieldLabel}
+              </span>
+            </div>
 
             <div className="flex justify-end">
               <span className="brutal-eyebrow flex items-center gap-2 border-2 border-foreground px-3 py-2 transition-colors group-hover:bg-foreground group-hover:text-background">

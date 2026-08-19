@@ -3,11 +3,12 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, ArrowUpRight, Briefcase, Clock3, Users } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Briefcase, Clock3 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
+import FormsFacepile from './formsFacepile'
 import FormsProject from './formsProject'
 import type { DataFormsPublic } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
@@ -278,12 +279,17 @@ export default function FormsExplore({ templateId }: Props) {
                     </p>
                   ) : null}
 
-                  <p className="brutal-eyebrow mt-auto flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    {String(form.totalResponse).padStart(2, '0')}{' '}
-                    {data.countLabel} ·{' '}
-                    {String(form.totalField).padStart(2, '0')} {data.fieldLabel}
-                  </p>
+                  <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <FormsFacepile
+                      total={form.totalResponse}
+                      seed={form.id}
+                      label={data.countLabel}
+                    />
+                    <span className="brutal-eyebrow text-muted-foreground">
+                      · {String(form.totalField).padStart(2, '0')}{' '}
+                      {data.fieldLabel}
+                    </span>
+                  </div>
 
                   {/* Harga tidak pernah berlaku untuk lowongan, jadi kakinya
                       hanya berisi ajakan melamar. */}
@@ -320,12 +326,17 @@ export default function FormsExplore({ templateId }: Props) {
                         {form.description}
                       </p>
                     ) : null}
-                    <p className="brutal-eyebrow mt-3 text-muted-foreground">
-                      {String(form.totalField).padStart(2, '0')}{' '}
-                      {data.fieldLabel} ·{' '}
-                      {String(form.totalResponse).padStart(2, '0')}{' '}
-                      {data.countLabel}
-                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="brutal-eyebrow text-muted-foreground">
+                        {String(form.totalField).padStart(2, '0')}{' '}
+                        {data.fieldLabel} ·
+                      </span>
+                      <FormsFacepile
+                        total={form.totalResponse}
+                        seed={form.id}
+                        label={data.countLabel}
+                      />
+                    </div>
                   </div>
 
                   <span className="hidden shrink-0 sm:block">
@@ -400,13 +411,17 @@ export default function FormsExplore({ templateId }: Props) {
                       </p>
                     ) : null}
 
-                    <p className="brutal-eyebrow mt-auto flex items-center gap-2 text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" />
-                      {String(form.totalResponse).padStart(2, '0')}{' '}
-                      {data.countLabel} ·{' '}
-                      {String(form.totalField).padStart(2, '0')}{' '}
-                      {data.fieldLabel}
-                    </p>
+                    <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <FormsFacepile
+                        total={form.totalResponse}
+                        seed={form.id}
+                        label={data.countLabel}
+                      />
+                      <span className="brutal-eyebrow text-muted-foreground">
+                        · {String(form.totalField).padStart(2, '0')}{' '}
+                        {data.fieldLabel}
+                      </span>
+                    </div>
 
                     <div className="flex items-center justify-between gap-3">
                       {data.layout === 'menu' ? (
