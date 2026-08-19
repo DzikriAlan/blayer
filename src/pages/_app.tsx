@@ -6,6 +6,7 @@ import { Archivo, JetBrains_Mono } from "next/font/google";
 import "@/shared/styles/globals.css";
 
 import AuthGuard from "@/features/auth/components/authGuard";
+import ErrorBoundary from "@/shared/components/error-boundary";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -43,11 +44,18 @@ export default function App({ Component, pageProps }: AppProps) {
         {/* Guard dipasang di sini, bukan per halaman, supaya halaman baru ikut
             terkunci secara bawaan dan pengecualiannya cukup didaftarkan di satu
             tempat. */}
+        {/* Batas error dipasang di dalam guard: kegagalan render satu halaman
+            tidak boleh menjatuhkan pemeriksaan sesi bersamanya. */}
         <AuthGuard>
-          <Component {...pageProps} />
+          <ErrorBoundary>
+            <Component {...pageProps} />
+          </ErrorBoundary>
         </AuthGuard>
       </div>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* Devtools hanya alat pengembang — jangan ikut terkirim ke pengguna. */}
+      {process.env.NODE_ENV === "development" ? (
+        <ReactQueryDevtools initialIsOpen={false} />
+      ) : null}
     </QueryClientProvider>
   );
 }
