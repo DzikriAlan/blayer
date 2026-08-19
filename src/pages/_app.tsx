@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Archivo, JetBrains_Mono } from "next/font/google";
 import "@/shared/styles/globals.css";
 
+import AuthGuard from "@/features/auth/components/authGuard";
+
 const archivo = Archivo({
   subsets: ["latin"],
   weight: ["600", "700", "800", "900"],
@@ -38,7 +40,12 @@ export default function App({ Component, pageProps }: AppProps) {
         />
       </Head>
       <div className={`${archivo.variable} ${jetbrainsMono.variable}`}>
-        <Component {...pageProps} />
+        {/* Guard dipasang di sini, bukan per halaman, supaya halaman baru ikut
+            terkunci secara bawaan dan pengecualiannya cukup didaftarkan di satu
+            tempat. */}
+        <AuthGuard>
+          <Component {...pageProps} />
+        </AuthGuard>
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
