@@ -77,9 +77,9 @@ Edit `.env.local` with your values:
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5432/next_starter"
 
-# Authentication
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
+# Supabase Auth — login Google. Key publik, aman terkirim ke browser.
+NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="your-publishable-or-anon-key"
 
 # Supabase Storage — dipakai untuk upload banner acara.
 # Service role key hanya dibaca di API route, tidak pernah dikirim ke browser.
@@ -88,7 +88,23 @@ SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 SUPABASE_BANNER_BUCKET="form-banners"
 ```
 
-> Generate `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
+> Login Google butuh provider Google diaktifkan di dashboard Supabase
+> (Authentication → Providers → Google) dan `http://localhost:3000/auth/callback`
+> terdaftar di Authentication → URL Configuration → Redirect URLs. Tanpa dua env
+> `NEXT_PUBLIC_SUPABASE_*` di atas, halaman terkunci akan menampilkan pesan
+> bahwa sesi tidak bisa dibaca.
+
+> Masuk bisa lewat username-kata sandi atau Google. Username disimpan sebagai
+> alamat internal `username@blayer.id`; pendaftaran berjalan lewat
+> `POST /api/v1/auth/register` yang memakai Admin API supaya akun langsung aktif
+> tanpa tautan konfirmasi. Karena itu `SUPABASE_SERVICE_ROLE_KEY` wajib terisi —
+> tanpa itu registrasi dan verifikasi token di API akan gagal.
+
+> **Kepemilikan data.** Tiap form menyimpan `userId` pemiliknya. Daftar form,
+> jawaban peserta, dan analisis AI hanya terbuka bagi pemiliknya, dan penolakan
+> terjadi di API (401 tanpa token, 403 untuk milik akun lain) — bukan sekadar
+> disembunyikan di tampilan. Halaman isi form `/forms/[id]` dan pengiriman
+> jawaban sengaja tetap publik supaya responden tidak perlu punya akun.
 
 > Banner acara butuh bucket **publik** bernama `form-banners` di dashboard
 > Supabase (Storage → New bucket → centang *Public bucket*). Tanpa env ini

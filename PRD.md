@@ -38,7 +38,7 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | Materi berbayar terbuka sendiri | Peserta kursus melihat video kelas seketika setelah formulir dan pembayarannya terkirim |
 | Template baru murah dibuat | Menambah template hanya perlu satu entri katalog, tanpa mengubah komponen mana pun |
 
-**Di luar cakupan v1:** autentikasi dan kepemilikan form per akun; kolaborasi multi-editor; verifikasi pembayaran otomatis lewat payment gateway; pengiriman email otomatis; aplikasi mobile native; penilaian esai berbasis kunci jawaban.
+**Di luar cakupan v1:** kolaborasi multi-editor; verifikasi pembayaran otomatis lewat payment gateway; pengiriman email otomatis; aplikasi mobile native; penilaian esai berbasis kunci jawaban.
 
 ---
 
@@ -86,7 +86,7 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | F-23 | Verifikasi pembayaran otomatis | Status pembayaran dikonfirmasi payment gateway, bukan dicocokkan manual oleh petugas | P0 | Belum |
 | F-24 | Penilaian ujian berbasis kunci jawaban | Pembuat form menetapkan jawaban benar per pertanyaan; skor dihitung dari ketepatan, bukan dari field terukur | P0 | Belum |
 | F-25 | Detail acara oleh penyelenggara | Tanggal, jam mulai, jam selesai, dan nama penyelenggara diisi di builder. Tiket saat ini tampil tanpa tanggal karena data itu memang milik penyelenggara, bukan jawaban pendaftar | P1 | Belum |
-| F-26 | Akun dan kepemilikan form | Membuat form menuntut login lebih dulu, dan hasil form hanya bisa dibuka pemiliknya. Saat ini keduanya belum ada — halaman hasil terbuka untuk siapa pun yang punya tautan | P0 | Belum |
+| F-26 | Akun dan kepemilikan form | Masuk dengan username-kata sandi atau akun Google. Halaman `/forms`, `/forms/create`, dan `/forms/[id]/result` dikunci guard; tiap form menyimpan `userId` pemiliknya sehingga daftar form, jawaban peserta, dan analisis AI hanya terbuka bagi pemiliknya. Penolakan dilakukan di API, bukan hanya di tampilan — request tanpa token dibalas 401 dan milik akun lain dibalas 403 | P0 | Selesai |
 | F-27 | Rekap pendapatan di dashboard | Halaman hasil form berbayar menampilkan total pemasukan dan rincian per metode pembayaran | P1 | Belum |
 | F-28 | Analisis AI atas jawaban | Peringkat dan rekomendasi naratif berdasarkan tujuan form; kode sudah ada, disembunyikan di balik saklar tampilan | P2 | Ditunda |
 | F-29 | Landing page publik | Halaman depan berdiri sendiri di luar rangka aplikasi: navbar, hero berikut ringkasan kategori, statistik, pita berjalan, daftar kategori, dan footer — memakai palet dan tipografi yang sama dengan aplikasinya | P1 | Selesai |
@@ -157,6 +157,11 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | Tampilan | Tailwind CSS + Shadcn/UI | Konsisten dengan sistem desain yang sudah ada |
 | State | Zustand (klien), TanStack Query (server) | Pemisahan tegas antara state tampilan dan data |
 | Basis data | Prisma + PostgreSQL (Supabase) | Skema bertipe, migrasi terkelola |
+| Autentikasi | Supabase Auth — username-kata sandi dan Google OAuth | Sesi, penyegaran token, dan OAuth ditangani penyedia yang sama dengan basis data, jadi tidak ada penyimpanan kata sandi sendiri |
+| Bentuk username | Username disintesis jadi `username@blayer.id` di satu berkas bersama | Supabase Auth hanya mengenal email untuk kata sandi, sedangkan produk memakai username. Konversi di satu tempat mencegah bentuk yang berbeda antara mendaftar dan masuk |
+| Pendaftaran | Lewat API route sendiri memakai Admin API | Alamat email sintetis tidak bisa menerima tautan konfirmasi; menandai akun terkonfirmasi dari server lebih aman daripada mematikan konfirmasi email untuk seluruh project |
+| Letak guard halaman | Satu `AuthGuard` di `_app.tsx`, daftar rute publik di satu berkas | Halaman baru terkunci secara bawaan; pengecualian harus ditulis sengaja, bukan terlupakan |
+| Penegakan kepemilikan | Diperiksa di API lewat token, bukan hanya di tampilan | Guard di browser hanya menyembunyikan tampilan — `curl` tetap tembus. Pemilik diambil dari token, tidak pernah dari body, agar pengirim tidak bisa mengaku sebagai akun lain |
 | Penyimpanan berkas | Supabase Storage, bucket publik | Banner dan kode QRIS harus permanen dan bisa dibuka tanpa login |
 | Unggahan | Base64 lewat API route | Secret key tetap di server, tanpa parser multipart tambahan |
 | Rangka halaman | `PageShell` untuk aplikasi, `LandingShell` untuk halaman depan | Halaman kerja butuh rail samping dan kolom sempit agar form terbaca; halaman depan butuh lebar penuh dan navigasi biasa. Memaksakan satu rangka membuat salah satunya terasa keliru |
@@ -201,7 +206,7 @@ Blayer menutup jarak itu: bentuk form dan bentuk hasilnya ditentukan sekaligus d
 | M3 — Transaksi | F-13 s/d F-22 | Pemesan memilih item bergambar, membayar, dan menerima struk atau video kelas di dalam satu alur |
 | M4 — Uang tepercaya | F-23, F-27 | Status pembayaran datang dari gateway, bukan dari klaim pengisi |
 | M5 — Ujian tepercaya | F-24, F-25 | Nilai ujian mencerminkan ketepatan jawaban, bukan kepercayaan diri peserta |
-| M6 — Siap publik | F-26 | Hasil form hanya terbuka bagi pemiliknya |
+| M6 — Siap publik | F-26 ✅ | Hasil form hanya terbuka bagi pemiliknya |
 
 ---
 
