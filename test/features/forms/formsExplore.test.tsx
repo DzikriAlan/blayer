@@ -47,9 +47,11 @@ describe('halaman kategori', () => {
 
     render(<FormsExplore templateId="exam" />)
 
+    // Judulnya menyebut yang bisa dilakukan pengunjung, bukan nama template.
     expect(
-      screen.getByRole('heading', { name: /Ujian Sekolah/i, level: 1 })
+      screen.getByRole('heading', { name: /Ujian Yang Sedang Dibuka/i, level: 1 })
     ).toBeInTheDocument()
+    expect(screen.queryByText(/Ujian Sekolah/)).not.toBeInTheDocument()
     expect(screen.getByText(/06 SOAL/)).toBeInTheDocument()
     expect(screen.getByText(/03 PESERTA/)).toBeInTheDocument()
     expect(screen.getAllByText('Kerjakan Ujian').length).toBeGreaterThan(0)
@@ -68,8 +70,11 @@ describe('halaman kategori', () => {
 
     render(<FormsExplore templateId="event" />)
 
-    expect(screen.getByRole('img')).toBeInTheDocument()
+    // Poster harus dimuat utuh — object-cover memotong tanggal dan tempat yang
+    // biasanya tercetak di tepi banner.
+    expect(screen.getByRole('img')).toHaveClass('object-contain')
     expect(screen.getByText(/03 TERDAFTAR/)).toBeInTheDocument()
+    expect(screen.getByText(/01 ACARA TERBUKA/)).toBeInTheDocument()
     expect(screen.getAllByText('Daftar Acara').length).toBeGreaterThan(0)
   })
 
@@ -111,7 +116,17 @@ describe('halaman kategori', () => {
 
     expect(screen.getByText('Ujian Matematika')).toBeInTheDocument()
     expect(screen.queryByText('Webinar Produk')).not.toBeInTheDocument()
-    expect(screen.getByText(/01 TERSEDIA/)).toBeInTheDocument()
+    expect(screen.getByText(/01 UJIAN DIBUKA/)).toBeInTheDocument()
+  })
+
+  it('TC-36g halaman kategori tidak menawarkan pembuatan form', () => {
+    setCatalogue([getForm({ templateId: 'event', title: 'Webinar Produk' })])
+
+    render(<FormsExplore templateId="event" />)
+
+    // Permukaan ini untuk yang datang ikut, bukan yang datang membangun.
+    expect(screen.queryByText('Use Template')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Buat/i)).not.toBeInTheDocument()
   })
 
   it('TC-36f kategori yang tidak dikenal dijelaskan, bukan dibiarkan kosong', () => {
@@ -120,7 +135,5 @@ describe('halaman kategori', () => {
     render(<FormsExplore templateId="entah-apa" />)
 
     expect(screen.getByText('Kategori Tidak Ada')).toBeInTheDocument()
-    // Tidak menawarkan template untuk kategori yang memang tidak ada.
-    expect(screen.queryByText('Use Template')).not.toBeInTheDocument()
   })
 })
