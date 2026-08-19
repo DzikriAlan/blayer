@@ -59,7 +59,9 @@ export default function FormsHero({
           </h1>
 
           <p className="mt-6 max-w-xl font-mono text-sm leading-relaxed text-foreground/80">
-            bukan hanya form builder, Blayer memungkinkan bisnis membangun berbagai pengalaman interaktif untuk mencapai hasil yang mereka inginkan.
+            bukan hanya form builder, Blayer membangun ekosistem tempat
+            kemampuan, peluang, dan penghasilan saling menyambung satu sama
+            lain.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-4">
