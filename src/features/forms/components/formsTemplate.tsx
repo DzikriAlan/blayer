@@ -56,14 +56,15 @@ export interface FormsTemplateValues {
  * diturunkan dari nilai ini, jadi menambah template baru cukup memilih salah
  * satunya tanpa menyentuh komponen mana pun:
  *
- * | view      | halaman isi     | setelah kirim  | hasil          | identitas    |
- * | --------- | --------------- | -------------- | -------------- | ------------ |
- * | `scoring` | biasa           | konfirmasi     | skor+peringkat | nama + email |
- * | `exam`    | terkunci        | konfirmasi     | skor+peringkat | nama + email |
- * | `survey`  | biasa           | konfirmasi     | ringkasan      | nama + email |
- * | `event`   | banner acara    | tiket acara    | daftar peserta | nama + email |
- * | `order`   | menu + bayar    | struk pesanan  | daftar pesanan | nama saja    |
- * | `course`  | harga + bayar   | akses video    | daftar peserta | nama + email |
+ * | view           | halaman isi     | setelah kirim  | hasil          | identitas    |
+ * | -------------- | --------------- | -------------- | -------------- | ------------ |
+ * | `scoring`      | biasa           | konfirmasi     | skor+peringkat | nama + email |
+ * | `exam`         | terkunci        | konfirmasi     | skor+peringkat | nama + email |
+ * | `psychometric` | terkunci        | konfirmasi     | skor+peringkat | nama + email |
+ * | `survey`       | biasa           | konfirmasi     | ringkasan      | nama + email |
+ * | `event`        | banner acara    | tiket acara    | daftar peserta | nama + email |
+ * | `order`        | menu + bayar    | struk pesanan  | daftar pesanan | nama saja    |
+ * | `course`       | harga + bayar   | akses video    | daftar peserta | nama + email |
  *
  * Kolom email hanya ditanyakan kalau memang ada yang dikirim ke sana — tiket
  * acara, akses kelas. Pesanan di meja selesai di tempat, jadi tidak usah.
@@ -71,6 +72,7 @@ export interface FormsTemplateValues {
 export type FormsTemplateView =
   | 'scoring'
   | 'exam'
+  | 'psychometric'
   | 'survey'
   | 'event'
   | 'order'
@@ -116,6 +118,17 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
     emptyTitle: 'Belum Ada Ujian Dibuka',
     emptySubtitle:
       'Belum ada ujian yang bisa dikerjakan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+  },
+  psychometric: {
+    heading: 'Lowongan Yang Sedang Membuka Psikotes',
+    lead: 'Lowongan yang seleksinya sedang berjalan. Pilih posisinya, kerjakan psikotesnya sekarang juga — layar terkunci selama pengerjaan dan hasilnya langsung masuk ke rekruternya.',
+    availabilityLabel: 'LOWONGAN DIBUKA',
+    countLabel: 'PELAMAR',
+    fieldLabel: 'SOAL',
+    action: 'Lamar & Kerjakan',
+    emptyTitle: 'Belum Ada Lowongan Dibuka',
+    emptySubtitle:
+      'Belum ada lowongan yang psikotesnya bisa dikerjakan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
   },
   scoring: {
     heading: 'Form Yang Bisa Kamu Isi',
@@ -184,11 +197,22 @@ export interface FormsTemplateItem {
   /** Satu nilai yang menentukan tampilan di ketiga permukaan. */
   view: FormsTemplateView
   /**
-   * Hanya mengatur tampil/tidaknya di daftar pilihan. Entri yang `false` tetap
-   * ada di katalog supaya form lama yang memakainya tetap bisa diresolusi
-   * tampilannya, dan tinggal diubah `true` untuk dimunculkan kembali.
+   * Hanya mengatur tampil/tidaknya di daftar pilihan builder. Entri yang
+   * `false` tetap ada di katalog supaya form lama yang memakainya tetap bisa
+   * diresolusi tampilannya, dan tinggal diubah `true` untuk dimunculkan
+   * kembali.
    */
   isVisible: boolean
+  /**
+   * Tampil sebagai kategori di halaman depan.
+   *
+   * Dipisah dari `isVisible` karena keduanya menjawab pertanyaan berbeda:
+   * yang satu "boleh dipakai membuat form?", yang satu lagi "layak jadi
+   * etalase untuk pengunjung yang baru datang?". Ujian sekolah tetap bisa
+   * dibuat dan halaman kategorinya tetap bisa dibuka lewat tautan langsung,
+   * tapi etalase depannya diberikan ke psikotes kerja.
+   */
+  isFeatured: boolean
   icon: LucideIcon
   values: FormsTemplateValues
 }
@@ -223,6 +247,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Pilihan ganda + esai, dinilai dan diperingkat otomatis',
     view: 'exam',
     isVisible: true,
+    isFeatured: false,
     icon: GraduationCap,
     values: {
       title: 'Ujian Tengah Semester — Sejarah Kelas XI',
@@ -272,28 +297,44 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   },
   {
     id: 'psychometric',
-    name: 'Psikotes Kandidat',
-    tagline: 'Soal situasional dan skala sikap untuk seleksi kerja',
-    view: 'scoring',
-    isVisible: false,
+    name: 'Psikotes Kerja',
+    tagline: 'Lowongan lengkap dengan psikotes terkunci dan peringkat pelamar',
+    view: 'psychometric',
+    isVisible: true,
+    isFeatured: true,
     icon: Brain,
     values: {
-      title: 'Psikotes Kandidat — Frontend Engineer',
+      title: 'Frontend Engineer — PT Nusantara Digital',
+      // Kartu lowongan di halaman kategori hanya memuat judul dan deskripsi,
+      // jadi keduanya ditulis seperti ringkasan lowongan di job portal: posisi
+      // dan perusahaan di judul, lokasi serta bentuk kerja di deskripsi.
       description:
-        'Jawab sejujurnya berdasarkan pengalaman nyata. Tidak ada jawaban benar atau salah.',
+        'Jakarta Selatan · Hybrid · Penuh Waktu · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
       isAiEnabled: true,
       isPublished: true,
       purpose:
-        'Menyeleksi kandidat untuk posisi Frontend Engineer. Nilai kemampuan problem solving, ketahanan menghadapi tekanan, kemauan belajar, dan kecocokan dengan budaya kerja kolaboratif. Beri peringkat kandidat dan tentukan siapa yang paling layak dilanjutkan ke tahap interview beserta alasannya.',
+        'Menyeleksi pelamar untuk posisi Frontend Engineer. Nilai kemampuan problem solving, ketahanan menghadapi tekanan, kemauan belajar, dan kecocokan dengan budaya kerja kolaboratif. Beri peringkat pelamar dan tentukan siapa yang paling layak dilanjutkan ke tahap interview beserta alasannya.',
       bannerUrl: '',
       meetingUrl: '',
       videoUrl: '',
       qrisUrl: '',
       priceAmount: '',
       fields: [
-        getField('Nama Lengkap', 'SHORT_TEXT', true),
-        getField('Email Aktif', 'EMAIL', true),
+        getField(
+          'Posisi yang Dilamar',
+          'SELECT',
+          true,
+          'Frontend Engineer\nBackend Engineer\nProduct Designer\nData Analyst\nProject Manager'
+        ),
         getField('Lama Pengalaman Kerja (tahun)', 'NUMBER', true),
+        getField(
+          'Tautan CV atau LinkedIn',
+          'URL',
+          true,
+          '',
+          'Pastikan tautannya bisa dibuka tanpa izin akses khusus.',
+          'https://'
+        ),
         getField(
           'Ceritakan satu proyek tersulit yang pernah kamu tangani dan bagaimana kamu menyelesaikannya.',
           'LONG_TEXT',
@@ -320,6 +361,11 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
           'Sendiri dengan fokus penuh\nBerpasangan (pair programming)\nDalam tim besar\nFleksibel, tergantung situasi'
         ),
         getField(
+          'Kapan Bisa Mulai Bekerja',
+          'DATE',
+          true
+        ),
+        getField(
           'Bidang apa yang ingin kamu dalami setahun ke depan?',
           'CHECKBOX',
           false,
@@ -334,6 +380,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Screening pelamar lengkap dengan ekspektasi gaji',
     view: 'scoring',
     isVisible: false,
+    isFeatured: false,
     icon: Briefcase,
     values: {
       title: 'Formulir Lamaran Kerja',
@@ -382,6 +429,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Rating, skala rekomendasi, dan masukan pelanggan',
     view: 'survey',
     isVisible: false,
+    isFeatured: false,
     icon: Star,
     values: {
       title: 'Survei Kepuasan Pelanggan',
@@ -428,6 +476,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Banner, link Google Meet, dan daftar peserta',
     view: 'event',
     isVisible: true,
+    isFeatured: true,
     icon: CalendarDays,
     values: {
       title: 'Pendaftaran Workshop',
@@ -458,6 +507,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Pilih makanan bergambar per meja, bayar QRIS di tempat',
     view: 'order',
     isVisible: true,
+    isFeatured: true,
     icon: UtensilsCrossed,
     values: {
       title: 'Pesan Menu — Meja Restoran',
@@ -520,6 +570,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Bayar biaya kelas, video materi terbuka setelah mendaftar',
     view: 'course',
     isVisible: true,
+    isFeatured: true,
     icon: PlayCircle,
     values: {
       title: 'Kelas Online — Dasar Membangun Web',
@@ -568,6 +619,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Form kosong dengan satu field, susun sendiri',
     view: 'scoring',
     isVisible: false,
+    isFeatured: false,
     icon: FilePlus2,
     values: {
       title: '',
