@@ -106,6 +106,44 @@ describe('halaman kategori', () => {
     expect(screen.getAllByText('Pesan Sekarang').length).toBeGreaterThan(0)
   })
 
+  it('TC-36m psikotes disajikan seperti lowongan di job portal', () => {
+    setCatalogue([
+      getForm({
+        templateId: 'psychometric',
+        title: 'Frontend Engineer — PT Nusantara Digital',
+        bannerUrl: 'https://contoh.test/logo.png',
+        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+      }),
+    ])
+
+    render(<FormsExplore templateId="psychometric" />)
+
+    expect(
+      screen.getByRole('heading', {
+        name: /Lowongan Yang Sedang Membuka Psikotes/i,
+        level: 1,
+      })
+    ).toBeInTheDocument()
+    expect(screen.getByText(/01 LOWONGAN DIBUKA/)).toBeInTheDocument()
+    expect(screen.getByText(/03 PELAMAR/)).toBeInTheDocument()
+    // Umur lowongan dan logo perusahaan adalah yang dipindai pelamar lebih
+    // dulu, jadi keduanya harus ada di kartunya.
+    expect(screen.getByText('3 HARI LALU')).toBeInTheDocument()
+    expect(screen.getByRole('img')).toHaveAttribute(
+      'alt',
+      'Logo Frontend Engineer — PT Nusantara Digital'
+    )
+    expect(screen.getAllByText('Lamar & Kerjakan').length).toBeGreaterThan(0)
+    // Judulnya dipangkas dua baris, jadi judul utuhnya tetap terbaca lewat
+    // tooltip — judulnya saja, bukan sekalian keterangannya.
+    expect(screen.getByRole('heading', { level: 2 })).toHaveAttribute(
+      'title',
+      'Frontend Engineer — PT Nusantara Digital'
+    )
+    // Lowongan tidak berharga, jadi tidak ada label "Gratis" seperti di menu.
+    expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
+  })
+
   it('TC-36e hanya form dari kategori itu yang tampil', () => {
     setCatalogue([
       getForm({ id: 'a', templateId: 'exam', title: 'Ujian Matematika' }),

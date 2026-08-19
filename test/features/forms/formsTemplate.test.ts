@@ -29,7 +29,15 @@ describe('katalog template', () => {
   })
 
   it('TC-04 setiap template punya view yang dikenali', () => {
-    const views = ['scoring', 'exam', 'survey', 'event', 'order', 'course']
+    const views = [
+      'scoring',
+      'exam',
+      'psychometric',
+      'survey',
+      'event',
+      'order',
+      'course',
+    ]
 
     FORMS_TEMPLATES.forEach((template) => {
       expect(views).toContain(template.view)
@@ -59,6 +67,42 @@ describe('katalog template', () => {
           expect(getOptions(field.optionText).length).toBeGreaterThanOrEqual(2)
         })
     })
+  })
+})
+
+describe('katalog kategori halaman depan', () => {
+  it('TC-36 psikotes menggantikan ujian sekolah di etalase depan', () => {
+    const featuredIds = FORMS_TEMPLATES.filter(
+      (template) => template.isFeatured
+    ).map((template) => template.id)
+
+    expect(featuredIds).toContain('psychometric')
+    expect(featuredIds).not.toContain('exam')
+  })
+
+  it('TC-36 ujian sekolah tetap bisa dipakai membuat form', () => {
+    expect(getTemplate('exam')?.isVisible).toBe(true)
+  })
+})
+
+describe('template psikotes kerja', () => {
+  const psychometric = getTemplate('psychometric')
+
+  it('TC-36 memakai view psychometric dan tampil di daftar pilihan', () => {
+    expect(psychometric?.view).toBe('psychometric')
+    expect(psychometric?.isVisible).toBe(true)
+  })
+
+  it('TC-36 pelamar ditanya posisi, pengalaman, dan tautan CV', () => {
+    expect(getFieldLabels('psychometric')).toContain('Posisi yang Dilamar')
+    expect(getFieldLabels('psychometric')).toContain('Tautan CV atau LinkedIn')
+
+    const cv = psychometric?.values.fields.find(
+      (field) => field.label === 'Tautan CV atau LinkedIn'
+    )
+
+    expect(cv?.type).toBe('URL')
+    expect(cv?.isRequired).toBe(true)
   })
 })
 
