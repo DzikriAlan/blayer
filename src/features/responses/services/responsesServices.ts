@@ -3,6 +3,7 @@ import type {
   PayloadPostResponses,
 } from '../types/responsesTypes'
 import { getAuthHeaders } from '@/shared/lib/authClient'
+import { throwApiError } from '@/shared/lib/httpError'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
@@ -13,7 +14,7 @@ export const postResponses = async (payload: PayloadPostResponses) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    if (!res.ok) throw new Error(res.statusText)
+    if (!res.ok) await throwApiError(res)
     return res.json()
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
@@ -30,7 +31,7 @@ export const getResponsesList = async (payload: PayloadGetResponsesList) => {
         headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
       }
     )
-    if (!res.ok) throw new Error(res.statusText)
+    if (!res.ok) await throwApiError(res)
     return res.json()
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
