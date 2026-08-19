@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import type { DataForms } from '../types/formsTypes'
+import type { DataFormsPublic } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
 import { useFormsControllers } from '../controllers/formsControllers'
 
@@ -25,8 +25,8 @@ const MARQUEE_WORDS = [
 
 export default function FormsLanding() {
   const router = useRouter()
-  const { forms } = useFormsStates()
-  const { fetchForms } = useFormsControllers()
+  const { formsPublic } = useFormsStates()
+  const { fetchFormsPublic } = useFormsControllers()
 
   const categoryRef = useRef<HTMLElement>(null)
 
@@ -45,7 +45,7 @@ export default function FormsLanding() {
         course: 'KELAS BERBAYAR',
       })[view] ?? 'FORM'
 
-    const getMappedForm = (item: DataForms) => ({
+    const getMappedForm = (item: DataFormsPublic) => ({
       id: item.id,
       title: item.title,
       description: item.description,
@@ -53,9 +53,11 @@ export default function FormsLanding() {
       totalResponse: item.totalResponse,
     })
 
+    // Katalog publik hanya berisi form yang sudah dipublikasikan, jadi tidak
+    // perlu disaring ulang di sini.
     const getRelatedForms = (templateId: string) =>
-      forms.data
-        .filter((raw) => raw.isPublished && raw.templateId === templateId)
+      formsPublic.data
+        .filter((raw) => raw.templateId === templateId)
         .map((raw) => getMappedForm(raw))
 
     const visibleTemplates = FORMS_TEMPLATES.filter(
@@ -80,25 +82,24 @@ export default function FormsLanding() {
       }
     })
 
-    const publishedForms = forms.data.filter((raw) => raw.isPublished)
-    const totalResponse = forms.data.reduce(
+    const totalResponse = formsPublic.data.reduce(
       (total, raw) => total + raw.totalResponse,
       0
     )
 
     return {
       data: mappedList,
-      isLoading: forms.status === 'loading',
-      isError: forms.status === 'error',
+      isLoading: formsPublic.status === 'loading',
+      isError: formsPublic.status === 'error',
       isEmpty: !mappedList.length,
       emptyTitle: 'No Category Yet',
       emptySubtitle:
         'Belum ada kategori yang bisa dipilih. Coba muat ulang halaman ini nanti.',
       emptyImage: '/no-data.svg',
       errorTitle: 'Something Broke',
-      errorSubtitle: forms.statusSubtitle,
+      errorSubtitle: formsPublic.statusSubtitle,
       totalCategory: mappedList.length,
-      totalForm: publishedForms.length,
+      totalForm: formsPublic.data.length,
       totalResponse,
       heroCategories: mappedList.map((item) => ({
         id: item.id,
@@ -108,7 +109,7 @@ export default function FormsLanding() {
       })),
       marqueeWords: [...MARQUEE_WORDS, ...MARQUEE_WORDS],
     }
-  }, [filters, forms])
+  }, [filters, formsPublic])
 
   // Kategori memakai template yang sama dengan builder, jadi "Use Template"
   // cukup meneruskan idnya lewat query string seperti di riwayat form.
@@ -191,7 +192,7 @@ export default function FormsLanding() {
             {/* Placeholder LoadData tidak punya slot aksi. */}
             {data.isError ? (
               <div className="mt-6 flex justify-center">
-                <Button onClick={() => fetchForms.refetch()}>Retry</Button>
+                <Button onClick={() => fetchFormsPublic.refetch()}>Retry</Button>
               </div>
             ) : null}
           </div>

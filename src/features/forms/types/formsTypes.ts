@@ -70,6 +70,30 @@ export interface Forms {
   data: DataForms[]
 }
 
+/**
+ * Bentuk form di katalog publik.
+ *
+ * Lebih ramping daripada `DataForms` karena halaman depan tidak boleh menerima
+ * `purpose` — isinya perintah AI milik pembuat form. `isPublished` juga tidak
+ * ada: semua yang masuk daftar ini sudah pasti terpublikasi.
+ */
+export interface DataFormsPublic {
+  id: string
+  title: string
+  description: string
+  templateId: string
+  totalField: number
+  totalResponse: number
+  createdAt: string
+}
+
+export interface FormsPublic {
+  status: string
+  statusTitle: string
+  statusSubtitle: string
+  data: DataFormsPublic[]
+}
+
 export interface DataFormsDetailField {
   id: string
   label: string

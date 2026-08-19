@@ -1,21 +1,40 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAuthStates } from '@/features/auth/states/authStates'
 import { useFormsStates } from '../states/formsStates'
-import { getForms, getFormsDetail, postForms } from '../services/formsServices'
+import {
+  getForms,
+  getFormsDetail,
+  getFormsPublic,
+  postForms,
+} from '../services/formsServices'
 import type { PayloadPostForms } from '../types/formsTypes'
 
 export const useFormsControllers = () => {
   const queryClient = useQueryClient()
+  const { authSession } = useAuthStates()
   const {
     payloadGetFormsDetail,
     setForms,
+    setFormsPublic,
     setFormsDetail,
     setFormsCreated,
   } = useFormsStates()
 
+  // Daftar ini berisi form milik pemanggilnya, jadi tanpa sesi tidak ada yang
+  // bisa dikembalikan. Menahannya di sini mencegah halaman publik menembakkan
+  // request yang sudah pasti dibalas 401.
+  const isSignedIn = authSession.status === 'success' && !!authSession.data
+
   const fetchForms = useQuery({
     queryKey: ['forms'],
     queryFn: () => getForms(),
+    enabled: isSignedIn,
+  })
+
+  const fetchFormsPublic = useQuery({
+    queryKey: ['formsPublic'],
+    queryFn: () => getFormsPublic(),
   })
 
   const fetchFormsDetail = useQuery({
@@ -39,16 +58,31 @@ export const useFormsControllers = () => {
   })
 
   useEffect(() => {
+    if (!isSignedIn) return setForms({ data: [], status: 'loading' })
     if (fetchForms.isPending) return setForms({ status: 'loading' })
     if (fetchForms.isError) return setForms({ status: 'error' })
 
     const data = fetchForms.data ?? []
     setForms({ data, status: data.length ? 'success' : 'empty' })
   }, [
+    isSignedIn,
     fetchForms.data,
     fetchForms.isPending,
     fetchForms.isError,
     setForms,
+  ])
+
+  useEffect(() => {
+    if (fetchFormsPublic.isPending) return setFormsPublic({ status: 'loading' })
+    if (fetchFormsPublic.isError) return setFormsPublic({ status: 'error' })
+
+    const data = fetchFormsPublic.data ?? []
+    setFormsPublic({ data, status: data.length ? 'success' : 'empty' })
+  }, [
+    fetchFormsPublic.data,
+    fetchFormsPublic.isPending,
+    fetchFormsPublic.isError,
+    setFormsPublic,
   ])
 
   useEffect(() => {
@@ -66,5 +100,5 @@ export const useFormsControllers = () => {
     setFormsDetail,
   ])
 
-  return { fetchForms, fetchFormsDetail, storeForms }
+  return { fetchForms, fetchFormsPublic, fetchFormsDetail, storeForms }
 }

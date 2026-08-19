@@ -2,9 +2,11 @@ import { create } from 'zustand'
 import type {
   DataForms,
   DataFormsCreated,
+  DataFormsPublic,
   DataFormsDetail,
   Forms,
   FormsCreated,
+  FormsPublic,
   FormsDetail,
   PayloadGetFormsDetail,
   PayloadPostForms,
@@ -14,11 +16,13 @@ interface FormsStore {
   payloadPostForms: PayloadPostForms
   payloadGetFormsDetail: PayloadGetFormsDetail
   forms: Forms
+  formsPublic: FormsPublic
   formsDetail: FormsDetail
   formsCreated: FormsCreated
   setPostForms: (payload: Partial<PayloadPostForms>) => void
   setGetFormsDetail: (payload: Partial<PayloadGetFormsDetail>) => void
   setForms: (forms: Partial<Forms>) => void
+  setFormsPublic: (formsPublic: Partial<FormsPublic>) => void
   setFormsDetail: (formsDetail: Partial<FormsDetail>) => void
   setFormsCreated: (formsCreated: Partial<FormsCreated>) => void
 }
@@ -49,6 +53,13 @@ export const useFormsStates = create<FormsStore>((set) => ({
     data: [] as DataForms[],
   },
 
+  formsPublic: {
+    status: 'loading',
+    statusTitle: 'Something went wrong',
+    statusSubtitle: 'Please try again later.',
+    data: [] as DataFormsPublic[],
+  },
+
   formsDetail: {
     status: 'loading',
     statusTitle: 'Something went wrong',
@@ -74,6 +85,11 @@ export const useFormsStates = create<FormsStore>((set) => ({
     })),
 
   setForms: (forms) => set((state) => ({ forms: { ...state.forms, ...forms } })),
+
+  setFormsPublic: (formsPublic) =>
+    set((state) => ({
+      formsPublic: { ...state.formsPublic, ...formsPublic },
+    })),
 
   setFormsDetail: (formsDetail) =>
     set((state) => ({ formsDetail: { ...state.formsDetail, ...formsDetail } })),
