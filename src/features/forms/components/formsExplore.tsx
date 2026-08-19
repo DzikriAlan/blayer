@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, ArrowUpRight, Sparkles, Users } from 'lucide-react'
 
-import { cn } from '@/shared/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
@@ -209,14 +208,10 @@ export default function FormsExplore({ templateId }: Props) {
               ))}
             </div>
           ) : (
-            <div
-              className={cn(
-                'grid gap-6',
-                data.layout === 'menu'
-                  ? 'sm:grid-cols-2 lg:grid-cols-3'
-                  : 'sm:grid-cols-2'
-              )}
-            >
+            // Poster dan menu sama-sama dibaca dengan cara memindai, jadi
+            // keduanya memakai grid yang sama: dua kolom begitu muat, tiga di
+            // layar lebar. Yang membedakan tetap isinya — sampul dan harga.
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.data.map((form) => (
                 <Link
                   key={form.id}
