@@ -55,13 +55,22 @@ export default function ErrorView({
               {subtitle}
             </p>
 
+            {/* Label tombol dibiarkan melipat di layar tersempit. Tombol
+                mewarisi whitespace-nowrap, dan pada 320 px "Kembali ke
+                Beranda" lebih lebar daripada ruang yang tersisa — teksnya
+                meluber keluar dan ikut menggeser seluruh halaman. */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="whitespace-normal text-center">
                 <Link href="/">
                   <Home /> Kembali ke Beranda
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="whitespace-normal text-center"
+              >
                 <Link href="/forms">
                   <LayoutGrid /> Semua Form
                 </Link>
