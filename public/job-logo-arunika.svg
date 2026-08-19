@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Logo demo Arunika Labs">
+  <defs>
+    <pattern id="harunika" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="16" height="16" fill="none"/>
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#111111" stroke-width="6" opacity="0.16"/>
+    </pattern>
+  </defs>
+  <rect width="240" height="240" fill="#F5F2EA"/>
+  <rect width="240" height="240" fill="url(#harunika)"/>
+  <rect x="28" y="28" width="184" height="184" fill="#5AA9E6"/>
+  <rect x="28" y="28" width="184" height="184" fill="none" stroke="#111111" stroke-width="12"/>
+  <text x="120" y="158" text-anchor="middle" font-family="Archivo, Arial Black, sans-serif" font-size="96" font-weight="900" fill="#111111">AL</text>
+</svg>
