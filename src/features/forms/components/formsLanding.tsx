@@ -163,9 +163,8 @@ export default function FormsLanding() {
           </h2>
 
           <p className="mt-5 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-            Kelas untuk menaikkan kemampuan, lowongan untuk membuktikannya,
-            proyek untuk membayarnya. Semuanya sedang berjalan sekarang, dan
-            bisa kamu ikuti tanpa membuat apa pun lebih dulu.
+            Semuanya sedang berjalan sekarang. Pilih yang kamu butuhkan dan
+            ikut langsung — tanpa perlu membuat apa pun lebih dulu.
           </p>
 
           <div className="mt-12">
