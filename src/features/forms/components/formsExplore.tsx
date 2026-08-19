@@ -363,7 +363,7 @@ export default function FormsExplore({ templateId }: Props) {
                   {/* Poster acara dan sampul kelas adalah alasan orang berhenti
                       menggulir, jadi gambarnya diberi ruang lebih dulu. */}
                   {data.layout === 'poster' ? (
-                    <div className="relative aspect-[16/9] w-full overflow-hidden border-b-2 border-foreground bg-muted">
+                    <div className="relative min-h-32 w-full overflow-hidden border-b-2 border-foreground bg-muted">
                       {/* Latar bergaris menutup sisa ruang saat poster tidak
                           sebangun dengan bingkainya. */}
                       <span
@@ -371,23 +371,26 @@ export default function FormsExplore({ templateId }: Props) {
                         className="brutal-hatch absolute inset-0 opacity-20"
                       />
                       {form.bannerUrl ? (
-                        <Image
+                        // Bingkainya sengaja tidak dikunci ke satu perbandingan
+                        // dan tingginya mengikuti gambar: poster acara maupun
+                        // sampul kelas tampil utuh, tanpa terpotong dan tanpa
+                        // menyisakan pita kosong di kiri-kanannya.
+                        //
+                        // Memakai <img> biasa, bukan next/image, justru karena
+                        // ukuran asli banner tidak diketahui di server — dan
+                        // next/image menuntut ukuran itu ditulis di muka, yang
+                        // berarti mengarang perbandingan yang belum tentu benar.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
                           src={form.bannerUrl}
                           // Poster acara dan sampul kelas kerap memuat tanggal
                           // dan tempat, jadi bukan gambar hiasan — namanya
                           // disebut seperti pada halaman isi form.
                           alt={`Banner ${form.title}`}
-                          fill
-                          // Banner tinggal di Supabase Storage yang tidak
-                          // terdaftar di remotePatterns; optimizer dilewati
-                          // seperti pada halaman isi form.
-                          unoptimized
-                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                          // Banner acara kerap jauh lebih lebar dari bingkainya
-                          // dan memuat tanggal serta tempat di tepi. object-cover
-                          // memotongnya persis di bagian itu, jadi posternya
-                          // dimuat utuh dan sisa ruangnya diisi latar bergaris.
-                          className="object-contain"
+                          loading="lazy"
+                          // Batas tinggi menahan poster yang sangat jangkung
+                          // supaya tidak mendorong seluruh isi kartu ke bawah.
+                          className="relative block h-auto max-h-[22rem] w-full object-contain"
                         />
                       ) : null}
                       {form.isPaid ? (
