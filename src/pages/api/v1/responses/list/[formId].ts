@@ -1,11 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { getAuthGuard } from '@/shared/lib/authServer'
+import { withApi } from '@/shared/lib/apiHandler'
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
@@ -56,3 +54,5 @@ export default async function handler(
     })),
   })
 }
+
+export default withApi('responses-list', handler)

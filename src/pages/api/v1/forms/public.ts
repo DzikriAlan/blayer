@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
+import { withApi } from '@/shared/lib/apiHandler'
 
 /**
  * Katalog form yang boleh dilihat siapa saja.
@@ -18,10 +19,7 @@ import { prisma } from '@/shared/lib/prisma'
  * pembuat form, serta `qrisUrl`, `meetingUrl`, dan `videoUrl` yang baru boleh
  * terlihat setelah seseorang benar-benar mendaftar atau membayar.
  */
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
@@ -58,3 +56,5 @@ export default async function handler(
     }))
   )
 }
+
+export default withApi('forms-public', handler)

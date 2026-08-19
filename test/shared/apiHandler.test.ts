@@ -1,0 +1,89 @@
+import { describe, expect, it, vi } from 'vitest'
+
+import { withApi } from '@/shared/lib/apiHandler'
+
+const getResponse = () => {
+  const res = {
+    statusCode: 0,
+    body: null as { message?: string } | null,
+    headersSent: false,
+    headers: {} as Record<string, string>,
+    setHeader(key: string, value: string) {
+      res.headers[key] = value
+    },
+    status(code: number) {
+      res.statusCode = code
+      return res
+    },
+    json(body: unknown) {
+      res.body = body as { message?: string }
+      return res
+    },
+  }
+  return res
+}
+
+describe('pembungkus handler API', () => {
+  it('TC-42a mengubah kegagalan tak tertangkap jadi JSON, bukan halaman HTML', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const handler = withApi('uji', async () => {
+      throw new Error("Can't reach database server")
+    })
+    const res = getResponse()
+
+    await handler({ method: 'POST', headers: {} } as never, res as never)
+
+    expect(res.statusCode).toBe(500)
+    // Pesan asli menyebut detail koneksi database, jadi tidak diteruskan.
+    expect(res.body?.message).not.toContain('database server')
+    expect(res.body?.message).toContain(res.headers['X-Request-Id'])
+    errorSpy.mockRestore()
+  })
+
+  it('TC-42b mencatat kegagalan ke log dengan nama rute', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const handler = withApi('forms-detail', async () => {
+      throw new Error('boom')
+    })
+
+    await handler({ method: 'PUT', headers: {} } as never, getResponse() as never)
+
+    expect(errorSpy).toHaveBeenCalledTimes(1)
+    const entry = JSON.parse(errorSpy.mock.calls[0][0] as string)
+    expect(entry).toMatchObject({
+      level: 'error',
+      route: 'forms-detail',
+      method: 'PUT',
+      errorMessage: 'boom',
+    })
+    errorSpy.mockRestore()
+  })
+
+  it('TC-42c tidak menimpa balasan yang sudah terkirim sebagian', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const res = getResponse()
+    const handler = withApi('uji', async () => {
+      res.status(200).json({ message: 'sudah terkirim' })
+      res.headersSent = true
+      throw new Error('gagal setelahnya')
+    })
+
+    await handler({ method: 'GET', headers: {} } as never, res as never)
+
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toEqual({ message: 'sudah terkirim' })
+    errorSpy.mockRestore()
+  })
+
+  it('TC-42d meneruskan balasan normal apa adanya', async () => {
+    const res = getResponse()
+    const handler = withApi('uji', async (_req, response) => {
+      response.status(201).json({ id: 'form-1' })
+    })
+
+    await handler({ method: 'POST', headers: {} } as never, res as never)
+
+    expect(res.statusCode).toBe(201)
+    expect(res.body).toEqual({ id: 'form-1' })
+  })
+})
