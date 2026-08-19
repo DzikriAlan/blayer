@@ -1,9 +1,8 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { useRouter } from 'next/router'
 
-import type { DataFormsPublic } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
 import { useFormsControllers } from '../controllers/formsControllers'
 
@@ -30,10 +29,6 @@ export default function FormsLanding() {
 
   const categoryRef = useRef<HTMLElement>(null)
 
-  const [filters, setFilters] = useState({
-    exploreId: '',
-  })
-
   const data = useMemo(() => {
     const getViewLabel = (view: string) =>
       ({
@@ -45,42 +40,24 @@ export default function FormsLanding() {
         course: 'KELAS BERBAYAR',
       })[view] ?? 'FORM'
 
-    const getMappedForm = (item: DataFormsPublic) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      totalField: item.totalField,
-      totalResponse: item.totalResponse,
-    })
-
-    // Katalog publik hanya berisi form yang sudah dipublikasikan, jadi tidak
-    // perlu disaring ulang di sini.
-    const getRelatedForms = (templateId: string) =>
-      formsPublic.data
-        .filter((raw) => raw.templateId === templateId)
-        .map((raw) => getMappedForm(raw))
+    // Katalog publik hanya berisi form yang sudah dipublikasikan, jadi cukup
+    // dihitung per template — daftar isinya dibuka di halaman kategori.
+    const getTotalForm = (templateId: string) =>
+      formsPublic.data.filter((raw) => raw.templateId === templateId).length
 
     const visibleTemplates = FORMS_TEMPLATES.filter(
       (template) => template.isVisible
     )
 
-    const mappedList = visibleTemplates.map((template) => {
-      const relatedForms = getRelatedForms(template.id)
-
-      return {
-        id: template.id,
-        name: template.name,
-        tagline: template.tagline,
-        viewLabel: getViewLabel(template.view),
-        icon: template.icon,
-        totalField: template.values.fields.length,
-        totalForm: relatedForms.length,
-        isExploring: filters.exploreId === template.id,
-        forms: relatedForms,
-        emptyExploreTitle: 'Belum Ada Yang Terbuka',
-        emptyExploreSubtitle: `Belum ada ${template.name.toLowerCase()} yang bisa diikuti sekarang. Pakai templatenya untuk membuka yang pertama.`,
-      }
-    })
+    const mappedList = visibleTemplates.map((template) => ({
+      id: template.id,
+      name: template.name,
+      tagline: template.tagline,
+      viewLabel: getViewLabel(template.view),
+      icon: template.icon,
+      totalField: template.values.fields.length,
+      totalForm: getTotalForm(template.id),
+    }))
 
     const totalResponse = formsPublic.data.reduce(
       (total, raw) => total + raw.totalResponse,
@@ -109,7 +86,7 @@ export default function FormsLanding() {
       })),
       marqueeWords: [...MARQUEE_WORDS, ...MARQUEE_WORDS],
     }
-  }, [filters, formsPublic])
+  }, [formsPublic])
 
   // Kategori memakai template yang sama dengan builder, jadi "Use Template"
   // cukup meneruskan idnya lewat query string seperti di riwayat form.
@@ -117,12 +94,11 @@ export default function FormsLanding() {
     router.push(`/forms/create?template=${templateId}`)
   }
 
-  // Membuka daftar form yang sudah live dari kategori itu; klik ulang menutup.
+  // Daftar form kategori dibuka di halamannya sendiri, karena tiap kategori
+  // punya bentuk sajian yang berbeda — poster untuk acara, menu untuk restoran,
+  // daftar untuk ujian — dan itu tidak muat di dalam kartu di halaman depan.
   const loadFormsExplore = (templateId: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      exploreId: prev.exploreId === templateId ? '' : templateId,
-    }))
+    router.push(`/kategori/${templateId}`)
   }
 
   const loadFormsCategory = () => {
@@ -183,7 +159,6 @@ export default function FormsLanding() {
             <LoadData response={data} minHeight="30vh">
               <FormsCategory
                 data={data.data}
-                isLoading={data.isLoading}
                 onLoadFormsTemplate={loadFormsTemplate}
                 onLoadFormsExplore={loadFormsExplore}
               />
