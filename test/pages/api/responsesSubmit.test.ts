@@ -62,8 +62,11 @@ const validBody = {
   answers: { 'field-1': 'Sinta' },
 }
 
-beforeEach(() => {
-  resetRateLimit()
+beforeEach(async () => {
+  // Rute ini dianggap berada di belakang satu proxy, keadaan yang sama dengan
+  // saat dipasang di platform hosting; tanpa itu X-Forwarded-For diabaikan.
+  process.env.TRUST_PROXY_HOPS = '1'
+  await resetRateLimit()
   prismaMock.form.findUnique = vi.fn().mockResolvedValue(getForm())
   prismaMock.formResponse.create = vi
     .fn()
@@ -136,5 +139,20 @@ describe('pengiriman jawaban', () => {
     const res = await call(validBody, '10.0.0.2')
 
     expect(res.statusCode).toBe(201)
+  })
+
+  it('TC-41h tanpa proxy tepercaya, alamat karangan tidak menambah kuota', async () => {
+    // X-Forwarded-For ditulis oleh klien. Kalau dipercaya tanpa syarat, satu
+    // pengirim cukup mengganti isinya tiap permintaan untuk mendapat kuota tak
+    // terbatas.
+    delete process.env.TRUST_PROXY_HOPS
+
+    for (let index = 0; index < 5; index += 1) {
+      await call(validBody, `10.0.0.${index}`)
+    }
+
+    const res = await call(validBody, '203.0.113.9')
+
+    expect(res.statusCode).toBe(429)
   })
 })

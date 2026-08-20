@@ -1,11 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { withApi } from '@/shared/lib/apiHandler'
+import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
+  }
+
+  if (
+    !(await enforceRateLimit(req, res, {
+      name: 'forms-public',
+      limit: 120,
+      windowMs: 60_000,
+    }))
+  ) {
+    return
   }
 
   const forms = await prisma.form.findMany({

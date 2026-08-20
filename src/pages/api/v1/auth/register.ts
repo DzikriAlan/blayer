@@ -20,11 +20,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (
-    !enforceRateLimit(req, res, {
+    !(await enforceRateLimit(req, res, {
       name: 'auth-register',
       limit: 5,
       windowMs: 10 * 60_000,
-    })
+    }))
   ) {
     return
   }

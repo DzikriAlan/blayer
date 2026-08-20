@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { getAuthGuard } from '@/shared/lib/authServer'
 import { withApi } from '@/shared/lib/apiHandler'
+import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
@@ -11,6 +12,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const user = await getAuthGuard(req, res)
   if (!user) return
+
+  if (
+    !(await enforceRateLimit(req, res, {
+      name: 'responses-list',
+      limit: 60,
+      windowMs: 60_000,
+      scope: user.id,
+    }))
+  ) {
+    return
+  }
 
   const { formId } = req.query
 

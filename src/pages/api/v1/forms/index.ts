@@ -39,12 +39,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!user) return
 
     if (
-      !enforceRateLimit(req, res, {
+      !(await enforceRateLimit(req, res, {
         name: 'forms-create',
         limit: 20,
         windowMs: 60_000,
         scope: user.id,
-      })
+      }))
     ) {
       return
     }

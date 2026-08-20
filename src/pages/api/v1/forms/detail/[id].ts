@@ -100,12 +100,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (
-    !enforceRateLimit(req, res, {
+    !(await enforceRateLimit(req, res, {
       name: 'forms-update',
       limit: 60,
       windowMs: 60_000,
       scope: user.id,
-    })
+    }))
   ) {
     return
   }

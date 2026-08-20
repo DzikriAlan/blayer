@@ -35,12 +35,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (
-    !enforceRateLimit(req, res, {
+    !(await enforceRateLimit(req, res, {
       name: 'uploads-banner',
       limit: 20,
       windowMs: 10 * 60_000,
       scope: user.id,
-    })
+    }))
   ) {
     return
   }
