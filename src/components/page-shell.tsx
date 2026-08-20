@@ -11,11 +11,17 @@ import AuthAccount from '@/features/auth/components/authAccount'
 
 interface Props {
   backHref?: string
+  /** Giant word set vertically down the left rail. */
   railWord?: string
+  /** Small stacked label at the top of the left rail. */
   railEyebrow?: string
+  /** Index chip at the top of the left rail. */
   railIndex?: string
+  /** Mono title shown in the black top bar. */
   barTitle: string
+  /** Vertical label on the right rail. */
   railNote?: string
+  /** Optional action rendered at the right edge of the top bar. */
   action?: React.ReactNode
   className?: string
   children: React.ReactNode
@@ -93,6 +99,8 @@ export default function PageShell({
             />
           </Link>
           <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
+          {/* Aksi bilah atas — mis. tombol Save di builder — harus tetap
+              terjangkau di ponsel dan terbaca pembaca layar. */}
           <div className="ml-auto flex shrink-0 items-center gap-3">
             {action}
             <AuthAccount tone="dark" />

@@ -27,6 +27,9 @@ export const useFormsControllers = () => {
     setFormsCreated,
   } = useFormsStates()
 
+  // Daftar ini berisi form milik pemanggilnya, jadi tanpa sesi tidak ada yang
+  // bisa dikembalikan. Menahannya di sini mencegah halaman publik menembakkan
+  // request yang sudah pasti dibalas 401.
   const isSignedIn = authSession.status === 'success' && !!authSession.data
 
   const fetchForms = useQuery({
@@ -71,6 +74,8 @@ export const useFormsControllers = () => {
     onSuccess: (data) => {
       setFormsCreated({ data: data ?? null, status: data ? 'success' : 'empty' })
       queryClient.invalidateQueries({ queryKey: ['forms'] })
+      // Detail ikut disegarkan supaya halaman isi form tidak menampilkan
+      // pertanyaan versi lama setelah pemiliknya menyunting.
       queryClient.invalidateQueries({ queryKey: ['formsDetail'] })
     },
     onError: (error: Error) => {

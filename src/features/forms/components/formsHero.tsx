@@ -3,6 +3,7 @@ import { ArrowDown, ArrowRight, type LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
+/** Ditulis di sini karena hanya hero yang memakainya. */
 const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
 
 export interface FormsHeroCategory {
@@ -38,6 +39,8 @@ export default function FormsHero({
       <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-5 pb-8 pt-10 sm:px-8 sm:pb-10 sm:pt-14 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
         <div>
           <span className="brutal-eyebrow inline-block bg-primary px-3 py-2 text-primary-foreground">
+            {/* Ketiganya bergantian digulir ke atas: yang pertama menyebut
+                alatnya, dua sisanya menyebut alasan orang datang. */}
             <span className="brutal-rotator">
               <span aria-hidden className="brutal-rotator-track">
                 {[...TAGLINES, TAGLINES[0]].map((tagline, index) => (
@@ -82,6 +85,7 @@ export default function FormsHero({
           </p>
         </div>
 
+        {/* Sisi kanan menunjukkan apa saja yang bisa dibentuk, bukan gambar hiasan. */}
         <div className="border-2 border-foreground bg-background">
           <div className="flex items-stretch gap-3 border-b-2 border-foreground bg-foreground px-5 py-2.5 text-background">
            <span className="brutal-eyebrow"></span>
@@ -117,6 +121,8 @@ export default function FormsHero({
         </div>
       </div>
 
+      {/* Statistik dibingkai sebagai kartu, bukan pita selebar layar, supaya
+          tepi kanannya berhenti sejajar dengan isi hero di atasnya. */}
       <div className="mx-auto w-full max-w-6xl px-5 pb-8 sm:px-8 sm:pb-10">
         <dl className="grid border-2 border-foreground sm:grid-cols-3">
           {stats.map((stat, index) => (

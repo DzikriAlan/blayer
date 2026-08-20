@@ -12,6 +12,7 @@ import FormsHero from './formsHero'
 import FormsCategory from './formsCategory'
 import { FORMS_TEMPLATES, FORMS_VIEW_COPY } from './formsTemplate'
 
+/** Pita berjalan di antara section; digandakan supaya perulangannya mulus. */
 const MARQUEE_WORDS = [
   'PSIKOTES KERJA',
   'PENDAFTARAN ACARA',
@@ -41,13 +42,20 @@ export default function FormsLanding() {
         course: 'KELAS BERBAYAR',
       })[view] ?? 'FORM'
 
+    // Katalog publik hanya berisi form yang sudah dipublikasikan, jadi cukup
+    // dihitung per template — daftar isinya dibuka di halaman kategori.
     const getTotalForm = (templateId: string) =>
       formsPublic.data.filter((raw) => raw.templateId === templateId).length
 
+    // Etalase depan memakai `isFeatured`, bukan `isVisible`: ujian sekolah dan
+    // menu restoran tetap bisa dipakai di builder dan halaman kategorinya tetap
+    // hidup, tapi tempatnya di halaman depan diisi psikotes dan freelance.
     const visibleTemplates = FORMS_TEMPLATES.filter(
       (template) => template.isFeatured
     )
 
+    // Satuan isinya diambil dari naskah kategori, jadi tiap kartu menyebut
+    // isinya dengan bahasanya sendiri — "03 LOWONGAN DIBUKA", bukan "03 FORM".
     const getAvailabilityText = (template: (typeof FORMS_TEMPLATES)[number]) =>
       `${String(getTotalForm(template.id)).padStart(2, '0')} ${
         FORMS_VIEW_COPY[template.view].availabilityLabel
@@ -56,6 +64,10 @@ export default function FormsLanding() {
     const mappedList = visibleTemplates.map((template) => ({
       id: template.id,
       name: template.name,
+      // Tagline template menjelaskan apa yang didapat pembuat form. Etalase
+      // ini dibaca orang yang datang untuk ikut, jadi yang dipakai naskah
+      // kategorinya — kalimat yang sama dengan yang menyambut mereka di
+      // halaman kategori setelah tombolnya ditekan.
       description: FORMS_VIEW_COPY[template.view].lead,
       viewLabel: getViewLabel(template.view),
       icon: template.icon,
@@ -91,6 +103,10 @@ export default function FormsLanding() {
     }
   }, [formsPublic])
 
+  // Daftar form kategori dibuka di halamannya sendiri, karena tiap kategori
+  // punya bentuk sajian yang berbeda — poster untuk acara, papan lowongan
+  // untuk psikotes, papan proyek untuk freelance — dan itu tidak muat di dalam
+  // kartu di halaman depan.
   const loadFormsExplore = (templateId: string) => {
     router.push(`/kategori/${templateId}`)
   }
@@ -159,6 +175,7 @@ export default function FormsLanding() {
               />
             </LoadData>
 
+            {/* Placeholder LoadData tidak punya slot aksi. */}
             {data.isError ? (
               <div className="mt-6 flex justify-center">
                 <Button onClick={() => fetchFormsPublic.refetch()}>Retry</Button>

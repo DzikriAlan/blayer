@@ -1,6 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
+/**
+ * Verifikasi sesi di sisi server.
+ *
+ * Guard di browser hanya menyembunyikan tampilan — siapa pun masih bisa
+ * memanggil API langsung lewat curl. File ini yang membuat penolakannya nyata:
+ * token dari header Authorization diadu ke Supabase, dan handler baru berjalan
+ * kalau tokennya sah.
+ */
+
 const supabaseUrl = (
   process.env.SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -16,6 +25,8 @@ const supabaseKey = (
 
 const isReady = !!supabaseUrl && !!supabaseKey
 
+// Client ini hanya dipakai untuk membaca token, tidak pernah menyimpan sesi —
+// tiap request API berdiri sendiri.
 const verifier = isReady
   ? createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
   : null
@@ -44,6 +55,10 @@ export const clearSessionCache = () => {
   sessionCache.clear()
 }
 
+/**
+ * Membaca pengguna dari token, atau null kalau tidak ada/kadaluwarsa.
+ * Dipakai endpoint yang boleh diakses publik tapi ingin tahu siapa pemanggilnya.
+ */
 export const getAuthUser = async (req: NextApiRequest) => {
   if (!verifier) return null
 
@@ -73,6 +88,12 @@ export const getAuthUser = async (req: NextApiRequest) => {
   return user
 }
 
+/**
+ * Versi tegas: membalas 401 dan mengembalikan null bila tidak ada sesi sah.
+ *
+ * Handler cukup menulis `const user = await getAuthGuard(req, res); if (!user) return`
+ * sehingga tidak ada jalur yang lupa memeriksa.
+ */
 export const getAuthGuard = async (
   req: NextApiRequest,
   res: NextApiResponse

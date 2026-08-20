@@ -31,6 +31,8 @@ export default function ResponsesEvent({
   totalAttendee,
 }: Props) {
   const data = useMemo(() => {
+    // Baris detail baru dirender kalau datanya memang ada, jadi form acara
+    // tanpa field tanggal atau sesi tidak menyisakan kolom kosong.
     const getDetailList = () => [
       { key: 'tanggal', icon: CalendarDays, label: 'TANGGAL', value: dateText },
       { key: 'sesi', icon: Clock, label: 'SESI', value: sessionText },

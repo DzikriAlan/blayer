@@ -4,6 +4,15 @@ import { Component, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 
+/**
+ * Jaring pengaman untuk error saat render di browser.
+ *
+ * Tanpa ini, satu komponen yang melempar error membuat React membuang seluruh
+ * pohon dan pengguna melihat halaman putih tanpa penjelasan maupun jalan
+ * keluar. Halaman 500 bawaan Next tidak menolong di sini: yang gagal terjadi
+ * setelah halaman terkirim, bukan saat merespons request.
+ */
+
 interface Props {
   children: ReactNode
 }
@@ -20,6 +29,8 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
+    // Console browser adalah satu-satunya tempat yang pasti terbaca saat
+    // pengguna melaporkan layar kosong.
     console.error('[blayer] render gagal', error)
   }
 

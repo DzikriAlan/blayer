@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// vi.hoisted dipakai karena vi.mock diangkat ke atas berkas — tiruan harus
+// sudah ada sebelum modul yang diuji diimpor.
 const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: { form: { findMany: vi.fn() } },
   authMock: { called: false },
@@ -7,6 +9,8 @@ const { prismaMock, authMock } = vi.hoisted(() => ({
 
 vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
 
+// Katalog publik tidak boleh menyentuh penjaga sesi sama sekali. Kalau suatu
+// saat ada yang memasangnya, tiruan ini yang akan menangkap.
 vi.mock('@/shared/lib/authServer', () => ({
   getAuthGuard: async () => {
     authMock.called = true
@@ -92,6 +96,7 @@ describe('katalog form publik', () => {
       'totalResponse',
     ])
 
+    // Kolom rahasia tidak boleh ikut diminta dari database sejak awal.
     const select = prismaMock.form.findMany.mock.calls[0][0].select
     expect(select.purpose).toBeUndefined()
     expect(select.qrisUrl).toBeUndefined()

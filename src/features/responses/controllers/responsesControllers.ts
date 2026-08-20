@@ -31,6 +31,8 @@ export const useResponsesControllers = () => {
       queryClient.invalidateQueries({ queryKey: ['responsesList'] })
     },
     onError: (error: Error) => {
+      // Pesan asli dari server yang ditampilkan, bukan teks bawaan: penolakan
+      // seperti batas laju atau field wajib hanya berguna kalau terbaca.
       setResponses({
         status: 'error',
         statusSubtitle: error.message || 'Please try again later.',

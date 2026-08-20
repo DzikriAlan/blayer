@@ -12,6 +12,7 @@ export const postUploadsBanner = async (
       headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
       body: JSON.stringify(payload),
     })
+    // Pesan dari server ikut dibaca supaya alasan gagalnya sampai ke UI.
     const json = await res.json().catch(() => null)
     if (!res.ok) throw new Error(json?.message || res.statusText)
     return json

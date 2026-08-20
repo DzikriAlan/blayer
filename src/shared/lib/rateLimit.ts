@@ -2,10 +2,28 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { logger } from './logger'
 import { getRateLimitStore, setRateLimitStore } from './rateLimitStore'
 
+/**
+ * Pembatas laju sederhana berbasis memori proses.
+ *
+ * Endpoint pengiriman jawaban terbuka tanpa sesi — itu memang disengaja,
+ * peserta tidak perlu punya akun. Konsekuensinya satu skrip bisa mengirim
+ * ribuan jawaban palsu ke form mana pun, dan jawaban itulah yang nanti jadi
+ * bahan analisis AI berbayar. Batas ini menutup jalur termurah untuk itu.
+ *
+ * Batasnya: hitungan disimpan di memori instance, jadi saat aplikasi berjalan
+ * di banyak instance serverless tiap instance punya jatahnya sendiri. Untuk
+ * menahan banjir dari satu sumber ini sudah cukup; kalau nanti trafiknya besar,
+ * ganti isi `getHits` dengan Redis/Upstash tanpa mengubah pemanggilnya.
+ */
+
 interface RateLimitOptions {
+  /** Nama aturan, ikut jadi bagian kunci supaya antar-endpoint tidak saling makan jatah. */
   name: string
+  /** Jumlah request yang boleh lewat dalam satu jendela waktu. */
   limit: number
+  /** Panjang jendela waktu dalam milidetik. */
   windowMs: number
+  /** Pembeda tambahan, mis. id form, supaya batas berlaku per form per IP. */
   scope?: string
 }
 
@@ -45,6 +63,10 @@ export const getClientIp = (req: NextApiRequest) => {
   return chain[index] ?? chain[0]
 }
 
+/**
+ * Mengembalikan true kalau request boleh diteruskan. Kalau kuotanya habis,
+ * fungsi ini sendiri yang membalas 429 sehingga pemanggil cukup `return`.
+ */
 export const enforceRateLimit = async (
   req: NextApiRequest,
   res: NextApiResponse,
@@ -90,6 +112,7 @@ export const enforceRateLimit = async (
   return true
 }
 
+/** Hanya dipakai test supaya hitungan satu kasus tidak bocor ke kasus lain. */
 export const resetRateLimit = async () => {
   await getRateLimitStore().clear()
   setRateLimitStore(null)

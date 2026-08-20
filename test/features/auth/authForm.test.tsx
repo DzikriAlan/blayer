@@ -155,6 +155,7 @@ describe('halaman masuk', () => {
     )
     expect(field).toHaveAttribute('type', 'password')
 
+    // Tombolnya di dalam form, jadi harus dipastikan tidak ikut mengirim.
     expect(calls.password).not.toHaveBeenCalled()
   })
 
@@ -205,6 +206,8 @@ describe('halaman daftar', () => {
     const user = userEvent.setup()
     renderForm('register')
 
+    // Saat mendaftar, alamatnya dibentuk dari username. Membiarkan isian berupa
+    // email lolos akan membuat akun beralamat ganda yang tidak bisa dimasuki.
     await user.type(
       screen.getByLabelText(/username/i),
       'penggunabaru@blayer.id'

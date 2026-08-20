@@ -18,6 +18,9 @@ const Kategori: NextPage<Props> = ({ templateId, heading, lead }) => {
   return (
     <>
       <Head>
+        {/* Judul tab memakai kalimat yang sama dengan halamannya — orang yang
+            membagikan tautan ini sedang menawarkan sesuatu untuk diikuti,
+            bukan memamerkan nama template. */}
         <title>{`${heading} — BLAYER`}</title>
         <meta name="description" content={lead} />
       </Head>
@@ -28,6 +31,15 @@ const Kategori: NextPage<Props> = ({ templateId, heading, lead }) => {
   )
 }
 
+/**
+ * Daftar template adalah konstanta di kode, bukan data dari basis data, jadi
+ * seluruh alamat kategori sudah bisa dipastikan saat build. Halaman ini dibuat
+ * untuk dibagikan, jadi judul dan deskripsinya harus benar sejak balasan
+ * pertama — bukan baru terisi setelah JavaScript jalan.
+ *
+ * `fallback: false` membuat kategori yang tidak ada dibalas 404 sungguhan,
+ * bukan halaman kosong berstatus 200.
+ */
 export const getStaticPaths: GetStaticPaths = () => ({
   paths: FORMS_TEMPLATES.map((template) => ({ params: { id: template.id } })),
   fallback: false,

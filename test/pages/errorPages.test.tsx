@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from 'vitest'
 import NotFoundPage from '@/pages/404'
 import ServerErrorPage from '@/pages/500'
 
+// Rangka halaman publik memuat kontrol akun, yang membaca rute aktif untuk
+// menyusun tautan "Masuk" dan sesi lewat TanStack Query.
 vi.mock('next/router', () => ({
   useRouter: () => ({ asPath: '/tidak-ada', replace: vi.fn() }),
 }))

@@ -37,6 +37,7 @@ const securityHeaders = [
   },
 ]
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   // Direktori build bisa dipisah lewat env supaya server verifikasi tidak
   // menimpa .next milik dev server yang sedang berjalan. Dua proses Next yang
