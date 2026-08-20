@@ -3,17 +3,17 @@ import { logger } from './logger'
 import { getRateLimitStore, setRateLimitStore } from './rateLimitStore'
 
 /**
- * Pembatas laju sederhana berbasis memori proses.
+ * Pembatas laju bersama untuk seluruh instance.
  *
  * Endpoint pengiriman jawaban terbuka tanpa sesi — itu memang disengaja,
  * peserta tidak perlu punya akun. Konsekuensinya satu skrip bisa mengirim
  * ribuan jawaban palsu ke form mana pun, dan jawaban itulah yang nanti jadi
  * bahan analisis AI berbayar. Batas ini menutup jalur termurah untuk itu.
  *
- * Batasnya: hitungan disimpan di memori instance, jadi saat aplikasi berjalan
- * di banyak instance serverless tiap instance punya jatahnya sendiri. Untuk
- * menahan banjir dari satu sumber ini sudah cukup; kalau nanti trafiknya besar,
- * ganti isi `getHits` dengan Redis/Upstash tanpa mengubah pemanggilnya.
+ * Hitungannya ditaruh di penyimpanan bersama lewat `rateLimitStore`, bukan di
+ * memori proses: di platform serverless tiap instance punya memori sendiri dan
+ * kehilangannya saat cold start, sehingga batas yang disangka aktif sebenarnya
+ * bisa dilewati dengan memaksa instance baru.
  */
 
 interface RateLimitOptions {
