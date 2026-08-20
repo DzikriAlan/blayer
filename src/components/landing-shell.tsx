@@ -8,6 +8,23 @@ import wordmark from '@/shared/images/blayer.png'
 import { cn } from '@/shared/lib/utils'
 import AuthAccount from '@/features/auth/components/authAccount'
 
+const FOOTER_COLUMNS = [
+  {
+    title: 'HALAMAN',
+    links: [
+      { href: '/', label: 'Beranda' },
+      { href: '/forms', label: 'Semua Form' },
+    ],
+  },
+  {
+    title: 'AKUN',
+    links: [
+      { href: '/login', label: 'Masuk' },
+      { href: '/register', label: 'Daftar' },
+    ],
+  },
+]
+
 interface Props {
   className?: string
   children: React.ReactNode
@@ -59,33 +76,34 @@ export default function LandingShell({ className, children }: Props) {
             </p>
           </div>
 
-          <div>
-            <p className="brutal-eyebrow opacity-70">HALAMAN</p>
-            <ul className="mt-4 flex flex-col gap-2.5">
-              <li>
-                <Link
-                  href="/forms"
-                  className="inline-flex min-h-[32px] items-center font-mono text-sm hover:text-primary"
-                >
-                  Semua Form
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="brutal-eyebrow opacity-70">MULAI</p>
-            <p className="mt-4 font-mono text-sm leading-relaxed opacity-80">
-              Mulai dari satu template, sesuaikan pertanyaannya, lalu bagikan
-              tautannya.
-            </p>
-          </div>
+          {FOOTER_COLUMNS.map((column) => (
+            <div key={column.title}>
+              <p className="brutal-eyebrow opacity-70">{column.title}</p>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="inline-flex min-h-[32px] items-center font-mono text-sm hover:text-primary"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         <div className="border-t-2 border-background/20 px-5 py-5 sm:px-8">
-          <p className="brutal-eyebrow mx-auto w-full max-w-6xl opacity-60">
-            BLAYER® STUDIO · DIBUAT UNTUK FORM YANG HASILNYA LANGSUNG TERBACA
-          </p>
+          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <p className="brutal-eyebrow opacity-60">
+              © {new Date().getFullYear()} BLAYER® STUDIO
+            </p>
+            <p className="brutal-eyebrow opacity-60">
+              DIBUAT UNTUK FORM YANG HASILNYA LANGSUNG TERBACA
+            </p>
+          </div>
         </div>
       </footer>
     </div>
