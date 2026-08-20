@@ -56,7 +56,7 @@ export default function FormsHero({
           </h1>
 
           <p className="mt-6 max-w-xl font-mono text-sm leading-relaxed text-foreground/80">
-            Bukan hanya form builder, Blayer membangun ekosistem tempat
+            Lebih dari form builder, Blayer membangun ekosistem tempat
             kemampuan, peluang, dan penghasilan saling menyambung satu sama
             lain.
           </p>
