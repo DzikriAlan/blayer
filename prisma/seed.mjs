@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 // Form demo harus punya pemilik seperti form biasa, kalau tidak seed gagal di
 // kolom userId yang sekarang wajib. Pemiliknya akun admin, jadi data demo ikut
 // terlihat saat masuk sebagai admin.
-const SEED_OWNER_EMAIL = 'blayeradmin@blayer.id'
+const SEED_OWNER_EMAIL = 'adminblayerganteng@blayer.id'
 let ownerId = ''
 
 const getOwnerId = async () => {

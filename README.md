@@ -108,7 +108,7 @@ Verify the database connection:
 npx prisma studio
 ```
 
-Isi data contoh (butuh akun `blayeradmin` sudah terdaftar, atau set `SEED_OWNER_ID`):
+Isi data contoh (butuh akun `adminblayerganteng` sudah terdaftar, atau set `SEED_OWNER_ID`):
 ```bash
 npm run db:seed
 ```
