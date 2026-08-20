@@ -8,6 +8,7 @@ import {
 import { getAuthGuard } from '@/shared/lib/authServer'
 import { withApi } from '@/shared/lib/apiHandler'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
+import { getImageExtension, getImageType } from '@/shared/lib/imageBytes'
 
 const ALLOWED_TYPES = [
   'image/jpeg',
@@ -77,14 +78,31 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ message: 'Ukuran banner maksimal 4 MB.' })
   }
 
-  const extension = fileName.split('.').pop()?.toLowerCase() || 'jpg'
+  // Sampai titik ini tipe berkas masih sebatas klaim klien. Yang disimpan dan
+  // disajikan nanti adalah isinya, jadi isinya yang menentukan.
+  const detectedType = getImageType(buffer)
+
+  if (!detectedType || !ALLOWED_TYPES.includes(detectedType)) {
+    return res.status(400).json({
+      message:
+        'Isi berkas bukan gambar JPG, PNG, WEBP, GIF, atau AVIF yang bisa dibaca.',
+    })
+  }
+
+  if (detectedType !== contentType) {
+    return res.status(400).json({
+      message: `Isi berkas terbaca sebagai ${detectedType}, tidak cocok dengan ${contentType} yang disebutkan.`,
+    })
+  }
+
+  const extension = getImageExtension(detectedType)
   const objectPath = `banner-${Date.now()}-${Math.random()
     .toString(36)
     .slice(2, 8)}.${extension}`
 
   const uploaded = await supabase.storage
     .from(SUPABASE_BANNER_BUCKET)
-    .upload(objectPath, buffer, { contentType, upsert: false })
+    .upload(objectPath, buffer, { contentType: detectedType, upsert: false })
 
   if (uploaded.error) {
     const getUploadErrorMessage = () => {
