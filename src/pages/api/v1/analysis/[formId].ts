@@ -114,6 +114,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return
   }
 
+  if (
+    !(await enforceRateLimit(req, res, {
+      name: 'analysis-daily-quota',
+      limit: 20,
+      windowMs: 24 * 60 * 60_000,
+      scope: user.id,
+    }))
+  ) {
+    return
+  }
+
   const form = await prisma.form.findUnique({
     where: { id: String(formId) },
     include: {

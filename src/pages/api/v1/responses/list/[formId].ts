@@ -25,12 +25,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const { formId } = req.query
+  const limitQuery = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined
+  const cursor = req.query.cursor ? String(req.query.cursor) : undefined
+  const isPaginated = limitQuery !== undefined || cursor !== undefined
+  const limit = limitQuery ? Math.min(Math.max(limitQuery, 1), 100) : 50
 
   const form = await prisma.form.findUnique({
     where: { id: String(formId) },
     include: {
       fields: { orderBy: { order: 'asc' } },
-      responses: { orderBy: { createdAt: 'desc' } },
     },
   })
 
@@ -41,6 +44,29 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .status(403)
       .json({ message: 'Form ini bukan milik akun yang sedang masuk.' })
   }
+
+  const rawResponses = await prisma.formResponse.findMany({
+    where: { formId: form.id },
+    take: isPaginated ? limit + 1 : undefined,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+  })
+
+  let nextCursor: string | null = null
+  let responses = rawResponses
+  if (isPaginated && rawResponses.length > limit) {
+    responses = rawResponses.slice(0, limit)
+    nextCursor = responses[responses.length - 1].id
+  }
+
+  const mappedResponses = responses.map((response) => ({
+    id: response.id,
+    respondentName: response.respondentName ?? '',
+    respondentEmail: response.respondentEmail ?? '',
+    answers: (response.answers as Record<string, unknown>) ?? {},
+    durationSeconds: response.durationSeconds ?? 0,
+    createdAt: response.createdAt.toISOString(),
+  }))
 
   return res.status(200).json({
     formId: form.id,
@@ -55,14 +81,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       options: (field.options as string[] | null) ?? [],
       isRequired: field.isRequired,
     })),
-    responses: form.responses.map((response) => ({
-      id: response.id,
-      respondentName: response.respondentName ?? '',
-      respondentEmail: response.respondentEmail ?? '',
-      answers: (response.answers as Record<string, unknown>) ?? {},
-      durationSeconds: response.durationSeconds ?? 0,
-      createdAt: response.createdAt.toISOString(),
-    })),
+    responses: mappedResponses,
+    ...(isPaginated ? { nextCursor, hasMore: nextCursor !== null } : {}),
   })
 }
 

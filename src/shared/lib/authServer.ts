@@ -31,16 +31,46 @@ const getBearerToken = (req: NextApiRequest) => {
   return header.slice(7).trim()
 }
 
+interface CachedUser {
+  user: AuthUser
+  expiresAt: number
+}
+
+const sessionCache = new Map<string, CachedUser>()
+const CACHE_TTL_MS = 60_000
+const MAX_CACHE_SIZE = 1000
+
+export const clearSessionCache = () => {
+  sessionCache.clear()
+}
+
 export const getAuthUser = async (req: NextApiRequest) => {
   if (!verifier) return null
 
   const token = getBearerToken(req)
   if (!token) return null
 
-  const { data, error } = await verifier.auth.getUser(token)
-  if (error || !data.user) return null
+  const now = Date.now()
+  const cached = sessionCache.get(token)
+  if (cached && cached.expiresAt > now) {
+    return cached.user
+  }
 
-  return { id: data.user.id, email: data.user.email ?? '' } as AuthUser
+  const { data, error } = await verifier.auth.getUser(token)
+  if (error || !data.user) {
+    sessionCache.delete(token)
+    return null
+  }
+
+  const user = { id: data.user.id, email: data.user.email ?? '' } as AuthUser
+
+  if (sessionCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = sessionCache.keys().next().value
+    if (oldestKey) sessionCache.delete(oldestKey)
+  }
+
+  sessionCache.set(token, { user, expiresAt: now + CACHE_TTL_MS })
+  return user
 }
 
 export const getAuthGuard = async (

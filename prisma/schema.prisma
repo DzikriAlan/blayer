@@ -46,6 +46,7 @@ model Form {
   analyses  FormAnalysis[]
 
   @@index([userId])
+  @@index([isPublished, createdAt, id])
   @@map("forms")
 }
 
@@ -79,6 +80,7 @@ model FormResponse {
   form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
 
   @@index([formId])
+  @@index([formId, createdAt, id])
   @@map("form_responses")
 }
 

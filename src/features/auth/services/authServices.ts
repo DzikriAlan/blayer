@@ -108,3 +108,17 @@ export const getAuthSessionChanges = (
 
   return () => data.subscription.unsubscribe()
 }
+
+export const postAuthForgotPassword = async (email: string) => {
+  const redirectTo = `${window.location.origin}/auth/reset-password`
+  const { error } = await getClient().auth.resetPasswordForEmail(email, { redirectTo })
+  if (error) throw error
+  return null
+}
+
+export const postAuthResetPassword = async (newPassword: string) => {
+  const { error } = await getClient().auth.updateUser({ password: newPassword })
+  if (error) throw error
+  return null
+}
+

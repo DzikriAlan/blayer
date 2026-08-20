@@ -186,6 +186,16 @@ export default function AuthForm({ mode }: Props) {
                 {form.formState.errors.password.message}
               </p>
             ) : null}
+            {!data.isRegister ? (
+              <div className="flex justify-end">
+                <Link
+                  href="/auth/forgot-password"
+                  className="font-mono text-xs text-muted-foreground underline underline-offset-4 hover:text-primary"
+                >
+                  Lupa kata sandi?
+                </Link>
+              </div>
+            ) : null}
           </div>
 
           {data.credentialError ? (
