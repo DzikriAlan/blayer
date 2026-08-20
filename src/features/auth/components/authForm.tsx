@@ -12,30 +12,47 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  PASSWORD_MIN,
-  USERNAME_MAX,
-  USERNAME_MIN,
-  USERNAME_PATTERN,
+  getLoginProblem,
+  getPasswordProblem,
+  getUsernameProblem,
 } from '@/shared/lib/authIdentity'
 import { useAuthStates } from '../states/authStates'
 import { useAuthControllers } from '../controllers/authControllers'
 
-const schema = z.object({
-  username: z
-    .string()
-    .trim()
-    .min(USERNAME_MIN, `Username minimal ${USERNAME_MIN} karakter.`)
-    .max(USERNAME_MAX, `Username maksimal ${USERNAME_MAX} karakter.`)
-    .regex(
-      USERNAME_PATTERN,
-      'Username hanya boleh huruf, angka, titik, garis bawah, dan strip.'
-    ),
-  password: z
-    .string()
-    .min(PASSWORD_MIN, `Kata sandi minimal ${PASSWORD_MIN} karakter.`),
-})
+/**
+ * Aturannya tidak ditulis ulang sebagai rantai zod supaya browser dan API route
+ * menolak dengan kalimat yang sama persis. Salinan yang terpisah sempat membuat
+ * isian berupa email lengkap dijelaskan sebagai masalah karakter di sini,
+ * padahal penyebabnya domain yang ditempel dua kali.
+ */
+const check =
+  (getProblem: (value: string) => string) =>
+  (value: string, ctx: z.RefinementCtx) => {
+    const problem = getProblem(value)
+    if (problem) ctx.addIssue({ code: z.ZodIssueCode.custom, message: problem })
+  }
 
-type FormValues = z.infer<typeof schema>
+/**
+ * Masuk menerima username maupun alamat email, sedangkan mendaftar hanya
+ * menerima username.
+ *
+ * Bedanya disengaja: saat mendaftar alamatnya memang dibentuk dari username,
+ * jadi membiarkan isian berupa email di sana hanya akan membuat akun dengan
+ * alamat ganda. Saat masuk, akunnya sudah ada dan yang dibutuhkan cuma cara
+ * menemukannya.
+ */
+const getSchema = (isRegister: boolean) =>
+  z.object({
+    // Spasi di ujung dibuang di sini juga, supaya nilai yang terkirim sama
+    // dengan nilai yang barusan divalidasi.
+    username: z
+      .string()
+      .trim()
+      .superRefine(check(isRegister ? getUsernameProblem : getLoginProblem)),
+    password: z.string().superRefine(check(getPasswordProblem)),
+  })
+
+type FormValues = z.infer<ReturnType<typeof getSchema>>
 
 /**
  * Tujuan hanya diterima bila berupa path internal.
@@ -60,7 +77,7 @@ export default function AuthForm({ mode }: Props) {
     useAuthControllers()
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(getSchema(mode === 'register')),
     defaultValues: { username: '', password: '' },
   })
 
@@ -88,6 +105,7 @@ export default function AuthForm({ mode }: Props) {
       lead: isRegister
         ? 'Buat akun untuk mulai menyusun form. Form yang Anda buat hanya terlihat oleh akun Anda sendiri.'
         : 'Membuat form dan membuka dashboard hasil butuh akun. Mengisi form lewat tautan publik tetap bisa tanpa login.',
+      fieldLabel: isRegister ? 'Username' : 'Username atau Email',
       submitLabel: isRegister ? 'Daftar' : 'Masuk',
       googleLabel: isRegister ? 'Daftar dengan Google' : 'Lanjut dengan Google',
       switchLead: isRegister ? 'Sudah punya akun?' : 'Belum punya akun?',
@@ -137,13 +155,13 @@ export default function AuthForm({ mode }: Props) {
 
         <form onSubmit={submitAuthPassword} className="mt-7 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{data.fieldLabel}</Label>
             <Input
               id="username"
               autoComplete="username"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="blayeradmin"
+              placeholder="adminblayer"
               aria-invalid={!!form.formState.errors.username}
               {...form.register('username')}
             />

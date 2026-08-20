@@ -4,7 +4,7 @@ import {
   getSupabaseAuthSetupMessage,
   getSupabaseBrowser,
 } from '@/shared/lib/supabaseBrowser'
-import { getEmailFromUsername, getUsernameFromEmail } from '@/shared/lib/authIdentity'
+import { getLoginEmail, getUsernameFromEmail } from '@/shared/lib/authIdentity'
 import type {
   DataAuthSession,
   PayloadPostAuthPassword,
@@ -67,7 +67,7 @@ export const postAuthSession = async (payload: PayloadPostAuthSession) => {
 
 export const postAuthPassword = async (payload: PayloadPostAuthPassword) => {
   const { error } = await getClient().auth.signInWithPassword({
-    email: getEmailFromUsername(payload.username),
+    email: getLoginEmail(payload.username),
     password: payload.password,
   })
 
