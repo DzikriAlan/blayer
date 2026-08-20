@@ -69,7 +69,12 @@ describe('katalog form publik', () => {
 
     expect(res.statusCode).toBe(200)
     expect(authMock.called).toBe(false)
-    expect(Array.isArray(res.body)).toBe(true)
+    // Jawabannya selalu beramplop sekarang, karena batas jumlahnya tidak
+    // pernah opsional — tanpa itu jalur default membaca seluruh tabel.
+    const body = res.body as { items: unknown[]; hasMore: boolean }
+    expect(Array.isArray(body.items)).toBe(true)
+    expect(body).toHaveProperty('nextCursor')
+    expect(body).toHaveProperty('hasMore')
   })
 
   it('TC-26aa hanya form yang sudah dipublikasikan yang ikut terbaca', async () => {
@@ -83,7 +88,7 @@ describe('katalog form publik', () => {
   it('TC-26ab tidak membocorkan purpose maupun kolom milik pembuat form', async () => {
     const res = await call({ method: 'GET', headers: {}, query: {} })
 
-    const [form] = res.body as Record<string, unknown>[]
+    const [form] = (res.body as { items: Record<string, unknown>[] }).items
     expect(Object.keys(form).sort()).toEqual([
       'bannerUrl',
       'createdAt',

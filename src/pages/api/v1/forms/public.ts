@@ -36,16 +36,23 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return
   }
 
-  const limitQuery = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined
+  const limitQuery = Number(req.query.limit)
   const cursor = req.query.cursor ? String(req.query.cursor) : undefined
-  const isPaginated = limitQuery !== undefined || cursor !== undefined
-  const limit = limitQuery ? Math.min(Math.max(limitQuery, 1), 100) : 50
+
+  // Batasnya tidak pernah opsional. Kalau paginasi hanya menyala saat pemanggil
+  // memintanya, jalur default tetap membaca seluruh tabel — dan jalur default
+  // itulah yang dipakai halaman depan.
+  const limit = Number.isFinite(limitQuery)
+    ? Math.min(Math.max(Math.trunc(limitQuery), 1), 100)
+    : 50
 
   const forms = await prisma.form.findMany({
     // Penyaringan ada di query, jadi draf yang belum dipublikasikan tidak
     // pernah ikut terbaca dari database.
     where: { isPublished: true },
-    take: isPaginated ? limit + 1 : undefined,
+    // Satu baris lebih banyak dari yang dikirim, semata untuk tahu apakah masih
+    // ada halaman berikutnya tanpa perlu COUNT terpisah.
+    take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     select: {
@@ -60,12 +67,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   })
 
-  let nextCursor: string | null = null
-  let items = forms
-  if (isPaginated && forms.length > limit) {
-    items = forms.slice(0, limit)
-    nextCursor = items[items.length - 1].id
-  }
+  const hasMore = forms.length > limit
+  const items = hasMore ? forms.slice(0, limit) : forms
+  const nextCursor = hasMore ? items[items.length - 1].id : null
 
   const mapped = items.map((form) => ({
     id: form.id,
@@ -79,15 +83,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     createdAt: form.createdAt.toISOString(),
   }))
 
-  if (isPaginated) {
-    return res.status(200).json({
-      items: mapped,
-      nextCursor,
-      hasMore: nextCursor !== null,
-    })
-  }
-
-  return res.status(200).json(mapped)
+  return res.status(200).json({ items: mapped, nextCursor, hasMore })
 }
 
 export default withApi('forms-public', handler)

@@ -1,4 +1,6 @@
+import { fetchPages } from '@/shared/lib/fetchPages'
 import type {
+  DataFormsPublic,
   PayloadDeleteForms,
   PayloadGetFormsDetail,
   PayloadPostForms,
@@ -27,12 +29,15 @@ export const getFormsPublic = async () => {
   try {
     // Tanpa header Authorization: katalog ini memang dibaca pengunjung yang
     // belum punya akun.
-    const res = await fetch(`${baseUrl}/api/v1/forms/public`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    return await fetchPages<DataFormsPublic>(async (cursor) => {
+      const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''
+      const res = await fetch(`${baseUrl}/api/v1/forms/public${query}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) await throwApiError(res)
+      return res.json()
     })
-    if (!res.ok) await throwApiError(res)
-    return res.json()
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error

@@ -25,10 +25,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const { formId } = req.query
-  const limitQuery = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined
+  const limitQuery = Number(req.query.limit)
   const cursor = req.query.cursor ? String(req.query.cursor) : undefined
-  const isPaginated = limitQuery !== undefined || cursor !== undefined
-  const limit = limitQuery ? Math.min(Math.max(limitQuery, 1), 100) : 50
+
+  // Batasnya tidak pernah opsional; lihat catatan yang sama di forms/public.
+  const limit = Number.isFinite(limitQuery)
+    ? Math.min(Math.max(Math.trunc(limitQuery), 1), 100)
+    : 50
 
   const form = await prisma.form.findUnique({
     where: { id: String(formId) },
@@ -48,17 +51,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const rawResponses = await prisma.formResponse.findMany({
     where: { formId: form.id },
-    take: isPaginated ? limit + 1 : undefined,
+    take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   })
 
-  let nextCursor: string | null = null
-  let responses = rawResponses
-  if (isPaginated && rawResponses.length > limit) {
-    responses = rawResponses.slice(0, limit)
-    nextCursor = responses[responses.length - 1].id
-  }
+  const hasMore = rawResponses.length > limit
+  const responses = hasMore ? rawResponses.slice(0, limit) : rawResponses
+  const nextCursor = hasMore ? responses[responses.length - 1].id : null
 
   const mappedResponses = responses.map((response) => ({
     id: response.id,
@@ -83,7 +83,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       isRequired: field.isRequired,
     })),
     responses: mappedResponses,
-    ...(isPaginated ? { nextCursor, hasMore: nextCursor !== null } : {}),
+    nextCursor,
+    hasMore,
   })
 }
 
