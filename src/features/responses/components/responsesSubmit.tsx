@@ -515,6 +515,23 @@ export default function ResponsesSubmit({ formId }: Props) {
         </p>
       ) : null}
 
+      {data.isAiEnabled ? (
+        <p className="border-b-2 border-foreground bg-muted px-5 py-4 font-mono text-xs leading-relaxed text-muted-foreground sm:px-7">
+          {/* Jawaban di form ber-AI dikirim ke layanan pihak ketiga untuk
+              dinilai. Responden berhak tahu itu sebelum mengirim, bukan
+              sesudahnya. */}
+          Jawabanmu di form ini akan dianalisis dengan bantuan AI pihak ketiga
+          (Anthropic) untuk membuat ringkasan dan peringkat bagi pembuat form.{' '}
+          <Link
+            href="/privacy"
+            className="font-bold text-foreground underline underline-offset-4 hover:text-primary"
+          >
+            Kebijakan privasi
+          </Link>
+          .
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center justify-between gap-5 bg-paper px-5 py-7 sm:px-7">
         <Button type="submit" size="lg" disabled={data.isSubmitting}>
           {data.isSubmitting ? (

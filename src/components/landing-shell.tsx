@@ -14,6 +14,7 @@ const FOOTER_COLUMNS = [
     links: [
       { href: '/', label: 'Beranda' },
       { href: '/forms', label: 'Semua Form' },
+      { href: '/privacy', label: 'Privasi' },
     ],
   },
   {
