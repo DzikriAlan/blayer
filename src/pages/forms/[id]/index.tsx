@@ -17,6 +17,7 @@ const FormsFillPage: NextPage = () => {
         <meta name="description" content="Isi form dan kirim jawabanmu." />
       </Head>
       <PageShell
+        backHref="/"
         barTitle="RESPONDING"
         railWord="FORM"
         railEyebrow={'BRUTAL\nFORM.'}

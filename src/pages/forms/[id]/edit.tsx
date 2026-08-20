@@ -31,6 +31,7 @@ const FormsEditPage: NextPage = () => {
         />
       </Head>
       <PageShell
+        backHref="/forms"
         barTitle={barTitle}
         railWord="BLAYER"
         railEyebrow={'FORM\nEDITOR.'}

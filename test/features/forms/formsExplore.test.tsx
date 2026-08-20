@@ -1,12 +1,22 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import FormsExplore from '@/features/forms/components/formsExplore'
 import { useFormsStates } from '@/features/forms/states/formsStates'
 
+const back = vi.fn()
+
 vi.mock('next/router', () => ({
-  useRouter: () => ({ query: {}, push: vi.fn() }),
+  useRouter: () => ({ query: {}, push: vi.fn(), back }),
 }))
+
+const setHistoryLength = (length: number) => {
+  Object.defineProperty(window.history, 'length', {
+    configurable: true,
+    value: length,
+  })
+}
 
 vi.mock('@/features/forms/controllers/formsControllers', () => ({
   useFormsControllers: () => ({ fetchFormsPublic: { refetch: vi.fn() } }),
@@ -302,3 +312,43 @@ describe('kartu berchip tidak melebarkan halaman', () => {
   })
 })
 
+describe('jalan kembali dari katalog kategori', () => {
+  beforeEach(() => {
+    back.mockClear()
+    setHistoryLength(2)
+  })
+
+  it('TC-36c kembali ke halaman sebelumnya, bukan selalu ke halaman depan', async () => {
+    const user = userEvent.setup()
+    render(<FormsExplore templateId="event" />)
+
+    await user.click(
+      screen.getByRole('link', { name: 'Kembali ke halaman sebelumnya' })
+    )
+
+    expect(back).toHaveBeenCalled()
+  })
+
+  it('TC-36c dibuka langsung dari tautan, tujuannya tetap ada', async () => {
+    const user = userEvent.setup()
+    setHistoryLength(1)
+    render(<FormsExplore templateId="event" />)
+
+    const link = screen.getByRole('link', {
+      name: 'Kembali ke halaman sebelumnya',
+    })
+    expect(link).toHaveAttribute('href', '/#kategori')
+
+    await user.click(link)
+
+    expect(back).not.toHaveBeenCalled()
+  })
+
+  it('TC-36c Semua Kategori tetap menuju daftar kategori', () => {
+    render(<FormsExplore templateId="event" />)
+
+    expect(
+      screen.getByRole('link', { name: /Semua Kategori/ })
+    ).toHaveAttribute('href', '/#kategori')
+  })
+})

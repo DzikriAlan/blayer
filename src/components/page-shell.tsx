@@ -1,11 +1,15 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowDown } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
+import BackLink from '@/components/back-link'
 import AuthAccount from '@/features/auth/components/authAccount'
 
 interface Props {
+  backHref?: string
   railWord?: string
   railEyebrow?: string
   railIndex?: string
@@ -17,6 +21,7 @@ interface Props {
 }
 
 export default function PageShell({
+  backHref = '/',
   railWord = 'BLAYER',
   railEyebrow = 'BRUTAL\nFORM.',
   railIndex = '01',
@@ -67,6 +72,11 @@ export default function PageShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex items-center gap-4 border-b-2 border-foreground bg-foreground px-4 py-3.5 text-background sm:px-6">
+          <BackLink
+            href={backHref}
+            className="border-background hover:bg-background hover:text-foreground"
+          />
+
           <Link
             href="/"
             aria-label="Kembali ke halaman depan"

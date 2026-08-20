@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, ArrowUpRight, Briefcase, Clock3 } from 'lucide-react'
 
+import BackLink from '@/components/back-link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
@@ -128,11 +129,17 @@ export default function FormsExplore({ templateId }: Props) {
 
   return (
     <section className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 sm:py-16">
-      <Button asChild variant="outline" size="sm">
-        <Link href="/#kategori">
-          <ArrowLeft /> Semua Kategori
-        </Link>
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <BackLink
+          href="/#kategori"
+          className="border-foreground hover:bg-foreground hover:text-background"
+        />
+        <Button asChild variant="outline" size="sm" className="h-10">
+          <Link href="/#kategori">
+            <ArrowLeft /> Semua Kategori
+          </Link>
+        </Button>
+      </div>
 
       <div className="mt-8 flex items-stretch gap-3">
         <span className="brutal-eyebrow bg-foreground px-3 py-2 text-background">

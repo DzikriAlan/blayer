@@ -20,6 +20,7 @@ const FormsResultPage: NextPage = () => {
         />
       </Head>
       <PageShell
+        backHref="/forms"
         barTitle="DASHBOARD HASIL"
         railWord="SCORE"
         railEyebrow={'HASIL\nFORM.'}

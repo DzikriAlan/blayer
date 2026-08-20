@@ -15,6 +15,7 @@ const Forms: NextPage = () => {
         />
       </Head>
       <PageShell
+        backHref="/"
         barTitle="ALL FORMS"
         railWord="FORMS"
         railEyebrow={'BRUTAL\nFORM.'}

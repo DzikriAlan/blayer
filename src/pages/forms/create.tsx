@@ -27,6 +27,7 @@ const FormsCreatePage: NextPage = () => {
         />
       </Head>
       <PageShell
+        backHref="/forms"
         barTitle={barTitle}
         railWord="BLAYER"
         railEyebrow={'FORM\nBUILDER.'}
