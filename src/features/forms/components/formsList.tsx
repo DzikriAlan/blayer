@@ -123,6 +123,10 @@ export default function FormsList() {
     router.push(`/forms/create?template=${templateId}`)
   }
 
+  const loadFormsExplore = (templateId: string) => {
+    router.push(`/kategori/${templateId}`)
+  }
+
   const loadFormsFilter = (templateId: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -228,6 +232,7 @@ export default function FormsList() {
           filterId={data.templateId}
           onLoadFormsTemplate={loadFormsTemplate}
           onLoadFormsFilter={loadFormsFilter}
+          onLoadFormsExplore={loadFormsExplore}
         />
       </section>
 

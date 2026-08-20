@@ -2,6 +2,7 @@
 
 import {
   ArrowRight,
+  ArrowUpRight,
   Brain,
   Briefcase,
   CalendarDays,
@@ -645,6 +646,7 @@ interface Props {
   filterId?: string
   onLoadFormsTemplate: (templateId: string) => void
   onLoadFormsFilter?: (templateId: string) => void
+  onLoadFormsExplore?: (templateId: string) => void
 }
 
 export default function FormsTemplate({
@@ -652,6 +654,7 @@ export default function FormsTemplate({
   filterId = '',
   onLoadFormsTemplate,
   onLoadFormsFilter,
+  onLoadFormsExplore,
 }: Props) {
   const visibleTemplates = FORMS_TEMPLATES.filter(
     (template) => template.isVisible
@@ -734,6 +737,17 @@ export default function FormsTemplate({
                       onClick={() => onLoadFormsFilter(template.id)}
                     >
                       <Eye /> {isFiltered ? 'Shown' : 'See'}
+                    </Button>
+                  ) : null}
+                  {onLoadFormsExplore ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      title={`Lihat ${template.name} yang sedang terbuka`}
+                      onClick={() => onLoadFormsExplore(template.id)}
+                    >
+                      Explore <ArrowUpRight />
                     </Button>
                   ) : null}
                   <Button
