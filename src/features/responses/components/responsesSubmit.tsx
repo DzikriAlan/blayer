@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, BarChart3, Loader2 } from 'lucide-react'
@@ -262,9 +262,12 @@ export default function ResponsesSubmit({ formId }: Props) {
       return
     }
 
+    // Dibaca dari ref, bukan dari state: state-nya baru terisi setelah timer
+    // berdetak sekali, jadi jawaban yang dikirim di detik pertama akan tercatat
+    // berdurasi nol.
     const getDurationSeconds = () =>
-      filters.startedAt
-        ? Math.max(Math.round((Date.now() - filters.startedAt) / 1000), 0)
+      startedAtRef.current
+        ? Math.max(Math.round((Date.now() - startedAtRef.current) / 1000), 0)
         : 0
 
     // Jawaban pembayaran disimpan bersama nominalnya, supaya daftar pesanan
@@ -298,20 +301,27 @@ export default function ResponsesSubmit({ formId }: Props) {
   }, [formId, setGetFormsDetail])
 
   // Stopwatch mulai begitu pertanyaan tampil, berhenti saat jawaban terkirim.
+  //
+  // Waktu mulai disimpan di ref, bukan state: ia tidak pernah ikut menentukan
+  // tampilan, dan menuliskannya lewat setState di dalam effect memicu render
+  // beruntun — persis yang dilarang react-hooks/set-state-in-effect. Yang
+  // menjadi state hanya detik berjalan, dan itu diperbarui dari callback timer.
+  const startedAtRef = useRef(0)
+
   useEffect(() => {
     if (formsDetail.status !== 'success') return
     if (responses.status === 'success') return
 
-    setFilters((prev) =>
-      prev.startedAt ? prev : { ...prev, startedAt: Date.now() }
-    )
+    if (!startedAtRef.current) startedAtRef.current = Date.now()
 
     const timer = window.setInterval(() => {
       setFilters((prev) => ({
         ...prev,
-        elapsedSeconds: prev.startedAt
-          ? Math.max(Math.round((Date.now() - prev.startedAt) / 1000), 0)
-          : 0,
+        startedAt: startedAtRef.current,
+        elapsedSeconds: Math.max(
+          Math.round((Date.now() - startedAtRef.current) / 1000),
+          0
+        ),
       }))
     }, 1000)
 
