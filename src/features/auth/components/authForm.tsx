@@ -145,20 +145,20 @@ export default function AuthForm({ mode }: Props) {
   }, [data.isSignedIn, data.next, router])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-5 py-16">
-      <div className="w-full max-w-md border-2 border-foreground bg-paper p-8 shadow-[6px_6px_0_0_hsl(var(--foreground))]">
+    <div className="flex h-[100dvh] items-center justify-center overflow-hidden bg-background px-5 py-6">
+      <div className="max-h-full w-full max-w-md overflow-y-auto border-2 border-foreground bg-paper p-6 shadow-[6px_6px_0_0_hsl(var(--foreground))] sm:p-8">
         <p className="brutal-eyebrow text-muted-foreground">{data.eyebrow}</p>
-        <h1 className="mt-3 font-display text-4xl font-black uppercase leading-[0.95] tracking-tight">
+        <h1 className="mt-2 font-display text-3xl font-black uppercase leading-[0.95] tracking-tight sm:mt-3 sm:text-4xl">
           {data.title[0]}
           <br />
           {data.title[1]}
           <span className="text-primary">.</span>
         </h1>
-        <p className="mt-4 font-mono text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-3 font-mono text-sm leading-relaxed text-muted-foreground sm:mt-4">
           {data.lead}
         </p>
 
-        <form onSubmit={submitAuthPassword} className="mt-7 flex flex-col gap-4">
+        <form onSubmit={submitAuthPassword} className="mt-5 flex flex-col gap-3 sm:mt-6 sm:gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="username">{data.fieldLabel}</Label>
             <Input
@@ -237,7 +237,7 @@ export default function AuthForm({ mode }: Props) {
           </Button>
         </form>
 
-        <div className="my-7 flex items-center gap-4">
+        <div className="my-5 flex items-center gap-4 sm:my-6">
           <span aria-hidden className="h-0.5 flex-1 bg-foreground" />
           <span className="brutal-eyebrow text-muted-foreground">ATAU</span>
           <span aria-hidden className="h-0.5 flex-1 bg-foreground" />
@@ -266,7 +266,7 @@ export default function AuthForm({ mode }: Props) {
           </p>
         ) : null}
 
-        <p className="mt-7 font-mono text-xs text-muted-foreground">
+        <p className="mt-5 font-mono text-xs text-muted-foreground sm:mt-6">
           {data.switchLead}{' '}
           <Link
             href={data.switchHref}
