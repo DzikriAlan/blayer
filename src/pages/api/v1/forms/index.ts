@@ -11,8 +11,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!user) return
 
     const forms = await prisma.form.findMany({
-      // Penyaringan pemilik dilakukan di query, bukan setelah data diambil —
-      // form milik akun lain tidak pernah ikut terbaca dari database.
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -40,8 +38,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const user = await getAuthGuard(req, res)
     if (!user) return
 
-    // Satu akun tidak punya alasan membuat lebih dari 20 form per menit.
-    // Batas ini menahan skrip yang memenuhi database lewat akun sungguhan.
     if (
       !enforceRateLimit(req, res, {
         name: 'forms-create',
@@ -58,13 +54,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const form = await prisma.form.create({
       data: {
-        // Pemilik diambil dari token, bukan dari body — pengirim request tidak
-        // bisa mengaku sebagai akun lain.
         userId: user.id,
         ...data,
         fields: {
-          // id dari body diabaikan saat membuat: field baru selalu dapat id
-          // sendiri dari database.
           create: data.fields.map((field) => ({ ...field, id: undefined })),
         },
       },

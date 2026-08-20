@@ -8,7 +8,6 @@ vi.mock('next/router', () => ({
   useRouter: () => ({ query: {}, push: vi.fn() }),
 }))
 
-// Komponen hanya membaca katalog dari store; query-nya tidak perlu ikut jalan.
 vi.mock('@/features/forms/controllers/formsControllers', () => ({
   useFormsControllers: () => ({ fetchFormsPublic: { refetch: vi.fn() } }),
 }))
@@ -47,7 +46,6 @@ describe('halaman kategori', () => {
 
     render(<FormsExplore templateId="exam" />)
 
-    // Judulnya menyebut yang bisa dilakukan pengunjung, bukan nama template.
     expect(
       screen.getByRole('heading', { name: /Ujian Yang Sedang Dibuka/i, level: 1 })
     ).toBeInTheDocument()
@@ -55,7 +53,6 @@ describe('halaman kategori', () => {
     expect(screen.getByText(/06 SOAL/)).toBeInTheDocument()
     expect(screen.getByText(/03 PESERTA/)).toBeInTheDocument()
     expect(screen.getAllByText('Kerjakan Ujian').length).toBeGreaterThan(0)
-    // Daftar, bukan poster: tidak ada gambar sampul.
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
@@ -70,8 +67,6 @@ describe('halaman kategori', () => {
 
     render(<FormsExplore templateId="event" />)
 
-    // Poster harus dimuat utuh — object-cover memotong tanggal dan tempat yang
-    // biasanya tercetak di tepi banner.
     expect(screen.getByRole('img')).toHaveClass('object-contain')
     expect(screen.getByText(/03 TERDAFTAR/)).toBeInTheDocument()
     expect(screen.getByText(/01 ACARA TERBUKA/)).toBeInTheDocument()
@@ -126,21 +121,16 @@ describe('halaman kategori', () => {
     ).toBeInTheDocument()
     expect(screen.getByText(/01 LOWONGAN DIBUKA/)).toBeInTheDocument()
     expect(screen.getByText(/03 PELAMAR/)).toBeInTheDocument()
-    // Umur lowongan dan logo perusahaan adalah yang dipindai pelamar lebih
-    // dulu, jadi keduanya harus ada di kartunya.
     expect(screen.getByText('3 HARI LALU')).toBeInTheDocument()
     expect(screen.getByRole('img')).toHaveAttribute(
       'alt',
       'Logo Frontend Engineer — PT Nusantara Digital'
     )
     expect(screen.getAllByText('Lamar & Kerjakan').length).toBeGreaterThan(0)
-    // Judulnya dipangkas dua baris, jadi judul utuhnya tetap terbaca lewat
-    // tooltip — judulnya saja, bukan sekalian keterangannya.
     expect(screen.getByRole('heading', { level: 2 })).toHaveAttribute(
       'title',
       'Frontend Engineer — PT Nusantara Digital'
     )
-    // Lowongan tidak berharga, jadi tidak ada label "Gratis" seperti di menu.
     expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
   })
 
@@ -167,7 +157,6 @@ describe('halaman kategori', () => {
       expect(screen.getByText(tag)).toBeInTheDocument()
     })
 
-    // Kalimat setelah ruas chip tetap jadi paragraf, tidak ikut jadi chip.
     expect(screen.getByText('Psikotes menakar ketelitian.')).toBeInTheDocument()
   })
 
@@ -237,7 +226,6 @@ describe('halaman kategori', () => {
 
     const { container } = render(<FormsExplore templateId="event" />)
 
-    // Empat wajah ditumpuk, sisanya dihitung jadi satu gelembung angka.
     expect(container.querySelectorAll('[data-facepile-face]').length).toBe(4)
     expect(screen.getByText('+3')).toBeInTheDocument()
     expect(screen.getByText(/07 TERDAFTAR/)).toBeInTheDocument()
@@ -273,7 +261,6 @@ describe('halaman kategori', () => {
 
     render(<FormsExplore templateId="event" />)
 
-    // Permukaan ini untuk yang datang ikut, bukan yang datang membangun.
     expect(screen.queryByText('Use Template')).not.toBeInTheDocument()
     expect(screen.queryByText(/Buat/i)).not.toBeInTheDocument()
   })
@@ -287,13 +274,6 @@ describe('halaman kategori', () => {
   })
 })
 
-/**
- * Lebar kartu tidak bisa diperiksa di jsdom — tidak ada mesin tata letak di
- * sana. Yang dipatok di sini kelasnya: `min-w-0` adalah satu-satunya alasan
- * kartu boleh menyempit di bawah lebar barisan chipnya, dan tanpa itu satu
- * kartu menggeser seluruh halaman ke samping di layar ponsel. Pemeriksaan
- * lebar sungguhan tetap lewat TC-32a.
- */
 describe('kartu berchip tidak melebarkan halaman', () => {
   it('TC-32e kartu proyek boleh menyempit di bawah lebar chipnya', () => {
     setCatalogue([

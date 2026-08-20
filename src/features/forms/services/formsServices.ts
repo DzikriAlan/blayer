@@ -25,8 +25,6 @@ export const getForms = async () => {
 
 export const getFormsPublic = async () => {
   try {
-    // Tanpa header Authorization: katalog ini memang dibaca pengunjung yang
-    // belum punya akun.
     const res = await fetch(`${baseUrl}/api/v1/forms/public`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },

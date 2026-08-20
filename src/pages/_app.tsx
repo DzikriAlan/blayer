@@ -41,18 +41,12 @@ export default function App({ Component, pageProps }: AppProps) {
         />
       </Head>
       <div className={`${archivo.variable} ${jetbrainsMono.variable}`}>
-        {/* Guard dipasang di sini, bukan per halaman, supaya halaman baru ikut
-            terkunci secara bawaan dan pengecualiannya cukup didaftarkan di satu
-            tempat. */}
-        {/* Batas error dipasang di dalam guard: kegagalan render satu halaman
-            tidak boleh menjatuhkan pemeriksaan sesi bersamanya. */}
         <AuthGuard>
           <ErrorBoundary>
             <Component {...pageProps} />
           </ErrorBoundary>
         </AuthGuard>
       </div>
-      {/* Devtools hanya alat pengembang — jangan ikut terkirim ke pengguna. */}
       {process.env.NODE_ENV === "development" ? (
         <ReactQueryDevtools initialIsOpen={false} />
       ) : null}

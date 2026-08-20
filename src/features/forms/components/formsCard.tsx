@@ -34,7 +34,6 @@ export default function FormsCard({
 }: Props) {
   return (
     <article className="group border-b-2 border-foreground bg-paper px-5 py-6 transition-colors hover:bg-muted sm:px-7">
-      {/* Baris 1: nomor urut + judul + status. */}
       <div className="flex items-start gap-4 sm:gap-6">
         <span className="brutal-index group-hover:bg-primary">
           {String(index + 1).padStart(2, '0')}
@@ -57,8 +56,6 @@ export default function FormsCard({
         </div>
       </div>
 
-      {/* Baris 2: di mobile pakai lebar penuh supaya tombol tidak menumpuk;
-          di layar sedang ke atas disejajarkan dengan judul. */}
       <div className="mt-4 sm:pl-[3.75rem]">
         {IS_AI_VISIBLE && isAiEnabled ? (
           <p className="line-clamp-2 max-w-xl font-mono text-xs leading-relaxed text-muted-foreground">
@@ -77,8 +74,6 @@ export default function FormsCard({
           </span>
         </div>
 
-        {/* Empat aksi per form: buka formnya, buka dashboard hasilnya,
-            sunting pertanyaannya, dan hapus. */}
         <div className="mt-5 flex flex-wrap gap-3">
           <Button asChild size="sm" variant="outline">
             <Link href={`/forms/${id}`} aria-label={`Buka form ${title}`}>

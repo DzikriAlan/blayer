@@ -13,23 +13,12 @@ import {
   getUsernameProblem,
 } from '@/shared/lib/authIdentity'
 
-/**
- * Pendaftaran dijalankan di server memakai secret key, bukan `signUp()` dari
- * browser.
- *
- * Alasannya alamat email di sini sintetis (`username@blayer.id`) sehingga tautan
- * konfirmasi tidak akan pernah sampai. Lewat Admin API akun bisa langsung
- * ditandai terkonfirmasi, jadi pengguna bisa masuk begitu selesai mendaftar
- * tanpa perlu mematikan konfirmasi email untuk seluruh project.
- */
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
   }
 
-  // Pendaftaran terbuka untuk siapa saja, jadi tanpa batas ini satu skrip
-  // bisa membuat ribuan akun dan menghabiskan kuota Supabase.
   if (
     !enforceRateLimit(req, res, {
       name: 'auth-register',
@@ -64,8 +53,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   })
 
   if (error) {
-    // Supabase menyebut bentrok akun dengan beberapa kalimat berbeda; semuanya
-    // diterjemahkan jadi satu pesan yang bisa ditindaklanjuti pendaftar.
     const isTaken =
       error.status === 422 ||
       /already|exist|registered/i.test(error.message ?? '')

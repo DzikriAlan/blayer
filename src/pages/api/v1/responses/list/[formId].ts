@@ -24,7 +24,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!form) return res.status(404).json({ message: 'Form tidak ditemukan.' })
 
-  // Jawaban peserta hanya boleh dibaca pemilik formnya.
   if (form.userId !== user.id) {
     return res
       .status(403)

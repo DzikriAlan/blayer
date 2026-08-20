@@ -8,13 +8,6 @@ interface MockImageProps {
   className?: string
 }
 
-/**
- * next/image butuh loader dan optimizer yang tidak ada di jsdom.
- *
- * Mock ini merender <img> biasa dan membuang prop khas Next (unoptimized,
- * priority, sizes, width/height nol) supaya React tidak memperingatkan
- * atribut yang tidak dikenal DOM.
- */
 vi.mock('next/image', () => ({
   default: ({ src, alt, className }: MockImageProps) => (
     // eslint-disable-next-line @next/next/no-img-element
@@ -22,7 +15,6 @@ vi.mock('next/image', () => ({
   ),
 }))
 
-// Radix mengukur elemennya dengan ResizeObserver, yang tidak ada di jsdom.
 if (!('ResizeObserver' in globalThis)) {
   globalThis.ResizeObserver = class {
     observe() {}

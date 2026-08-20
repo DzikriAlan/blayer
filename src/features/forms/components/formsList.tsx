@@ -119,12 +119,10 @@ export default function FormsList() {
     }))
   }
 
-  // Dari beranda, template diteruskan ke builder lewat query string.
   const loadFormsTemplate = (templateId: string) => {
     router.push(`/forms/create?template=${templateId}`)
   }
 
-  // "See" pada kartu template menyaring riwayat form; klik ulang melepas filter.
   const loadFormsFilter = (templateId: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -141,11 +139,6 @@ export default function FormsList() {
     }))
   }
 
-  /**
-   * Menghapus form ikut menghapus seluruh jawaban dan analisisnya lewat
-   * cascade di database, jadi jumlah jawaban disebut lebih dulu di konfirmasi
-   * — angka itu yang membuat orang berhenti sejenak sebelum menekan OK.
-   */
   const clearForms = (id: string) => {
     const target = forms.data.find((item) => item.id === id)
     if (!target) return
@@ -160,8 +153,6 @@ export default function FormsList() {
     destroyForms.mutate(
       { id },
       {
-        // Kegagalan hapus harus terlihat: tanpa ini kartunya sekadar tetap
-        // di tempat dan pengguna mengira aplikasinya menggantung.
         onError: (error: Error) =>
           setFilters((prev) => ({
             ...prev,
@@ -231,7 +222,6 @@ export default function FormsList() {
         </div>
       </section>
 
-      {/* border-b datang dari FormsTemplate sendiri, jadi cukup tiga sisi di sini. */}
       <section className="border-x-2 border-t-2 border-foreground">
         <FormsTemplate
           activeId=""
@@ -272,8 +262,6 @@ export default function FormsList() {
         </p>
       ) : null}
 
-      {/* Satu pintu untuk memuat, gagal, dan kosong; isian hanya dirender
-          kalau memang ada datanya. */}
       <LoadData response={data} minHeight="30vh">
         <section className="border-x-2 border-t-2 border-foreground">
           {data.data.map((item, index) => (
@@ -295,8 +283,6 @@ export default function FormsList() {
         </section>
       </LoadData>
 
-      {/* Placeholder LoadData tidak punya slot aksi, jadi jalan keluarnya
-          diletakkan tepat di bawahnya. */}
       {data.isError ? (
         <div className="flex justify-center">
           <Button onClick={() => fetchForms.refetch()}>Retry</Button>

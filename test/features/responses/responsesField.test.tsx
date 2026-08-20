@@ -97,7 +97,6 @@ describe('field menu bergambar', () => {
       />
     )
 
-    // 28.000 × 2 + 8.000 = 64.000
     expect(screen.getByText('Rp64.000')).toBeInTheDocument()
   })
 })

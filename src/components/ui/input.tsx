@@ -2,10 +2,6 @@ import * as React from "react"
 
 import { cn } from "@/shared/lib/utils"
 
-/**
- * Underline-only field: a thick baseline rule, no box.
- * Use `variant="boxed"` where a bordered control reads better (dense editors).
- */
 const Input = React.forwardRef<
   HTMLInputElement,
   React.ComponentProps<"input"> & { variant?: "underline" | "boxed" }

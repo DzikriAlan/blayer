@@ -9,8 +9,6 @@ const Broken = () => {
 
 describe('batas error di browser', () => {
   it('TC-42m mengganti layar putih dengan pesan dan jalan keluar', () => {
-    // React ikut menulis error ke console saat boundary bekerja; itu berisik
-    // di output test, bukan tanda kegagalan.
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     render(
