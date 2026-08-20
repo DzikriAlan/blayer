@@ -4,7 +4,11 @@ import {
   getSupabaseAuthSetupMessage,
   getSupabaseBrowser,
 } from '@/shared/lib/supabaseBrowser'
-import { getLoginEmail, getUsernameFromEmail } from '@/shared/lib/authIdentity'
+import {
+  USERNAME_DOMAIN,
+  getLoginEmail,
+  getUsernameFromEmail,
+} from '@/shared/lib/authIdentity'
 import type {
   DataAuthSession,
   PayloadPostAuthPassword,
@@ -128,9 +132,27 @@ export const getAuthSessionChanges = (
   return () => data.subscription.unsubscribe()
 }
 
+/**
+ * Meminta tautan pemulihan kata sandi.
+ *
+ * Akun yang mendaftar dengan username memakai alamat sintetis
+ * `username@blayer.id` yang tidak pernah bisa menerima surat. Supabase menjawab
+ * sukses untuk alamat apa pun — itu disengaja, supaya orang tidak bisa menebak
+ * akun mana yang terdaftar — sehingga tanpa penjagaan di sini kegagalannya
+ * sunyi: pengguna melihat "tautan terkirim" dan menunggu surat yang tidak akan
+ * pernah datang.
+ */
 export const postAuthForgotPassword = async (email: string) => {
+  const value = email.trim().toLowerCase()
+
+  if (value.endsWith(`@${USERNAME_DOMAIN}`)) {
+    throw new Error(
+      `Alamat @${USERNAME_DOMAIN} dibuat otomatis dari username dan tidak bisa menerima surat. Pemulihan lewat email baru berlaku untuk akun yang masuk dengan Google.`
+    )
+  }
+
   const redirectTo = `${window.location.origin}/auth/reset-password`
-  const { error } = await getClient().auth.resetPasswordForEmail(email, { redirectTo })
+  const { error } = await getClient().auth.resetPasswordForEmail(value, { redirectTo })
   if (error) throw error
   return null
 }
