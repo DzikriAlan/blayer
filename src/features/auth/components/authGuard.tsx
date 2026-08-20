@@ -7,14 +7,6 @@ import { LoadData } from '@/shared/components/load-data'
 import { useAuthStates } from '../states/authStates'
 import { useAuthControllers } from '../controllers/authControllers'
 
-/**
- * Halaman yang boleh dibuka tanpa login.
- *
- * Dicocokkan dengan `router.pathname`, bukan URL sebenarnya, supaya rute
- * dinamis cukup ditulis sekali. `/forms/[id]` sengaja publik: responden mengisi
- * form lewat tautan dan tidak boleh dipaksa punya akun (F-03). Halaman hasil
- * `/forms/[id]/result` pathname-nya berbeda, jadi tetap terkunci.
- */
 const PUBLIC_PATHNAMES = [
   '/',
   '/login',
@@ -47,7 +39,6 @@ export default function AuthGuard({ children }: Props) {
       isChecking,
       isError,
       isSignedIn,
-      // Sesi sudah selesai dibaca dan hasilnya kosong pada halaman terkunci.
       isBlocked: !isPublic && !isChecking && !isError && !isSignedIn,
       errorTitle: 'Sesi Tidak Terbaca',
       errorSubtitle: authSession.statusSubtitle,
@@ -57,8 +48,6 @@ export default function AuthGuard({ children }: Props) {
   useEffect(() => {
     if (!data.isBlocked) return
 
-    // Tujuan awal dititipkan supaya setelah login pengguna kembali ke halaman
-    // yang tadi dibuka, bukan dilempar ke beranda.
     router.replace(`/login?next=${encodeURIComponent(router.asPath)}`)
   }, [data.isBlocked, router])
 
@@ -77,8 +66,6 @@ export default function AuthGuard({ children }: Props) {
     )
   }
 
-  // Selama sesi belum pasti — atau pengguna sedang dilempar ke /login — isi
-  // halaman tidak boleh ikut terender walau sekejap.
   if (!data.isSignedIn) return <LoadData response={{ isLoading: true }} minHeight="100vh" />
 
   return <>{children}</>

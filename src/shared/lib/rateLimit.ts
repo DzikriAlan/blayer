@@ -1,76 +1,82 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { logger } from './logger'
-
-/**
- * Pembatas laju sederhana berbasis memori proses.
- *
- * Endpoint pengiriman jawaban terbuka tanpa sesi — itu memang disengaja,
- * peserta tidak perlu punya akun. Konsekuensinya satu skrip bisa mengirim
- * ribuan jawaban palsu ke form mana pun, dan jawaban itulah yang nanti jadi
- * bahan analisis AI berbayar. Batas ini menutup jalur termurah untuk itu.
- *
- * Batasnya: hitungan disimpan di memori instance, jadi saat aplikasi berjalan
- * di banyak instance serverless tiap instance punya jatahnya sendiri. Untuk
- * menahan banjir dari satu sumber ini sudah cukup; kalau nanti trafiknya besar,
- * ganti isi `getHits` dengan Redis/Upstash tanpa mengubah pemanggilnya.
- */
+import { getRateLimitStore, setRateLimitStore } from './rateLimitStore'
 
 interface RateLimitOptions {
-  /** Nama aturan, ikut jadi bagian kunci supaya antar-endpoint tidak saling makan jatah. */
   name: string
-  /** Jumlah request yang boleh lewat dalam satu jendela waktu. */
   limit: number
-  /** Panjang jendela waktu dalam milidetik. */
   windowMs: number
-  /** Pembeda tambahan, mis. id form, supaya batas berlaku per form per IP. */
   scope?: string
 }
 
-const hits = new Map<string, number[]>()
-
-/** Jaga-jaga kalau ada banyak IP unik: buang kunci mati sebelum menambah baru. */
-const MAX_KEY = 10_000
-
-export const getClientIp = (req: NextApiRequest) => {
+const getForwardedChain = (req: NextApiRequest) => {
   const forwarded = req.headers['x-forwarded-for']
-  const raw = Array.isArray(forwarded) ? forwarded[0] : forwarded
+  const raw = Array.isArray(forwarded) ? forwarded.join(',') : forwarded
 
-  // Header ini berisi rantai "klien, proxy1, proxy2" — yang paling depan
-  // adalah alamat asli menurut proxy terdepan (Vercel/Cloudflare).
-  if (raw) return raw.split(',')[0].trim()
-
-  return req.socket?.remoteAddress ?? 'unknown'
-}
-
-const prune = (now: number, windowMs: number) => {
-  Array.from(hits.keys()).forEach((key) => {
-    const alive = (hits.get(key) ?? []).filter(
-      (stamp) => now - stamp < windowMs
-    )
-    if (alive.length) hits.set(key, alive)
-    else hits.delete(key)
-  })
+  return (raw ?? '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
 }
 
 /**
- * Mengembalikan true kalau request boleh diteruskan. Kalau kuotanya habis,
- * fungsi ini sendiri yang membalas 429 sehingga pemanggil cukup `return`.
+ * Alamat pemanggil, dihitung dari jumlah proxy yang benar-benar ada di depan
+ * aplikasi.
+ *
+ * `X-Forwarded-For` ditulis oleh klien dan hanya ditimpa oleh proxy, jadi
+ * bagian paling kiri justru bagian yang paling mudah dipalsukan: siapa pun bisa
+ * mengirim header berisi alamat karangan dan memakai kuota milik orang lain,
+ * atau mendapat kuota tak terbatas dengan mengganti alamat tiap permintaan.
+ *
+ * Yang bisa dipercaya hanya alamat yang ditambahkan oleh proxy tepercaya,
+ * yaitu entri ke-n dari kanan. Tanpa TRUST_PROXY_HOPS header ini diabaikan
+ * seluruhnya dan alamat soket yang dipakai.
  */
-export const enforceRateLimit = (
+export const getClientIp = (req: NextApiRequest) => {
+  const hops = Number(process.env.TRUST_PROXY_HOPS ?? 0)
+  const socketIp = req.socket?.remoteAddress ?? 'unknown'
+
+  if (!Number.isInteger(hops) || hops <= 0) return socketIp
+
+  const chain = getForwardedChain(req)
+  if (!chain.length) return socketIp
+
+  const index = chain.length - hops
+  return chain[index] ?? chain[0]
+}
+
+export const enforceRateLimit = async (
   req: NextApiRequest,
   res: NextApiResponse,
   { name, limit, windowMs, scope = '' }: RateLimitOptions
 ) => {
   const now = Date.now()
   const ip = getClientIp(req)
-  const key = `${name}:${scope}:${ip}`
+  const key = `ratelimit:${name}:${scope}:${ip}`
+  const store = getRateLimitStore()
 
-  if (hits.size > MAX_KEY) prune(now, windowMs)
+  let hit
+  try {
+    hit = await store.add(key, now, windowMs)
+  } catch (error) {
+    // Penyimpanan bersama yang sedang tidak bisa dihubungi tidak boleh
+    // menjatuhkan seluruh rute. Permintaan diteruskan, tetapi dicatat keras
+    // supaya periode tanpa perlindungan ini terlihat.
+    logger.error('rate limit gagal membaca penyimpanan', {
+      rule: name,
+      store: store.name,
+      message: error instanceof Error ? error.message : String(error),
+    })
+    return true
+  }
 
-  const recent = (hits.get(key) ?? []).filter((stamp) => now - stamp < windowMs)
+  if (hit.total > limit) {
+    await store.remove(key, now).catch(() => {})
 
-  if (recent.length >= limit) {
-    const retryAfter = Math.ceil((windowMs - (now - recent[0])) / 1000)
+    const retryAfter = Math.max(
+      1,
+      Math.ceil((windowMs - (now - hit.oldest)) / 1000)
+    )
 
     logger.warn('rate limit tercapai', { rule: name, scope, ip, limit })
 
@@ -81,10 +87,10 @@ export const enforceRateLimit = (
     return false
   }
 
-  recent.push(now)
-  hits.set(key, recent)
   return true
 }
 
-/** Hanya dipakai test supaya hitungan satu kasus tidak bocor ke kasus lain. */
-export const resetRateLimit = () => hits.clear()
+export const resetRateLimit = async () => {
+  await getRateLimitStore().clear()
+  setRateLimitStore(null)
+}

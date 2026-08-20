@@ -1,20 +1,9 @@
-/**
- * Aturan username, dipakai bersama oleh browser dan API route.
- *
- * Supabase Auth hanya mengenal email untuk login berkata sandi, sedangkan
- * produk ini memakai username. Username diubah jadi alamat internal di satu
- * tempat ini supaya bentuknya tidak pernah berbeda antara saat mendaftar dan
- * saat masuk — beda satu karakter saja akan terbaca sebagai akun lain.
- */
-
 export const USERNAME_DOMAIN = 'blayer.id'
 
 export const USERNAME_MIN = 3
 export const USERNAME_MAX = 30
 export const PASSWORD_MIN = 8
 
-// Huruf, angka, titik, garis bawah, dan strip. Sengaja tanpa spasi dan tanpa
-// "@" supaya tidak bentrok dengan bentuk alamat email.
 export const USERNAME_PATTERN = /^[a-zA-Z0-9._-]+$/
 
 export const getNormalizedUsername = (username: string) =>
@@ -26,11 +15,38 @@ export const getEmailFromUsername = (username: string) =>
 export const getUsernameFromEmail = (email: string) =>
   email.endsWith(`@${USERNAME_DOMAIN}`) ? email.split('@')[0] : email
 
-/** Mengembalikan alasan penolakan, atau string kosong bila sudah sah. */
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export const getLoginEmail = (input: string) => {
+  const value = getNormalizedUsername(input)
+  return value.includes('@') ? value : getEmailFromUsername(value)
+}
+
+export const getLoginProblem = (input: string) => {
+  const value = getNormalizedUsername(input)
+
+  if (!value) return 'Username atau email wajib diisi.'
+  if (!value.includes('@')) return getUsernameProblem(value)
+  if (!EMAIL_PATTERN.test(value)) return 'Alamat email itu belum lengkap.'
+
+  return ''
+}
+
 export const getUsernameProblem = (username: string) => {
   const value = getNormalizedUsername(username)
 
   if (!value) return 'Username wajib diisi.'
+
+  if (value.includes('@')) {
+    const [name, ...rest] = value.split('@')
+    const domain = rest.join('@')
+
+    if (domain === USERNAME_DOMAIN)
+      return `Cukup username-nya saja, tanpa @${USERNAME_DOMAIN}. Isi "${name}".`
+
+    return `Isi username, bukan alamat email. Untuk ${value}, username-nya "${name}".`
+  }
+
   if (value.length < USERNAME_MIN)
     return `Username minimal ${USERNAME_MIN} karakter.`
   if (value.length > USERNAME_MAX)

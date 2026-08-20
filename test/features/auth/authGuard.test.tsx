@@ -44,8 +44,6 @@ beforeEach(() => {
   router.replace = vi.fn()
   session.data = null
 
-  // Zustand hidup di luar React, jadi sisa sesi dari test sebelumnya harus
-  // dibersihkan sendiri agar tiap kasus mulai dari keadaan belum tahu.
   useAuthStates.setState({
     authSession: {
       status: 'loading',

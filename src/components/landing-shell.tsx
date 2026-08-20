@@ -1,126 +1,58 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, Plus, X } from 'lucide-react'
 
+import mark from '@/shared/images/emotblayer.png'
+import wordmark from '@/shared/images/blayer.png'
 import { cn } from '@/shared/lib/utils'
-import { Button } from '@/components/ui/button'
 import AuthAccount from '@/features/auth/components/authAccount'
 
-const NAV_ITEMS = [{ href: '#kategori', label: 'Kategori' }]
+const FOOTER_COLUMNS = [
+  {
+    title: 'HALAMAN',
+    links: [
+      { href: '/', label: 'Beranda' },
+      { href: '/forms', label: 'Semua Form' },
+    ],
+  },
+  {
+    title: 'AKUN',
+    links: [
+      { href: '/login', label: 'Masuk' },
+      { href: '/register', label: 'Daftar' },
+    ],
+  },
+]
 
 interface Props {
   className?: string
   children: React.ReactNode
 }
 
-/**
- * Rangka halaman publik.
- *
- * Berbeda dari PageShell yang memakai rail samping dan kolom sempit untuk
- * bekerja di dalam aplikasi, rangka ini mengikuti bentuk landing page biasa —
- * navbar, isi selebar layar, lalu footer.
- */
 export default function LandingShell({ className, children }: Props) {
-  const [filters, setFilters] = useState({ isMenuOpen: false })
-
-  const editMenu = () => {
-    setFilters((prev) => ({ ...prev, isMenuOpen: !prev.isMenuOpen }))
-  }
-
-  const clearMenu = () => {
-    setFilters((prev) => ({ ...prev, isMenuOpen: false }))
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b-2 border-foreground bg-paper">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-3.5 sm:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-3"
-            onClick={clearMenu}
-          >
+          <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/blayer-mark.png"
+              src={mark}
               alt=""
-              width={36}
-              height={36}
+              width={40}
+              height={40}
               priority
-              className="h-9 w-9 shrink-0 border-2 border-foreground"
+              className="h-10 w-10 shrink-0 border-2 border-foreground"
             />
             <span className="font-display text-xl font-black uppercase leading-none tracking-tight">
-              Blayer<span className="text-primary">®</span>
+              Blayer
             </span>
           </Link>
 
-          <nav className="ml-6 hidden items-center gap-7 md:flex">
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="brutal-eyebrow flex min-h-[32px] items-center text-muted-foreground transition-colors hover:text-primary"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="ml-auto hidden items-center gap-3 sm:flex">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/forms">Semua Form</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/forms/create">
-                <Plus /> Buat Form
-              </Link>
-            </Button>
+          <div className="ml-auto flex items-center gap-3">
             <AuthAccount />
           </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="ml-auto sm:hidden"
-            aria-label={filters.isMenuOpen ? 'Tutup menu' : 'Buka menu'}
-            aria-expanded={filters.isMenuOpen}
-            onClick={editMenu}
-          >
-            {filters.isMenuOpen ? <X /> : <Menu />}
-          </Button>
         </div>
-
-        {filters.isMenuOpen ? (
-          <div className="border-t-2 border-foreground bg-muted px-5 py-5 sm:hidden">
-            <nav className="flex flex-col gap-4">
-              {NAV_ITEMS.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="brutal-eyebrow flex min-h-[32px] items-center"
-                  onClick={clearMenu}
-                >
-                  <span className="text-primary">{'> '}</span>
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button asChild variant="outline" size="sm" onClick={clearMenu}>
-                <Link href="/forms">Semua Form</Link>
-              </Button>
-              <Button asChild size="sm" onClick={clearMenu}>
-                <Link href="/forms/create">
-                  <Plus /> Buat Form
-                </Link>
-              </Button>
-              <AuthAccount />
-            </div>
-          </div>
-        ) : null}
       </header>
 
       <main className={cn('flex-1', className)}>{children}</main>
@@ -129,63 +61,49 @@ export default function LandingShell({ className, children }: Props) {
         <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3 sm:px-8">
           <div>
             <Image
-              src="/blayer-logo.png"
+              src={wordmark}
               alt="Blayer"
-              width={200}
-              height={92}
+              width={360}
+              height={360}
               className="h-auto w-[180px] border-2 border-background"
             />
             <p className="brutal-eyebrow mt-5 leading-relaxed opacity-70">
-              NO FRILLS.
+              TAKE WHAT YOU NEED.
               <br />
-              JUST ANSWERS.
+              BUILD WHAT YOU NEED.
               <br />
-              PURE INPUT.
+              MAKE WHAT YOU NEED.
             </p>
           </div>
 
-          <div>
-            <p className="brutal-eyebrow opacity-70">HALAMAN</p>
-            <ul className="mt-4 flex flex-col gap-2.5">
-              {NAV_ITEMS.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    className="inline-flex min-h-[32px] items-center font-mono text-sm hover:text-primary"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-              <li>
-                <Link
-                  href="/forms"
-                  className="inline-flex min-h-[32px] items-center font-mono text-sm hover:text-primary"
-                >
-                  Semua Form
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="brutal-eyebrow opacity-70">MULAI</p>
-            <p className="mt-4 font-mono text-sm leading-relaxed opacity-80">
-              Mulai dari satu template, sesuaikan pertanyaannya, lalu bagikan
-              tautannya.
-            </p>
-            <Button asChild variant="paper" size="sm" className="mt-5">
-              <Link href="/forms/create">
-                <Plus /> Buat Form
-              </Link>
-            </Button>
-          </div>
+          {FOOTER_COLUMNS.map((column) => (
+            <div key={column.title}>
+              <p className="brutal-eyebrow opacity-70">{column.title}</p>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="inline-flex min-h-[32px] items-center font-mono text-sm hover:text-primary"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         <div className="border-t-2 border-background/20 px-5 py-5 sm:px-8">
-          <p className="brutal-eyebrow mx-auto w-full max-w-6xl opacity-60">
-            BLAYER® STUDIO · DIBUAT UNTUK FORM YANG HASILNYA LANGSUNG TERBACA
-          </p>
+          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <p className="brutal-eyebrow opacity-60">
+              © {new Date().getFullYear()} BLAYER® STUDIO
+            </p>
+            <p className="brutal-eyebrow opacity-60">
+              DIBUAT UNTUK FORM YANG HASILNYA LANGSUNG TERBACA
+            </p>
+          </div>
         </div>
       </footer>
     </div>

@@ -4,14 +4,10 @@ import { createClient } from '@supabase/supabase-js'
 
 const prisma = new PrismaClient()
 
-// Form demo harus punya pemilik seperti form biasa, kalau tidak seed gagal di
-// kolom userId yang sekarang wajib. Pemiliknya akun admin, jadi data demo ikut
-// terlihat saat masuk sebagai admin.
-const SEED_OWNER_EMAIL = 'blayeradmin@blayer.id'
+const SEED_OWNER_EMAIL = 'adminblayerganteng@blayer.id'
 let ownerId = ''
 
 const getOwnerId = async () => {
-  // Jalan pintas untuk lingkungan tanpa akses Supabase, mis. CI.
   const explicit = process.env.SEED_OWNER_ID?.trim()
   if (explicit) return explicit
 
@@ -43,17 +39,8 @@ const getOwnerId = async () => {
   return owner.id
 }
 
-/**
- * Satu template = beberapa form demo.
- *
- * Setiap kali seed dijalankan, form lama dengan templateId yang sama dihapus
- * dulu, jadi riwayat di beranda tidak pernah menumpuk. Templat yang sudah
- * tidak dipakai ikut dibersihkan lewat OBSOLETE_TEMPLATE_IDS.
- */
 const OBSOLETE_TEMPLATE_IDS = ['csat', 'recruitment', 'blank']
 
-// Nama dan email tidak pernah jadi field: halaman isi sudah punya dua kolom
-// identitas bawaan yang mengisi respondentName dan respondentEmail.
 const EXAM_FIELDS = [
   {
     label: 'Kelas',
@@ -91,8 +78,6 @@ const EXAM_FIELDS = [
   },
 ]
 
-// answers diurutkan sama persis dengan EXAM_FIELDS di atas; nama dan email
-// tidak ikut karena keduanya mengisi respondentName dan respondentEmail.
 const STUDENTS = [
   {
     name: 'Rani Puspita',
@@ -174,8 +159,6 @@ const STUDENTS = [
   },
 ]
 
-// Urutannya sama persis dengan template psikotes di katalog, karena jawaban
-// demo di bawah dipetakan ke field berdasarkan posisi.
 const PSYCHOMETRIC_POSITIONS = [
   'Frontend Engineer',
   'Backend Engineer',
@@ -235,8 +218,6 @@ const PSYCHOMETRIC_FIELDS = [
   },
 ]
 
-// answers diurutkan sama dengan PSYCHOMETRIC_FIELDS; nama dan email tidak ikut
-// karena keduanya mengisi respondentName dan respondentEmail.
 const APPLICANTS = [
   {
     name: 'Alya Rahmadani',
@@ -350,7 +331,6 @@ const EVENT_FIELDS = [
   },
 ]
 
-// [nama, instansi, sesi]
 const ATTENDEE_ROWS = [
   ['Sinta Larasati', 'Tokopedia', 'Sesi Malam (19.00 - 21.00)'],
   ['Arif Nugroho', 'Freelance', 'Sesi Pagi (09.00 - 12.00)'],
@@ -412,8 +392,6 @@ const RESTAURANT_FIELDS = [
   },
 ]
 
-// [nama, meja, item pesanan, penyajian, catatan, metode, total]
-// Nama hanya mengisi respondentName, bukan jawaban field.
 const ORDER_ROWS = [
   [
     'Bagas Wicaksono',
@@ -507,8 +485,6 @@ const FREELANCE_FIELDS = [
   { label: 'Kapan Bisa Mulai Mengerjakan', type: 'DATE', isRequired: true },
 ]
 
-// answers diurutkan sama dengan FREELANCE_FIELDS; nama dan email tidak ikut
-// karena keduanya mengisi respondentName dan respondentEmail.
 const BIDDERS = [
   {
     name: 'Fikri Ardiansyah',
@@ -582,7 +558,6 @@ const BIDDERS = [
   },
 ]
 
-// Kelasnya satu, jadi harganya melekat pada form — bukan dipilih ulang peserta.
 const COURSE_PRICE = 350000
 
 const COURSE_PAYMENT_OPTIONS = [
@@ -612,7 +587,6 @@ const COURSE_FIELDS = [
   },
 ]
 
-// [nama, level, tujuan, metode]
 const STUDENT_ROWS = [
   [
     'Nabila Az-Zahra',
@@ -640,13 +614,6 @@ const STUDENT_ROWS = [
   ],
 ]
 
-/**
- * Penanda data contoh.
- *
- * Judul form sudah memakainya sejak awal; nama responden ikut ditandai supaya
- * tidak ada satu pun baris di dashboard hasil yang terbaca seperti orang
- * sungguhan. Emailnya tetap diturunkan dari nama aslinya agar tetap wajar.
- */
 const getDemoName = (name) => `[DEMO] ${name}`
 
 const getSlug = (name) =>
@@ -673,11 +640,6 @@ const getCreatedFields = (list) =>
     order: index,
   }))
 
-/**
- * Tiap template punya beberapa form demo, bukan satu, supaya tombol
- * "Eksplor Kategori" di landing page selalu menemukan isi. Entri pertama
- * adalah demo utama yang dipakai contoh di README dan output seed.
- */
 const EXAM_FORMS = [
   {
     title: '[DEMO] Ujian Tengah Semester — Sejarah Kelas XI',
@@ -776,7 +738,6 @@ const FREELANCE_FORMS = [
     title: '[DEMO] Redesain Landing Page Company Profile',
     description:
       'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Kami butuh landing page baru yang lebih cepat dan enak dibaca di ponsel. Aset desain sudah tersedia dalam bentuk Figma.',
-    // Anggaran pemilik proyek; freelancer tetap menawar sendiri lewat field.
     priceAmount: 4500000,
     bidders: BIDDERS,
   },
@@ -791,7 +752,6 @@ const FREELANCE_FORMS = [
     title: '[DEMO] Penulisan 20 Artikel SEO Bidang Properti',
     description:
       'Penulisan Konten · Kerja Jarak Jauh · Estimasi 4 Minggu · Terbuka untuk Pemula. Dua puluh artikel siap tayang, riset kata kunci sudah kami sediakan.',
-    // Anggarannya masih terbuka, jadi papan proyek menandainya "Nego".
     priceAmount: 0,
     bidders: BIDDERS.slice(2),
   },
@@ -871,7 +831,6 @@ const seedPsychometric = async () => {
         description: demo.description,
         purpose: null,
         templateId: 'psychometric',
-        // Banner lowongan dipakai sebagai logo perusahaan di papan lowongan.
         bannerUrl: demo.bannerUrl,
         isPublished: true,
         fields: { create: getCreatedFields(PSYCHOMETRIC_FIELDS) },
@@ -925,7 +884,6 @@ const seedEvent = async () => {
           respondentName: getDemoName(name),
           respondentEmail: email,
           answers: getAnswers(form.fields, [instansi, sesi]),
-          // Pendaftaran diisi cepat, beda jauh dengan pengerjaan ujian.
           durationSeconds: 90 + demo.attendees.length * 7,
         },
       })
@@ -970,15 +928,12 @@ const seedRestaurant = async () => {
         data: {
           formId: form.id,
           respondentName: getDemoName(name),
-          // Form pesanan tidak menanyakan email, jadi tidak ada yang disimpan.
           respondentEmail: null,
           answers: getAnswers(form.fields, [
             table,
             orderItems,
             serving,
             note,
-            // Metode pembayaran disimpan bersama nominalnya, sama seperti
-            // yang dilakukan halaman pengisian saat form dikirim.
             `${method} — Rp${amount.toLocaleString('id-ID')}`,
           ]),
           durationSeconds: 120 + orderItems.length * 25,
@@ -1004,8 +959,6 @@ const seedFreelance = async () => {
         description: demo.description,
         purpose: null,
         templateId: 'freelance',
-        // Anggaran proyek memakai kolom yang sama dengan harga kelas; nol
-        // berarti masih terbuka untuk dinegosiasi.
         priceAmount: demo.priceAmount,
         isPublished: true,
         fields: { create: getCreatedFields(FREELANCE_FIELDS) },
@@ -1063,8 +1016,6 @@ const seedCourse = async () => {
             '08123456789',
             level,
             goal,
-            // Metode pembayaran disimpan bersama nominalnya, sama seperti
-            // yang dilakukan halaman pengisian saat form dikirim.
             `${method} — Rp${COURSE_PRICE.toLocaleString('id-ID')}`,
           ]),
           durationSeconds: 180 + goal.length,
@@ -1083,7 +1034,6 @@ const main = async () => {
   ownerId = await getOwnerId()
   console.log(`• pemilik form demo: ${SEED_OWNER_EMAIL} (${ownerId})`)
 
-  // Relasi pakai onDelete: Cascade, jadi field/jawaban/analisis ikut terhapus.
   const removed = await prisma.form.deleteMany({
     where: {
       templateId: {

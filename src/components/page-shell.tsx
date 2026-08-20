@@ -1,28 +1,28 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowDown } from 'lucide-react'
 
+import mark from '@/shared/images/emotblayer.png'
 import { cn } from '@/shared/lib/utils'
+import BackLink from '@/components/back-link'
 import AuthAccount from '@/features/auth/components/authAccount'
 
 interface Props {
-  /** Giant word set vertically down the left rail. */
+  backHref?: string
   railWord?: string
-  /** Small stacked label at the top of the left rail. */
   railEyebrow?: string
-  /** Index chip at the top of the left rail. */
   railIndex?: string
-  /** Mono title shown in the black top bar. */
   barTitle: string
-  /** Vertical label on the right rail. */
   railNote?: string
-  /** Optional action rendered at the right edge of the top bar. */
   action?: React.ReactNode
   className?: string
   children: React.ReactNode
 }
 
 export default function PageShell({
+  backHref = '/',
   railWord = 'BLAYER',
   railEyebrow = 'BRUTAL\nFORM.',
   railIndex = '01',
@@ -73,23 +73,26 @@ export default function PageShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex items-center gap-4 border-b-2 border-foreground bg-foreground px-4 py-3.5 text-background sm:px-6">
+          <BackLink
+            href={backHref}
+            className="border-background hover:bg-background hover:text-foreground"
+          />
+
           <Link
             href="/"
             aria-label="Kembali ke halaman depan"
-            className="flex h-8 w-8 shrink-0 items-center justify-center"
+            className="flex h-10 w-10 shrink-0 items-center justify-center"
           >
             <Image
-              src="/blayer-mark.png"
+              src={mark}
               alt=""
-              width={32}
-              height={32}
+              width={40}
+              height={40}
               priority
-              className="h-8 w-8 border-2 border-background"
+              className="h-10 w-10 border-2 border-background"
             />
           </Link>
           <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
-          {/* Aksi bilah atas — mis. tombol Save di builder — harus tetap
-              terjangkau di ponsel dan terbaca pembaca layar. */}
           <div className="ml-auto flex shrink-0 items-center gap-3">
             {action}
             <AuthAccount tone="dark" />

@@ -139,7 +139,6 @@ describe('identitas pengisi', () => {
   it('TC-21 penomoran pertanyaan menyambung dari identitas yang tampil', async () => {
     await loadSubmit()
 
-    // Nama = 01, jadi pertanyaan pertama form mulai dari 02.
     expect(screen.getByText('02')).toBeInTheDocument()
   })
 

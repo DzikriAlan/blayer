@@ -33,7 +33,6 @@ const INPUT_TYPES: Partial<Record<DataFormsDetailField['type'], string>> = {
 const RATING_VALUES = [1, 2, 3, 4, 5]
 const SCALE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-/** Jumlah porsi ditulis di belakang nama, mis. "Nasi Goreng x2". */
 const MENU_QTY_PATTERN = / x(\d+)$/
 
 interface Props {
@@ -41,9 +40,7 @@ interface Props {
   field: DataFormsDetailField
   value: string | string[]
   error: string
-  /** Tagihan berjalan, dipakai field pembayaran untuk menampilkan totalnya. */
   amount?: number
-  /** Gambar QRIS milik pembuat form; kosong berarti belum diunggah. */
   qrisUrl?: string
   onEditAnswer: (fieldId: string, value: string | string[]) => void
 }
@@ -63,7 +60,6 @@ export default function ResponsesField({
 
   const getIndexLabel = () => String(index + 1).padStart(2, '0')
 
-  // Baris opsi menu: "Nama|Harga|URL Gambar"; dua bagian terakhir opsional.
   const getMenuItem = (option: string) => {
     const [name, price, imageUrl] = option.split('|')
     return {
@@ -83,7 +79,6 @@ export default function ResponsesField({
 
   const getCurrencyText = (value: number) => `Rp${value.toLocaleString('id-ID')}`
 
-  // Baris opsi pembayaran: "Metode|Petunjuk".
   const getPaymentItem = (option: string) => {
     const [method, guide] = option.split('|')
     return { method: (method ?? '').trim(), guide: (guide ?? '').trim() }
@@ -363,8 +358,6 @@ export default function ResponsesField({
       )
     }
 
-    // Grid (bukan flex) supaya skala tetap terbaca saat dibungkus di layar kecil.
-    // Garis kotak dibentuk dari border tiap sel, jadi aman berapa pun barisnya.
     if (field.type === 'RATING') {
       return (
         <div className="grid grid-cols-5 border-l-2 border-t-2 border-foreground">

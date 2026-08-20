@@ -1,19 +1,9 @@
 interface Props {
-  /** Jumlah orang yang sudah masuk; menentukan berapa wajah yang digambar. */
   total: number
-  /** Dipakai sebagai benih warna supaya satu form selalu tampil sama. */
   seed: string
-  /** Satuan orangnya, mis. "TERDAFTAR" atau "PELAMAR". */
   label: string
 }
 
-/**
- * Warna datar bernada tinggi, bukan gradasi lembut.
- *
- * Sistem desainnya memakai bidang warna penuh berbingkai tebal — gradasi
- * pastel terbaca seperti tempelan dari produk lain begitu berdiri di sebelah
- * kartu dan chipnya.
- */
 const FACE_COLORS = [
   '#FF3B1F',
   '#FFC300',
@@ -23,19 +13,8 @@ const FACE_COLORS = [
   '#FF7AC8',
 ]
 
-/** Sebanyak-banyaknya wajah yang ditumpuk; sisanya dihitung jadi angka. */
 const MAX_FACE = 4
 
-/**
- * Tumpukan wajah untuk jumlah orang yang sudah ikut.
- *
- * Wajahnya sengaja bukan foto siapa-siapa: katalog publik tidak pernah
- * mengirim nama maupun email responden, dan memang tidak boleh — yang sudah
- * mengisi form orang lain tidak pantas wajahnya terpajang di halaman depan.
- * Jadi yang digambar adalah wajah bikinan yang warnanya diturunkan dari id
- * form, supaya satu kartu selalu tampil sama setiap kali dibuka tanpa
- * menyentuh data siapa pun.
- */
 export default function FormsFacepile({ total, seed, label }: Props) {
   const getSeedNumber = (index: number) => {
     const text = `${seed}-${index}`
@@ -55,14 +34,8 @@ export default function FormsFacepile({ total, seed, label }: Props) {
 
       return {
         key: `${seed}-${index}`,
-        // Warna dimulai dari benih form lalu maju satu langkah tiap wajah,
-        // jadi empat wajah yang bertumpuk dijamin tidak pernah kembar —
-        // kalau kembar, tumpukannya terbaca seperti satu gambar yang digeser.
         color:
           FACE_COLORS[(getSeedNumber(0) + index) % FACE_COLORS.length],
-        // Mata yang sesekali mengedip dan mulut yang lebarnya berbeda-beda
-        // membuat tumpukannya terbaca sebagai beberapa orang, bukan satu
-        // gambar yang diulang.
         isWinking: seedNumber % 3 === 0,
         mouthWidth: 3 + (seedNumber % 3),
       }
@@ -108,10 +81,6 @@ export default function FormsFacepile({ total, seed, label }: Props) {
             </svg>
           ))}
 
-          {/* Gelembung sisanya ikut di dalam barisan wajah, bukan di
-              sebelahnya: kalau ia jadi anak dari pembungkus luar, jarak antar
-              elemen di sana menambal balik tindihannya dan ia terlihat
-              terlepas sendirian dari tumpukan. */}
           {restTotal > 0 ? (
             <span className="brutal-eyebrow -ml-4 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-foreground text-[9px] tracking-normal text-background">
               +{restTotal > 99 ? '99' : restTotal}

@@ -1,48 +1,42 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { LoaderCircle } from 'lucide-react'
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  PASSWORD_MIN,
-  USERNAME_MAX,
-  USERNAME_MIN,
-  USERNAME_PATTERN,
+  getLoginProblem,
+  getPasswordProblem,
+  getUsernameProblem,
 } from '@/shared/lib/authIdentity'
 import { useAuthStates } from '../states/authStates'
 import { useAuthControllers } from '../controllers/authControllers'
 
-const schema = z.object({
-  username: z
-    .string()
-    .trim()
-    .min(USERNAME_MIN, `Username minimal ${USERNAME_MIN} karakter.`)
-    .max(USERNAME_MAX, `Username maksimal ${USERNAME_MAX} karakter.`)
-    .regex(
-      USERNAME_PATTERN,
-      'Username hanya boleh huruf, angka, titik, garis bawah, dan strip.'
-    ),
-  password: z
-    .string()
-    .min(PASSWORD_MIN, `Kata sandi minimal ${PASSWORD_MIN} karakter.`),
-})
+const check =
+  (getProblem: (value: string) => string) =>
+  (value: string, ctx: z.RefinementCtx) => {
+    const problem = getProblem(value)
+    if (problem) ctx.addIssue({ code: z.ZodIssueCode.custom, message: problem })
+  }
 
-type FormValues = z.infer<typeof schema>
+const getSchema = (isRegister: boolean) =>
+  z.object({
+    username: z
+      .string()
+      .trim()
+      .superRefine(check(isRegister ? getUsernameProblem : getLoginProblem)),
+    password: z.string().superRefine(check(getPasswordProblem)),
+  })
 
-/**
- * Tujuan hanya diterima bila berupa path internal.
- *
- * Tanpa saringan ini, `?next=https://situs-lain` akan membuat halaman login
- * sendiri jadi alat pengalihan ke domain luar.
- */
+type FormValues = z.infer<ReturnType<typeof getSchema>>
+
 const getSafeNext = (next: unknown) => {
   if (typeof next !== 'string') return ''
   if (!next.startsWith('/') || next.startsWith('//')) return ''
@@ -59,8 +53,10 @@ export default function AuthForm({ mode }: Props) {
   const { storeAuthSession, storeAuthPassword, storeAuthRegister } =
     useAuthControllers()
 
+  const [isPasswordShown, setIsPasswordShown] = useState(false)
+
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(getSchema(mode === 'register')),
     defaultValues: { username: '', password: '' },
   })
 
@@ -73,8 +69,6 @@ export default function AuthForm({ mode }: Props) {
       isRegister,
       next: getSafeNext(router.query.next) || '/forms',
       isSignedIn,
-      // Tiga tombol punya keadaan sibuk sendiri-sendiri supaya yang berputar
-      // hanya tombol yang benar-benar sedang bekerja.
       isCredentialPending: credential.isPending,
       isGooglePending: storeAuthSession.isPending,
       isBusy:
@@ -88,6 +82,7 @@ export default function AuthForm({ mode }: Props) {
       lead: isRegister
         ? 'Buat akun untuk mulai menyusun form. Form yang Anda buat hanya terlihat oleh akun Anda sendiri.'
         : 'Membuat form dan membuka dashboard hasil butuh akun. Mengisi form lewat tautan publik tetap bisa tanpa login.',
+      fieldLabel: isRegister ? 'Username' : 'Username atau Email',
       submitLabel: isRegister ? 'Daftar' : 'Masuk',
       googleLabel: isRegister ? 'Daftar dengan Google' : 'Lanjut dengan Google',
       switchLead: isRegister ? 'Sudah punya akun?' : 'Belum punya akun?',
@@ -117,33 +112,32 @@ export default function AuthForm({ mode }: Props) {
   useEffect(() => {
     if (!data.isSignedIn) return
 
-    // Sudah punya sesi — halaman ini tidak perlu ditampilkan lagi.
     router.replace(data.next)
   }, [data.isSignedIn, data.next, router])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-5 py-16">
-      <div className="w-full max-w-md border-2 border-foreground bg-paper p-8 shadow-[6px_6px_0_0_hsl(var(--foreground))]">
+    <div className="flex h-[100dvh] items-center justify-center overflow-hidden bg-background px-5 py-6">
+      <div className="max-h-full w-full max-w-md overflow-y-auto border-2 border-foreground bg-paper p-6 shadow-[6px_6px_0_0_hsl(var(--foreground))] sm:p-8">
         <p className="brutal-eyebrow text-muted-foreground">{data.eyebrow}</p>
-        <h1 className="mt-3 font-display text-4xl font-black uppercase leading-[0.95] tracking-tight">
+        <h1 className="mt-2 font-display text-3xl font-black uppercase leading-[0.95] tracking-tight sm:mt-3 sm:text-4xl">
           {data.title[0]}
           <br />
           {data.title[1]}
           <span className="text-primary">.</span>
         </h1>
-        <p className="mt-4 font-mono text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-3 font-mono text-sm leading-relaxed text-muted-foreground sm:mt-4">
           {data.lead}
         </p>
 
-        <form onSubmit={submitAuthPassword} className="mt-7 flex flex-col gap-4">
+        <form onSubmit={submitAuthPassword} className="mt-5 flex flex-col gap-3 sm:mt-6 sm:gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{data.fieldLabel}</Label>
             <Input
               id="username"
               autoComplete="username"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="blayeradmin"
+              placeholder="adminblayer"
               aria-invalid={!!form.formState.errors.username}
               {...form.register('username')}
             />
@@ -156,16 +150,37 @@ export default function AuthForm({ mode }: Props) {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="password">Kata Sandi</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={
-                data.isRegister ? 'new-password' : 'current-password'
-              }
-              placeholder="••••••••"
-              aria-invalid={!!form.formState.errors.password}
-              {...form.register('password')}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={isPasswordShown ? 'text' : 'password'}
+                autoComplete={
+                  data.isRegister ? 'new-password' : 'current-password'
+                }
+                placeholder="••••••••"
+                className="pr-10"
+                aria-invalid={!!form.formState.errors.password}
+                {...form.register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setIsPasswordShown((shown) => !shown)}
+                aria-label={
+                  isPasswordShown
+                    ? 'Sembunyikan kata sandi'
+                    : 'Tampilkan kata sandi'
+                }
+                aria-pressed={isPasswordShown}
+                aria-controls="password"
+                className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-primary focus-visible:text-primary focus-visible:outline-none"
+              >
+                {isPasswordShown ? (
+                  <EyeOff className="size-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="size-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
             {form.formState.errors.password ? (
               <p className="font-mono text-xs text-destructive">
                 {form.formState.errors.password.message}
@@ -190,7 +205,7 @@ export default function AuthForm({ mode }: Props) {
           </Button>
         </form>
 
-        <div className="my-7 flex items-center gap-4">
+        <div className="my-5 flex items-center gap-4 sm:my-6">
           <span aria-hidden className="h-0.5 flex-1 bg-foreground" />
           <span className="brutal-eyebrow text-muted-foreground">ATAU</span>
           <span aria-hidden className="h-0.5 flex-1 bg-foreground" />
@@ -219,7 +234,7 @@ export default function AuthForm({ mode }: Props) {
           </p>
         ) : null}
 
-        <p className="mt-7 font-mono text-xs text-muted-foreground">
+        <p className="mt-5 font-mono text-xs text-muted-foreground sm:mt-6">
           {data.switchLead}{' '}
           <Link
             href={data.switchHref}

@@ -69,7 +69,7 @@ describe('halaman masuk', () => {
   it('TC-26k menyediakan dua jalan masuk: username-kata sandi dan Google', () => {
     renderForm('login')
 
-    expect(screen.getByLabelText('Username')).toBeInTheDocument()
+    expect(screen.getByLabelText(/username/i)).toBeInTheDocument()
     expect(screen.getByLabelText('Kata Sandi')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Masuk' })).toBeInTheDocument()
     expect(
@@ -81,7 +81,7 @@ describe('halaman masuk', () => {
     const user = userEvent.setup()
     renderForm('login')
 
-    await user.type(screen.getByLabelText('Username'), 'blayeradmin')
+    await user.type(screen.getByLabelText(/username/i), 'blayeradmin')
     await user.type(screen.getByLabelText('Kata Sandi'), 'kataSandiPanjang')
     await user.click(screen.getByRole('button', { name: 'Masuk' }))
 
@@ -98,11 +98,63 @@ describe('halaman masuk', () => {
     const user = userEvent.setup()
     renderForm('login')
 
-    await user.type(screen.getByLabelText('Username'), 'blayeradmin')
+    await user.type(screen.getByLabelText(/username/i), 'blayeradmin')
     await user.type(screen.getByLabelText('Kata Sandi'), 'pendek')
     await user.click(screen.getByRole('button', { name: 'Masuk' }))
 
     expect(await screen.findByText(/minimal 8 karakter/i)).toBeInTheDocument()
+    expect(calls.password).not.toHaveBeenCalled()
+  })
+
+  it('TC-26o masuk memakai alamat email dikirim apa adanya', async () => {
+    const user = userEvent.setup()
+    renderForm('login')
+
+    await user.type(
+      screen.getByLabelText(/username/i),
+      'adminblayer@blayer.id'
+    )
+    await user.type(screen.getByLabelText('Kata Sandi'), 'kataSandiPanjang')
+    await user.click(screen.getByRole('button', { name: 'Masuk' }))
+
+    await waitFor(() => {
+      expect(calls.password).toHaveBeenCalledWith({
+        username: 'adminblayer@blayer.id',
+        password: 'kataSandiPanjang',
+      })
+    })
+  })
+
+  it('TC-26o alamat yang belum selesai diketik ditahan saat masuk', async () => {
+    const user = userEvent.setup()
+    renderForm('login')
+
+    await user.type(screen.getByLabelText(/username/i), 'adminblayer@blayer')
+    await user.type(screen.getByLabelText('Kata Sandi'), 'kataSandiPanjang')
+    await user.click(screen.getByRole('button', { name: 'Masuk' }))
+
+    expect(await screen.findByText(/belum lengkap/i)).toBeInTheDocument()
+    expect(calls.password).not.toHaveBeenCalled()
+  })
+
+  it('TC-26q tombol mata membuka dan menutup kata sandi', async () => {
+    const user = userEvent.setup()
+    renderForm('login')
+
+    const field = screen.getByLabelText('Kata Sandi')
+    await user.type(field, 'kataSandiPanjang')
+    expect(field).toHaveAttribute('type', 'password')
+
+    await user.click(
+      screen.getByRole('button', { name: 'Tampilkan kata sandi' })
+    )
+    expect(field).toHaveAttribute('type', 'text')
+
+    await user.click(
+      screen.getByRole('button', { name: 'Sembunyikan kata sandi' })
+    )
+    expect(field).toHaveAttribute('type', 'password')
+
     expect(calls.password).not.toHaveBeenCalled()
   })
 
@@ -136,7 +188,7 @@ describe('halaman daftar', () => {
     const user = userEvent.setup()
     renderForm('register')
 
-    await user.type(screen.getByLabelText('Username'), 'penggunabaru')
+    await user.type(screen.getByLabelText(/username/i), 'penggunabaru')
     await user.type(screen.getByLabelText('Kata Sandi'), 'kataSandiPanjang')
     await user.click(screen.getByRole('button', { name: 'Daftar' }))
 
@@ -147,6 +199,22 @@ describe('halaman daftar', () => {
       })
     })
     expect(calls.password).not.toHaveBeenCalled()
+  })
+
+  it('TC-26p mendaftar dengan email ditolak dan diberi tahu username-nya', async () => {
+    const user = userEvent.setup()
+    renderForm('register')
+
+    await user.type(
+      screen.getByLabelText(/username/i),
+      'penggunabaru@blayer.id'
+    )
+    await user.type(screen.getByLabelText('Kata Sandi'), 'kataSandiPanjang')
+    await user.click(screen.getByRole('button', { name: 'Daftar' }))
+
+    expect(await screen.findByText(/tanpa @blayer\.id/i)).toBeInTheDocument()
+    expect(screen.queryByText(/huruf, angka/i)).not.toBeInTheDocument()
+    expect(calls.register).not.toHaveBeenCalled()
   })
 
   it('TC-26p tetap menawarkan Google dan jalan ke halaman masuk', () => {

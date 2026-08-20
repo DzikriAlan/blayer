@@ -43,11 +43,9 @@ const OPTION_TYPES: FormsFieldType[] = [
   'PAYMENT',
 ]
 
-/** Template yang halaman isinya memuat pembayaran. */
 const PAID_VIEWS = ['order', 'course']
 
 const fieldSchema = z.object({
-  /** Kosong untuk field baru; terisi untuk field yang sedang disunting. */
   id: z.string().optional(),
   label: z.string().min(1, 'Pertanyaan wajib diisi'),
   description: z.string(),
@@ -71,7 +69,6 @@ const schema = z
     isPublished: z.boolean(),
     fields: z.array(fieldSchema).min(1, 'Tambahkan minimal satu field'),
   })
-  // Tujuan hanya wajib kalau analisis AI dinyalakan.
   .superRefine((values, ctx) => {
     if (values.isAiEnabled && values.purpose.trim().length < 20) {
       ctx.addIssue({
@@ -82,7 +79,6 @@ const schema = z
       })
     }
 
-    // Link acara boleh kosong, tapi kalau diisi harus URL yang benar.
     if (values.meetingUrl.trim() && !/^https?:\/\/\S+$/.test(values.meetingUrl.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -91,8 +87,6 @@ const schema = z
       })
     }
 
-    // Harga boleh kosong (form gratis atau bertagihan menu), tapi kalau diisi
-    // harus angka positif — jika tidak, tagihannya tidak bisa dihitung.
     if (
       values.priceAmount.trim() &&
       !(Number(values.priceAmount.trim()) > 0)
@@ -104,7 +98,6 @@ const schema = z
       })
     }
 
-    // Aturan yang sama berlaku untuk video kelas.
     if (values.videoUrl.trim() && !/^https?:\/\/\S+$/.test(values.videoUrl.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -127,7 +120,6 @@ const emptyField = {
 }
 
 interface Props {
-  /** Terisi berarti builder sedang menyunting form yang sudah ada. */
   formId?: string
   onEditFormsTitle?: (title: string) => void
 }
@@ -142,7 +134,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   const [filters, setFilters] = useState({
     optionError: '',
     activeTemplateId: '',
-    /** Id form yang isiannya sudah dimuat ke builder. */
     loadedId: '',
   })
 
@@ -186,7 +177,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const getFieldError = (index: number) =>
       form.formState.errors.fields?.[index]?.label?.message ?? ''
 
-    // Bentuk builder mengikuti satu nilai view milik template.
     const getView = () => {
       const template = FORMS_TEMPLATES.find(
         (item) => item.id === filters.activeTemplateId
@@ -230,20 +220,13 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       hasEventDetail: getView() === 'event',
       hasCourseDetail: getView() === 'course',
       hasPaymentDetail: PAID_VIEWS.includes(getView()),
-      // Banner dipakai sebagai poster acara, kelas, restoran, maupun logo
-      // perusahaan yang membuka lowongan.
       hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
         getView()
       ),
       bannerUrl: watchedBannerUrl,
       qrisUrl: watchedQrisUrl,
-      // Harga tetap hanya relevan untuk form berbayar yang tidak punya menu:
-      // kalau ada menu, tagihannya datang dari item yang dipilih pengisi.
       hasFixedPrice:
         PAID_VIEWS.includes(getView()) && !watchedFieldTypes.includes('MENU'),
-      // Anggaran proyek bukan tagihan: yang membayar pemilik proyek, bukan
-      // freelancer yang mengisi. Jadi kolomnya berdiri sendiri, tanpa QRIS
-      // dan tanpa field pembayaran.
       hasBudget: getView() === 'freelance',
       priceAmountError: form.formState.errors.priceAmount?.message ?? '',
       meetingUrlError: form.formState.errors.meetingUrl?.message ?? '',
@@ -283,7 +266,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const template = getTemplate(templateId)
     if (!template) return
 
-    // Template menimpa seluruh isian — konfirmasi dulu kalau sudah ada yang ditulis.
     const isOverwriting = form.formState.isDirty
     if (
       isOverwriting &&
@@ -294,8 +276,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       return
     }
 
-    // Saat UI AI disembunyikan, tujuan AI tidak boleh ikut aktif dari template
-    // — kalau tidak, validasinya wajib tapi kolomnya tidak terlihat.
     form.reset({
       ...template.values,
       isAiEnabled: IS_AI_VISIBLE && template.values.isAiEnabled,
@@ -306,9 +286,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       activeTemplateId: templateId,
     }))
 
-    // URL ikut menyebut template yang sedang dipakai. Tanpa ini, efek pembaca
-    // ?template= melihat nilai lama dan langsung menarik isian kembali ke
-    // template sebelumnya — jadi template lain tidak pernah bisa dipilih.
     if (router.query.template !== templateId) {
       router.replace(
         { pathname: router.pathname, query: { template: templateId } },
@@ -361,7 +338,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       return
     }
 
-    // Menu tanpa harga membuat tagihan tidak bisa dihitung, jadi ditolak di sini.
     const invalidMenuIndex = values.fields.findIndex(
       (field) =>
         field.type === 'MENU' &&
@@ -383,10 +359,8 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const payload: PayloadPostForms = {
       title: values.title,
       description: values.description,
-      // Kirim kosong saat AI dimatikan supaya server menyimpannya sebagai null.
       purpose: values.isAiEnabled ? values.purpose.trim() : '',
       templateId: filters.activeTemplateId,
-      // Detail tambahan hanya ikut terkirim kalau templatenya memang memakainya.
       bannerUrl: data.hasBanner ? values.bannerUrl : '',
       meetingUrl: data.hasEventDetail ? values.meetingUrl.trim() : '',
       videoUrl: data.hasCourseDetail ? values.videoUrl.trim() : '',
@@ -397,8 +371,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
           : 0,
       isPublished: values.isPublished,
       fields: values.fields.map((field) => ({
-        // id ikut hanya saat menyunting; tanpa itu server menganggapnya field
-        // baru dan jawaban lama kehilangan pertanyaannya.
         id: field.id || undefined,
         label: field.label,
         description: field.description,
@@ -418,8 +390,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     onEditFormsTitle?.(watchedTitle)
   }, [watchedTitle, onEditFormsTitle])
 
-  // Template yang dipilih dari beranda datang lewat ?template=<id>. Saat
-  // menyunting, isian datang dari form yang tersimpan — bukan dari template.
   useEffect(() => {
     if (isEditing) return
     if (!router.isReady) return
@@ -431,8 +401,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const template = FORMS_TEMPLATES.find((item) => item.id === templateId)
     if (!template) return
 
-    // Saat UI AI disembunyikan, tujuan AI tidak boleh ikut aktif dari template
-    // — kalau tidak, validasinya wajib tapi kolomnya tidak terlihat.
     form.reset({
       ...template.values,
       isAiEnabled: IS_AI_VISIBLE && template.values.isAiEnabled,
@@ -450,7 +418,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     }
   }, [formsCreated.status, formsCreated.data, router])
 
-  // Saat menyunting, isian ditarik dari form yang tersimpan.
   useEffect(() => {
     if (!isEditing) return
     setGetFormsDetail({ id: formId })
@@ -461,8 +428,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     const detail = formsDetail.data
     if (!detail || detail.id !== formId) return
-    // Reset hanya sekali per form: pemuatan ulang di tengah pengetikan akan
-    // membuang suntingan yang belum tersimpan.
     if (filters.loadedId === formId) return
 
     form.reset({
@@ -483,8 +448,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
         placeholder: field.placeholder,
         type: field.type,
         isRequired: field.isRequired,
-        // Builder menyunting pilihan sebagai teks per baris; database
-        // menyimpannya sebagai array.
         optionText: field.options.join('\n'),
       })),
     })

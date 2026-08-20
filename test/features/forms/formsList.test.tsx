@@ -262,3 +262,15 @@ describe('menghapus form dari riwayat', () => {
     ).toHaveAttribute('href', '/forms/form-1/edit')
   })
 })
+
+describe('jelajah kategori dari kartu template', () => {
+  it('TC-13g Explore membuka katalog kategori template itu', async () => {
+    const user = userEvent.setup()
+    await loadList()
+
+    const explore = screen.getAllByRole('button', { name: /Explore/ })[0]
+    await user.click(explore)
+
+    expect(push).toHaveBeenCalledWith(expect.stringMatching(/^\/kategori\//))
+  })
+})

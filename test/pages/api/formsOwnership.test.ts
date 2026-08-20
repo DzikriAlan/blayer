@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// vi.mock diangkat ke atas berkas oleh Vitest, jadi impor biasa sudah menerima
-// versi tiruan dari prisma dan penjaga sesi.
 import handler from '@/pages/api/v1/forms/index'
 
-// vi.hoisted dipakai karena vi.mock diangkat ke atas berkas — tiruan harus
-// sudah ada sebelum modul yang diuji diimpor.
 const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: {
     form: {
@@ -30,7 +26,6 @@ vi.mock('@/shared/lib/authServer', () => ({
     return authMock.user
   },
 }))
-
 
 const getResponse = () => {
   const res = {
@@ -100,7 +95,6 @@ describe('kepemilikan form di API', () => {
       query: {},
       body: {
         title: 'Judul',
-        // Pengirim mencoba mengaku sebagai akun lain.
         userId: 'user-korban',
         fields: [{ label: 'Nama', type: 'SHORT_TEXT' }],
       },

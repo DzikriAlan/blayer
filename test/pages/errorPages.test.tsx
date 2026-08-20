@@ -5,8 +5,6 @@ import { describe, expect, it, vi } from 'vitest'
 import NotFoundPage from '@/pages/404'
 import ServerErrorPage from '@/pages/500'
 
-// Rangka halaman publik memuat kontrol akun, yang membaca rute aktif untuk
-// menyusun tautan "Masuk" dan sesi lewat TanStack Query.
 vi.mock('next/router', () => ({
   useRouter: () => ({ asPath: '/tidak-ada', replace: vi.fn() }),
 }))
@@ -48,10 +46,10 @@ describe('halaman tidak ditemukan', () => {
     )
   })
 
-  it('TC-33 memakai rangka halaman publik lengkap dengan navigasinya', () => {
+  it('TC-33 memakai rangka halaman publik lengkap dengan footernya', () => {
     renderPage(<NotFoundPage />)
 
-    expect(screen.getAllByRole('link', { name: /Buat Form/ }).length).toBeGreaterThan(1)
+    expect(screen.getByText('HALAMAN')).toBeInTheDocument()
     expect(screen.getByText(/BLAYER® STUDIO/)).toBeInTheDocument()
   })
 })

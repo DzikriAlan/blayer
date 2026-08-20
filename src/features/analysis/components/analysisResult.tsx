@@ -112,8 +112,6 @@ export default function AnalysisResult({ formId }: Props) {
         ) : null}
       </section>
 
-      {/* Memuat, gagal, dan kosong ditangani satu komponen; dashboard hanya
-          dirender kalau jawabannya memang sudah ada. */}
       <LoadData response={data} minHeight="30vh">
         {data.totalResponse > 0 ? (
           <ResponsesDashboard
@@ -125,8 +123,6 @@ export default function AnalysisResult({ formId }: Props) {
         ) : null}
       </LoadData>
 
-      {/* Placeholder LoadData tidak punya slot aksi, jadi jalan keluarnya
-          diletakkan tepat di bawahnya. */}
       {data.isError ? (
         <div className="flex justify-center">
           <Button onClick={() => fetchResponsesList.refetch()}>Retry</Button>

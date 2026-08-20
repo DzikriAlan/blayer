@@ -36,8 +36,6 @@ export default function ResponsesCourse({
     const getCurrencyText = (value: number) =>
       `Rp${value.toLocaleString('id-ID')}`
 
-    // Tautan YouTube diputar di halaman; penyedia lain cukup dibuka di tab baru
-    // karena tidak semuanya mengizinkan disematkan lewat iframe.
     const getEmbedUrl = () => {
       const raw = videoUrl.trim()
       if (!raw) return ''

@@ -9,14 +9,6 @@ import FormsCreate, {
   FORMS_CREATE_FORM_ID,
 } from '@/features/forms/components/formsCreate'
 
-/**
- * Menyunting form yang sudah dipublikasikan.
- *
- * Builder-nya sama persis dengan halaman buat; yang membedakan hanya `formId`
- * yang membuatnya menarik isian dari form tersimpan lalu mengirim PUT. Halaman
- * ini tidak ada di daftar rute publik, jadi penjaga sesi menutupnya sendiri —
- * dan servernya tetap memeriksa kepemilikan, bukan hanya penjaga di browser.
- */
 const FormsEditPage: NextPage = () => {
   const router = useRouter()
   const [filters, setFilters] = useState({ title: '' })
@@ -39,6 +31,7 @@ const FormsEditPage: NextPage = () => {
         />
       </Head>
       <PageShell
+        backHref="/forms"
         barTitle={barTitle}
         railWord="BLAYER"
         railEyebrow={'FORM\nEDITOR.'}
@@ -55,8 +48,6 @@ const FormsEditPage: NextPage = () => {
           </Button>
         }
       >
-        {/* Router baru siap setelah hidrasi; sebelum itu id masih kosong dan
-            builder tidak boleh dirender sebagai mode buat baru. */}
         {formId ? (
           <FormsCreate formId={formId} onEditFormsTitle={editFormsTitle} />
         ) : null}
