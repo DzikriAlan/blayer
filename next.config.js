@@ -10,7 +10,12 @@ const getContentSecurityPolicy = () => {
     "form-action 'self'",
     "frame-ancestors 'none'",
     "object-src 'none'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    // Tanpa 'unsafe-inline' maupun 'unsafe-eval'. Next 16 tidak lagi
+    // membutuhkannya; diuji di build produksi dan di server dev, seluruh
+    // halaman beserta alur login berjalan tanpa satu pun pelanggaran.
+    // Dibiarkan sama di kedua lingkungan supaya tidak ada kebijakan yang lolos
+    // di dev lalu jatuh di produksi.
+    "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' data: blob: https://images.unsplash.com ${supabase}`.trim(),
     "font-src 'self' data:",

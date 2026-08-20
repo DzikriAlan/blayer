@@ -74,3 +74,15 @@ npx prisma migrate resolve --applied 0_init
 Buka [SUPABASE_AUDIT.md](SUPABASE_AUDIT.md). Sisa itemnya hanya bisa diperiksa
 dari dashboard Supabase, dan salah satunya — daftar Redirect URL — menentukan
 apakah login Google berfungsi di domain produksi.
+
+## Pesan konsol yang bisa diabaikan di mode dev
+
+```
+Refused to execute script from '/_next/static/development/_clientMiddlewareManifest.js'
+because its MIME type ('application/json') is not executable
+```
+
+Server dev Next 16 menyajikan berkas berekstensi `.js` dengan MIME JSON, dan
+header `X-Content-Type-Options: nosniff` menolaknya. Ini bukan pelanggaran CSP
+dan tidak muncul di build produksi. Aplikasi tetap berjalan penuh — diuji sampai
+login berhasil dan daftar form ter-render.
