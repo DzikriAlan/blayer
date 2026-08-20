@@ -692,7 +692,7 @@ export default function FormsTemplate({
             <div
               key={template.id}
               className={cn(
-                'flex w-[250px] shrink-0 snap-start flex-col justify-between gap-5 border-r-2 border-foreground p-5 transition-colors last:border-r-0',
+                'flex w-[330px] shrink-0 snap-start flex-col justify-between gap-5 border-r-2 border-foreground p-5 transition-colors last:border-r-0',
                 isActive ? 'bg-primary text-primary-foreground' : 'bg-paper'
               )}
             >
@@ -727,12 +727,13 @@ export default function FormsTemplate({
                   {String(template.values.fields.length).padStart(2, '0')}{' '}
                   FIELDS
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   {onLoadFormsFilter ? (
                     <Button
                       type="button"
                       size="sm"
                       variant={isFiltered ? 'primary' : 'ghost'}
+                      className="px-3"
                       title={`Lihat riwayat form ${template.name}`}
                       onClick={() => onLoadFormsFilter(template.id)}
                     >
@@ -744,6 +745,7 @@ export default function FormsTemplate({
                       type="button"
                       size="sm"
                       variant="ghost"
+                      className="px-3"
                       title={`Lihat ${template.name} yang sedang terbuka`}
                       onClick={() => onLoadFormsExplore(template.id)}
                     >
@@ -754,6 +756,7 @@ export default function FormsTemplate({
                     type="button"
                     size="sm"
                     variant={isActive ? 'paper' : 'outline'}
+                    className="px-3"
                     onClick={() => onLoadFormsTemplate(template.id)}
                   >
                     {isActive ? 'Applied' : 'Use'}
