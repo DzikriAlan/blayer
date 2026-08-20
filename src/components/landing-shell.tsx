@@ -1,15 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, Plus, X } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
-import { Button } from '@/components/ui/button'
 import AuthAccount from '@/features/auth/components/authAccount'
-
-const NAV_ITEMS = [{ href: '#kategori', label: 'Kategori' }]
 
 interface Props {
   className?: string
@@ -17,25 +12,11 @@ interface Props {
 }
 
 export default function LandingShell({ className, children }: Props) {
-  const [filters, setFilters] = useState({ isMenuOpen: false })
-
-  const editMenu = () => {
-    setFilters((prev) => ({ ...prev, isMenuOpen: !prev.isMenuOpen }))
-  }
-
-  const clearMenu = () => {
-    setFilters((prev) => ({ ...prev, isMenuOpen: false }))
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b-2 border-foreground bg-paper">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-3.5 sm:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-3"
-            onClick={clearMenu}
-          >
+          <Link href="/" className="flex items-center gap-3">
             <Image
               src="/blayer-mark.png"
               alt=""
@@ -49,71 +30,10 @@ export default function LandingShell({ className, children }: Props) {
             </span>
           </Link>
 
-          <nav className="ml-6 hidden items-center gap-7 md:flex">
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="brutal-eyebrow flex min-h-[32px] items-center text-muted-foreground transition-colors hover:text-primary"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="ml-auto hidden items-center gap-3 sm:flex">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/forms">Semua Form</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/forms/create">
-                <Plus /> Buat Form
-              </Link>
-            </Button>
+          <div className="ml-auto flex items-center gap-3">
             <AuthAccount />
           </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="ml-auto sm:hidden"
-            aria-label={filters.isMenuOpen ? 'Tutup menu' : 'Buka menu'}
-            aria-expanded={filters.isMenuOpen}
-            onClick={editMenu}
-          >
-            {filters.isMenuOpen ? <X /> : <Menu />}
-          </Button>
         </div>
-
-        {filters.isMenuOpen ? (
-          <div className="border-t-2 border-foreground bg-muted px-5 py-5 sm:hidden">
-            <nav className="flex flex-col gap-4">
-              {NAV_ITEMS.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="brutal-eyebrow flex min-h-[32px] items-center"
-                  onClick={clearMenu}
-                >
-                  <span className="text-primary">{'> '}</span>
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button asChild variant="outline" size="sm" onClick={clearMenu}>
-                <Link href="/forms">Semua Form</Link>
-              </Button>
-              <Button asChild size="sm" onClick={clearMenu}>
-                <Link href="/forms/create">
-                  <Plus /> Buat Form
-                </Link>
-              </Button>
-              <AuthAccount />
-            </div>
-          </div>
-        ) : null}
       </header>
 
       <main className={cn('flex-1', className)}>{children}</main>
@@ -140,16 +60,6 @@ export default function LandingShell({ className, children }: Props) {
           <div>
             <p className="brutal-eyebrow opacity-70">HALAMAN</p>
             <ul className="mt-4 flex flex-col gap-2.5">
-              {NAV_ITEMS.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    className="inline-flex min-h-[32px] items-center font-mono text-sm hover:text-primary"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
               <li>
                 <Link
                   href="/forms"
@@ -167,11 +77,6 @@ export default function LandingShell({ className, children }: Props) {
               Mulai dari satu template, sesuaikan pertanyaannya, lalu bagikan
               tautannya.
             </p>
-            <Button asChild variant="paper" size="sm" className="mt-5">
-              <Link href="/forms/create">
-                <Plus /> Buat Form
-              </Link>
-            </Button>
           </div>
         </div>
 

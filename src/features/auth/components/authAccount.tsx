@@ -60,9 +60,7 @@ export default function AuthAccount({ tone = 'light' }: Props) {
       >
         {data.initial}
       </span>
-      <span className="brutal-eyebrow hidden max-w-[140px] truncate sm:inline">
-        {data.name}
-      </span>
+      <span className="sr-only">{data.name}</span>
       <Button
         type="button"
         variant={data.buttonVariant}
