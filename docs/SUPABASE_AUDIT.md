@@ -7,28 +7,33 @@ adalah setelan di dashboard Supabase yang tidak bisa dibaca dari repositori,
 jadi hanya orang dengan akses dashboard yang boleh mencentangnya. Menandainya
 selesai tanpa membuka dashboard membuat orang berikutnya berhenti memeriksa.
 
-## Yang sudah terverifikasi dari kode
+## Sudah terverifikasi lewat API, bukan diasumsikan
 
-Dua hal ini diperiksa lewat API Supabase, bukan diasumsikan:
-
-- Provider `google` dan `email` aktif (`GET /auth/v1/settings` menjawab
-  `external.google = true`, `external.email = true`).
+- Provider `google` dan `email` aktif (`GET /auth/v1/settings`).
 - `SUPABASE_SERVICE_ROLE_KEY` tidak pernah muncul di modul yang terbundel ke
   klien; `.env` tidak ada di riwayat git.
+- Bucket `form-banners`: `public = true`, `file_size_limit = 4000000`,
+  `allowed_mime_types` hanya lima tipe gambar, SVG tidak termasuk.
+- RLS aktif di `forms`, `form_fields`, `form_responses`, `form_analyses`.
+  Diuji dengan `SET ROLE anon`: baca 0 baris, update 0 baris, delete 0 baris.
 
-Sisanya di bawah masih perlu dibuka satu per satu.
+## Temuan kritis, sudah ditutup
+
+Sebelum 20 Agustus 2026, RLS mati di seluruh tabel tanpa satu pun policy.
+Karena Supabase mengekspos skema `public` lewat `/rest/v1` memakai anon key —
+dan anon key ikut terkirim ke setiap peramban — siapa pun pengunjung bisa
+membaca, mengubah, dan menghapus seluruh baris tanpa melewati satu pun
+pemeriksaan otorisasi di API. Terbukti: `GET /rest/v1/forms` mengembalikan
+data, `PATCH` dan `DELETE` dijawab `204`.
+
+Ditutup oleh migrasi `20260820010000_enable_row_level_security`. Aplikasi tidak
+terpengaruh karena Prisma menyambung sebagai `postgres` yang ber-`BYPASSRLS`.
+
+## Sisa yang hanya bisa dibuka dari dashboard
 
 ---
 
-## 1. Kebijakan Storage Bucket (`form-banners`)
-
-- [ ] **Tipe Bucket:** Set ke `Public` (agar banner form & aset QRIS dapat dimuat oleh pengisi form tanpa autentikasi).
-- [ ] **File Size Limit:** Batasi ukuran maksimum unggahan file (mis. **5MB** per file) di menu *Bucket Settings*.
-- [ ] **Allowed MIME Types:** Batasi MIME type yang diizinkan hanya pada gambar: `image/jpeg`, `image/png`, `image/webp`, `image/gif`, `image/avif`. (SVG dilarang karena berisiko eksekusi skrip).
-
----
-
-## 2. Authentication & Redirect URLs
+### Authentication & Redirect URLs
 
 - [ ] **Site URL:** Atur `Site URL` produksi (mis. `https://blayer.app`).
 - [ ] **Redirect URLs:** Pastikan daftar `Additional Redirect URLs` hanya berisi domain tepercaya dan callback sah:
@@ -38,16 +43,8 @@ Sisanya di bawah masih perlu dibuka satu per satu.
   - `https://blayer.app/auth/reset-password`
 - [ ] **OAuth Providers:** Google OAuth dikonfigurasi dengan Client ID & Client Secret resmi di dashboard Supabase (*Authentication -> Providers -> Google*).
 
----
+### Tabel di luar skema Prisma
 
-## 3. Database & Row Level Security (RLS) Policies
-
-- [ ] **Akses API Server:** Seluruh pembacaan/penulisan basis data dilakukan melalui API Server Next.js menggunakan `DATABASE_URL` / Prisma ORM yang memvalidasi `userId` milik pengguna terautentikasi (401 & 403 enforcement).
-- [ ] **Proteksi Anon Key Direct Access:** Jika tabel diakses via PostgREST/Supabase client langsung, aktifkan `Row Level Security (RLS)` pada tabel `forms`, `form_fields`, `form_responses`, dan `form_analyses`.
-
----
-
-## 4. API Keys & Environment Variables Security
-
-- [ ] `NEXT_PUBLIC_SUPABASE_URL` & `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: Key publik aman terkirim ke peramban.
-- [ ] `SUPABASE_SERVICE_ROLE_KEY`: Key rahasia tingkat tinggi, **HANYA** disimpan pada environment server (bukan `NEXT_PUBLIC_`) dan dilarang terekspos ke klien browser.
+- [ ] Tabel `tasks` ada di skema `public` tetapi tidak dikenal Prisma dan tidak
+  dipakai aplikasi. RLS-nya masih mati, jadi ia terbaca lewat anon key. Pastikan
+  isinya bukan data sungguhan, lalu hapus tabelnya atau nyalakan RLS-nya.
