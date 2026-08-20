@@ -83,8 +83,28 @@ run('benchmark paginasi cursor', () => {
       pages += 1
     }
 
+    // Pembanding: halaman yang sama diambil dengan OFFSET. Inilah yang
+    // membedakan keduanya — OFFSET harus memindai dan membuang semua baris
+    // sebelumnya, cursor langsung meloncat lewat index.
+    const offsetStart = performance.now()
+    await prisma.formResponse.findMany({
+      where: { formId },
+      take: PAGE,
+      skip: TOTAL - PAGE,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    })
+    const offsetMs = performance.now() - offsetStart
+
+    console.log(
+      [
+        `  halaman pertama (cursor) : ${first.ms.toFixed(1)} ms`,
+        `  halaman terakhir (cursor): ${last.ms.toFixed(1)} ms  setelah ${pages} halaman`,
+        `  halaman terakhir (OFFSET): ${offsetMs.toFixed(1)} ms`,
+      ].join('\n')
+    )
+
     // Inti paginasi cursor: biaya per halaman tidak tumbuh mengikuti posisi.
-    // OFFSET akan melambat linear di sini. Ambangnya longgar karena mesin CI
+    // OFFSET melambat linear di sini. Ambangnya longgar karena mesin CI
     // berisik; yang dicari adalah pertumbuhan linear, bukan selisih milidetik.
     expect(pages).toBeGreaterThan(10)
     expect(last.ms).toBeLessThan(first.ms * 5 + 50)

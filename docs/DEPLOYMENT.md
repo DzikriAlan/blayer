@@ -53,6 +53,17 @@ BENCHMARK_DATABASE_URL=postgresql://...
 Hanya dipakai `npx vitest run test/benchmark`. Menulis sepuluh ribu baris, jadi
 arahkan ke basis data sekali pakai, tidak pernah ke produksi.
 
+Hasil pengukuran terakhir, 10.000 baris di Postgres lokal:
+
+| Cara | Halaman terakhir |
+|---|---|
+| cursor (halaman pertama sebagai acuan) | 37,7 ms |
+| cursor, setelah 199 halaman | **7,3 ms** |
+| OFFSET ke posisi yang sama | 63,2 ms |
+
+Biaya per halaman tidak tumbuh mengikuti posisi — itu yang membedakan cursor
+dari OFFSET, dan itu yang membuat index komposit di migrasi kedua penting.
+
 ## Basis data
 
 Skema dikelola migrasi, bukan `db:push` — script itu sengaja dibuat gagal.
