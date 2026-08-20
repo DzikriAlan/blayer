@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowDown } from 'lucide-react'
 
+import mark from '@/shared/images/emotblayer.png'
 import { cn } from '@/shared/lib/utils'
 import BackLink from '@/components/back-link'
 import AuthAccount from '@/features/auth/components/authAccount'
@@ -83,7 +84,7 @@ export default function PageShell({
             className="flex h-10 w-10 shrink-0 items-center justify-center"
           >
             <Image
-              src="/blayer-mark.png"
+              src={mark}
               alt=""
               width={40}
               height={40}
