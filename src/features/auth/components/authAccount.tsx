@@ -56,7 +56,7 @@ export default function AuthAccount({ tone = 'light' }: Props) {
     <div className="flex items-center gap-2.5">
       <span
         aria-hidden
-        className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-current font-mono text-xs font-bold"
+        className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-current font-mono text-sm font-bold"
       >
         {data.initial}
       </span>

@@ -20,10 +20,10 @@ export default function LandingShell({ className, children }: Props) {
             <Image
               src="/blayer-mark.png"
               alt=""
-              width={36}
-              height={36}
+              width={40}
+              height={40}
               priority
-              className="h-9 w-9 shrink-0 border-2 border-foreground"
+              className="h-10 w-10 shrink-0 border-2 border-foreground"
             />
             <span className="font-display text-xl font-black uppercase leading-none tracking-tight">
               Blayer<span className="text-primary">®</span>

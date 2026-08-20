@@ -80,15 +80,15 @@ export default function PageShell({
           <Link
             href="/"
             aria-label="Kembali ke halaman depan"
-            className="flex h-8 w-8 shrink-0 items-center justify-center"
+            className="flex h-10 w-10 shrink-0 items-center justify-center"
           >
             <Image
               src="/blayer-mark.png"
               alt=""
-              width={32}
-              height={32}
+              width={40}
+              height={40}
               priority
-              className="h-8 w-8 border-2 border-background"
+              className="h-10 w-10 border-2 border-background"
             />
           </Link>
           <p className="brutal-eyebrow truncate text-background">{barTitle}</p>
