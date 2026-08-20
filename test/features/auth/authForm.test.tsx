@@ -137,6 +137,28 @@ describe('halaman masuk', () => {
     expect(calls.password).not.toHaveBeenCalled()
   })
 
+  it('TC-26q tombol mata membuka dan menutup kata sandi', async () => {
+    const user = userEvent.setup()
+    renderForm('login')
+
+    const field = screen.getByLabelText('Kata Sandi')
+    await user.type(field, 'kataSandiPanjang')
+    expect(field).toHaveAttribute('type', 'password')
+
+    await user.click(
+      screen.getByRole('button', { name: 'Tampilkan kata sandi' })
+    )
+    expect(field).toHaveAttribute('type', 'text')
+
+    await user.click(
+      screen.getByRole('button', { name: 'Sembunyikan kata sandi' })
+    )
+    expect(field).toHaveAttribute('type', 'password')
+
+    // Tombolnya di dalam form, jadi harus dipastikan tidak ikut mengirim.
+    expect(calls.password).not.toHaveBeenCalled()
+  })
+
   it('TC-26n tombol Google membawa tujuan asal', async () => {
     const user = userEvent.setup()
     router.query = { next: '/forms/create' }

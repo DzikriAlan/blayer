@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { LoaderCircle } from 'lucide-react'
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -75,6 +75,11 @@ export default function AuthForm({ mode }: Props) {
   const { authSession } = useAuthStates()
   const { storeAuthSession, storeAuthPassword, storeAuthRegister } =
     useAuthControllers()
+
+  // Kata sandi di sini tidak bisa dipulihkan lewat email, karena alamatnya
+  // sintetis. Bisa memeriksa apa yang diketik jauh lebih berarti daripada di
+  // form login biasa.
+  const [isPasswordShown, setIsPasswordShown] = useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(getSchema(mode === 'register')),
@@ -174,16 +179,40 @@ export default function AuthForm({ mode }: Props) {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="password">Kata Sandi</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={
-                data.isRegister ? 'new-password' : 'current-password'
-              }
-              placeholder="••••••••"
-              aria-invalid={!!form.formState.errors.password}
-              {...form.register('password')}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={isPasswordShown ? 'text' : 'password'}
+                autoComplete={
+                  data.isRegister ? 'new-password' : 'current-password'
+                }
+                placeholder="••••••••"
+                // Ruang untuk tombol mata, supaya sandi panjang tidak tertimpa.
+                className="pr-10"
+                aria-invalid={!!form.formState.errors.password}
+                {...form.register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setIsPasswordShown((shown) => !shown)}
+                // Tanpa type="button" tombol ini akan ikut mengirim form, dan
+                // memeriksa ketikan justru berujung percobaan login.
+                aria-label={
+                  isPasswordShown
+                    ? 'Sembunyikan kata sandi'
+                    : 'Tampilkan kata sandi'
+                }
+                aria-pressed={isPasswordShown}
+                aria-controls="password"
+                className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-primary focus-visible:text-primary focus-visible:outline-none"
+              >
+                {isPasswordShown ? (
+                  <EyeOff className="size-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="size-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
             {form.formState.errors.password ? (
               <p className="font-mono text-xs text-destructive">
                 {form.formState.errors.password.message}
