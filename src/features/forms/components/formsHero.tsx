@@ -84,7 +84,7 @@ export default function FormsHero({
 
         <div className="border-2 border-foreground bg-background">
           <div className="flex items-stretch gap-3 border-b-2 border-foreground bg-foreground px-5 py-2.5 text-background">
-            <span className="brutal-eyebrow">SATU FORM, BANYAK BENTUK</span>
+           <span className="brutal-eyebrow"></span>
             <span aria-hidden className="brutal-hatch flex-1 opacity-40" />
           </div>
 
