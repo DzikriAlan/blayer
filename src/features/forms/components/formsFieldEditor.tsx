@@ -35,6 +35,7 @@ export const FORMS_FIELD_TYPES: { value: FormsFieldType; label: string }[] = [
   { value: 'PAYMENT', label: 'Metode Pembayaran' },
 ]
 
+/** Bentuk baris opsi berbeda untuk field bergambar dan field pembayaran. */
 const OPTION_GUIDES: Partial<
   Record<FormsFieldType, { label: string; placeholder: string; hint: string }>
 > = {
@@ -105,6 +106,8 @@ export default function FormsFieldEditor({
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <Label htmlFor={`field-label-${index}`}>Question</Label>
 
+            {/* Reorder + delete. Arrows sit side by side so the pair never
+                reads as a select control. */}
             <div className="flex items-center">
               <Button
                 type="button"

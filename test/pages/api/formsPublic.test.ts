@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// vi.hoisted dipakai karena vi.mock diangkat ke atas berkas — tiruan harus
+// sudah ada sebelum modul yang diuji diimpor.
 const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: { form: { findMany: vi.fn() } },
   authMock: { called: false },
@@ -7,6 +9,8 @@ const { prismaMock, authMock } = vi.hoisted(() => ({
 
 vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
 
+// Katalog publik tidak boleh menyentuh penjaga sesi sama sekali. Kalau suatu
+// saat ada yang memasangnya, tiruan ini yang akan menangkap.
 vi.mock('@/shared/lib/authServer', () => ({
   getAuthGuard: async () => {
     authMock.called = true
@@ -65,7 +69,12 @@ describe('katalog form publik', () => {
 
     expect(res.statusCode).toBe(200)
     expect(authMock.called).toBe(false)
-    expect(Array.isArray(res.body)).toBe(true)
+    // Jawabannya selalu beramplop sekarang, karena batas jumlahnya tidak
+    // pernah opsional — tanpa itu jalur default membaca seluruh tabel.
+    const body = res.body as { items: unknown[]; hasMore: boolean }
+    expect(Array.isArray(body.items)).toBe(true)
+    expect(body).toHaveProperty('nextCursor')
+    expect(body).toHaveProperty('hasMore')
   })
 
   it('TC-26aa hanya form yang sudah dipublikasikan yang ikut terbaca', async () => {
@@ -79,7 +88,7 @@ describe('katalog form publik', () => {
   it('TC-26ab tidak membocorkan purpose maupun kolom milik pembuat form', async () => {
     const res = await call({ method: 'GET', headers: {}, query: {} })
 
-    const [form] = res.body as Record<string, unknown>[]
+    const [form] = (res.body as { items: Record<string, unknown>[] }).items
     expect(Object.keys(form).sort()).toEqual([
       'bannerUrl',
       'createdAt',
@@ -92,6 +101,7 @@ describe('katalog form publik', () => {
       'totalResponse',
     ])
 
+    // Kolom rahasia tidak boleh ikut diminta dari database sejak awal.
     const select = prismaMock.form.findMany.mock.calls[0][0].select
     expect(select.purpose).toBeUndefined()
     expect(select.qrisUrl).toBeUndefined()

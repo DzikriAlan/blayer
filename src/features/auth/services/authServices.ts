@@ -4,7 +4,11 @@ import {
   getSupabaseAuthSetupMessage,
   getSupabaseBrowser,
 } from '@/shared/lib/supabaseBrowser'
-import { getLoginEmail, getUsernameFromEmail } from '@/shared/lib/authIdentity'
+import {
+  USERNAME_DOMAIN,
+  getLoginEmail,
+  getUsernameFromEmail,
+} from '@/shared/lib/authIdentity'
 import type {
   DataAuthSession,
   PayloadPostAuthPassword,
@@ -14,6 +18,11 @@ import type {
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
+/**
+ * Metadata Google datang dengan nama field yang berbeda-beda
+ * (`full_name`, `name`, `avatar_url`, `picture`), jadi semuanya dirapikan ke
+ * satu bentuk supaya komponen tidak perlu tahu asal datanya.
+ */
 const getMappedSession = (user: User): DataAuthSession => ({
   id: user.id,
   email: user.email ?? '',
@@ -44,6 +53,9 @@ export const getAuthSession = async () => {
 }
 
 export const postAuthSession = async (payload: PayloadPostAuthSession) => {
+  // Google mengembalikan pengguna ke halaman callback, bukan langsung ke
+  // tujuan akhir — URL tujuan dititipkan lewat query supaya callback tahu ke
+  // mana harus melanjutkan setelah sesi terbaca.
   const redirectTo = `${window.location.origin}/auth/callback${
     payload.next ? `?next=${encodeURIComponent(payload.next)}` : ''
   }`
@@ -63,6 +75,8 @@ export const postAuthPassword = async (payload: PayloadPostAuthPassword) => {
     password: payload.password,
   })
 
+  // Supabase menjawab kombinasi salah dengan pesan bahasa Inggris yang menyebut
+  // "credentials"; diterjemahkan supaya sejalan dengan sisa antarmuka.
   if (error) {
     throw new Error(
       /invalid login credentials/i.test(error.message)
@@ -84,6 +98,8 @@ export const postAuthRegister = async (payload: PayloadPostAuthRegister) => {
   const json = await res.json().catch(() => null)
   if (!res.ok) throw new Error(json?.message || res.statusText)
 
+  // Mendaftar langsung diikuti masuk supaya pengguna tidak perlu mengetik
+  // ulang apa yang baru saja diisinya.
   await postAuthPassword(payload)
 
   return json
@@ -96,6 +112,13 @@ export const deleteAuthSession = async () => {
   return null
 }
 
+/**
+ * Mendengarkan perubahan sesi dari Supabase.
+ *
+ * Dibutuhkan karena sesi bisa berubah tanpa aksi di halaman ini — token
+ * diperbarui otomatis, atau pengguna logout dari tab lain. Mengembalikan
+ * fungsi pembatalan agar listener ikut dibersihkan saat komponen dilepas.
+ */
 export const getAuthSessionChanges = (
   onChange: (session: DataAuthSession | null) => void
 ) => {
@@ -108,3 +131,35 @@ export const getAuthSessionChanges = (
 
   return () => data.subscription.unsubscribe()
 }
+
+/**
+ * Meminta tautan pemulihan kata sandi.
+ *
+ * Akun yang mendaftar dengan username memakai alamat sintetis
+ * `username@blayer.id` yang tidak pernah bisa menerima surat. Supabase menjawab
+ * sukses untuk alamat apa pun — itu disengaja, supaya orang tidak bisa menebak
+ * akun mana yang terdaftar — sehingga tanpa penjagaan di sini kegagalannya
+ * sunyi: pengguna melihat "tautan terkirim" dan menunggu surat yang tidak akan
+ * pernah datang.
+ */
+export const postAuthForgotPassword = async (email: string) => {
+  const value = email.trim().toLowerCase()
+
+  if (value.endsWith(`@${USERNAME_DOMAIN}`)) {
+    throw new Error(
+      `Alamat @${USERNAME_DOMAIN} dibuat otomatis dari username dan tidak bisa menerima surat. Pemulihan lewat email baru berlaku untuk akun yang masuk dengan Google.`
+    )
+  }
+
+  const redirectTo = `${window.location.origin}/auth/reset-password`
+  const { error } = await getClient().auth.resetPasswordForEmail(value, { redirectTo })
+  if (error) throw error
+  return null
+}
+
+export const postAuthResetPassword = async (newPassword: string) => {
+  const { error } = await getClient().auth.updateUser({ password: newPassword })
+  if (error) throw error
+  return null
+}
+

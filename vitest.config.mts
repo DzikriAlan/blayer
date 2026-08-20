@@ -7,6 +7,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // JSX diproses langsung oleh esbuild bawaan Vitest — test tidak butuh
+  // Fast Refresh, jadi plugin React tidak diperlukan.
   esbuild: {
     jsx: 'automatic',
   },

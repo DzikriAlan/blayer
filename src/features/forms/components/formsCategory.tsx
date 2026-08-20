@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button'
 export interface FormsCategoryItem {
   id: string
   name: string
+  /** Naskah dari sisi pengunjung; tagline builder tidak dipakai di sini. */
   description: string
   viewLabel: string
   icon: LucideIcon
+  /** Satuan isi kategorinya, mis. "03 LOWONGAN TERBUKA". */
   availabilityText: string
 }
 
@@ -17,6 +19,14 @@ interface Props {
   onLoadFormsExplore: (templateId: string) => void
 }
 
+/**
+ * Etalase kategori di halaman depan.
+ *
+ * Ditulis untuk yang datang mencari sesuatu untuk diikuti, bukan untuk yang
+ * datang membangun: yang ditawarkan isi kategorinya — berapa yang sedang
+ * terbuka dan berapa orang yang sudah masuk — bukan templatenya. Pintu ke
+ * builder tetap ada di navigasi atas, jadi tidak perlu diulang di sini.
+ */
 export default function FormsCategory({
   data,
   onLoadFormsExplore,
@@ -45,6 +55,9 @@ export default function FormsCategory({
                 </div>
               </div>
 
+              {/* Lebarnya ditahan supaya tiap keterangan jatuh ke dua baris.
+                  Dibiarkan selebar kartu, kalimat sepanjang ini jadi satu
+                  baris panjang yang tidak enak dipindai. */}
               <p className="max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground">
                 {item.description}
               </p>

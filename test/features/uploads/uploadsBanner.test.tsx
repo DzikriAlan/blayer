@@ -70,6 +70,8 @@ describe('unggah gambar', () => {
     const { container } = await loadBanner()
     const input = container.querySelector('input[type="file"]') as HTMLInputElement
 
+    // userEvent menghormati atribut accept dan membuang berkasnya lebih dulu;
+    // fireEvent dipakai supaya penolakan milik komponen sendiri yang teruji.
     fireEvent.change(input, {
       target: { files: [getFile('catatan.txt', 'text/plain', 1024)] },
     })

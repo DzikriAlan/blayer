@@ -27,8 +27,13 @@ import ResponsesEvent from './responsesEvent'
 import ResponsesOrder from './responsesOrder'
 import ResponsesCourse from './responsesCourse'
 
+/**
+ * Pesanan di meja selesai di tempat, jadi emailnya tidak pernah dipakai.
+ * View lain masih menanyakannya karena ada yang dikirim ke sana.
+ */
 const NO_EMAIL_VIEWS = ['order']
 
+/** Jumlah porsi ditulis di belakang nama, mis. "Nasi Goreng x2". */
 const MENU_QTY_PATTERN = / x(\d+)$/
 
 interface Props {
@@ -54,6 +59,7 @@ export default function ResponsesSubmit({ formId }: Props) {
   const data = useMemo(() => {
     const getAnswer = (fieldId: string) => filters.answers[fieldId] ?? ''
 
+    // Bentuk halaman ditentukan template asal form, bukan oleh pengisi.
     const getView = () => {
       const template = FORMS_TEMPLATES.find(
         (item) => item.id === formsDetail.data?.templateId
@@ -61,6 +67,8 @@ export default function ResponsesSubmit({ formId }: Props) {
       return template?.view ?? FORMS_TEMPLATE_DEFAULT_VIEW
     }
 
+    // Tanggal dan sesi acara diambil dari jawaban peserta sendiri, karena
+    // itulah satu-satunya sumber yang ada tanpa menambah field baru di form.
     const getFirstAnswerByType = (type: string) => {
       const field = (formsDetail.data?.fields ?? []).find(
         (item) => item.type === type
@@ -89,6 +97,8 @@ export default function ResponsesSubmit({ formId }: Props) {
       return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
     }
 
+    // Pesanan dibaca dari field menu; nama, jumlah, dan harganya disatukan di
+    // sini supaya tagihan, struk, dan jawaban tersimpan memakai angka yang sama.
     const getOrderItems = () =>
       (formsDetail.data?.fields ?? [])
         .filter((field) => field.type === 'MENU')
@@ -108,6 +118,8 @@ export default function ResponsesSubmit({ formId }: Props) {
           })
         })
 
+    // Form tanpa menu — kursus, misalnya — memakai harga tetap yang ditetapkan
+    // pembuat form, jadi pengisi tidak perlu memilih apa pun untuk ditagih.
     const orderItems = getOrderItems()
     const orderAmount = orderItems.length
       ? orderItems.reduce((total, item) => total + item.subtotal, 0)
@@ -122,6 +134,7 @@ export default function ResponsesSubmit({ formId }: Props) {
       return Array.isArray(answer) ? answer[0] ?? '' : String(answer ?? '')
     }
 
+    // Nomor pertanyaan menyambung dari kolom identitas yang benar-benar tampil.
     const hasEmailInput = !NO_EMAIL_VIEWS.includes(getView())
     const identityOffset = hasEmailInput ? 2 : 1
 
@@ -130,6 +143,7 @@ export default function ResponsesSubmit({ formId }: Props) {
       field,
       value: getAnswer(field.id),
       error: filters.errors[field.id] ?? '',
+      // Hanya field pembayaran yang memakainya; sisanya mengabaikan nilai ini.
       amount: orderAmount,
     }))
 
@@ -144,6 +158,8 @@ export default function ResponsesSubmit({ formId }: Props) {
       errorTitle: 'Form Not Found',
       errorSubtitle:
         'Form yang kamu cari tidak tersedia atau sudah dihapus oleh pembuatnya.',
+      // Keadaan halaman dan keadaan daftar pertanyaan dipisah: form yang belum
+      // punya pertanyaan tetap menampilkan kolom identitas dan tombol kirim.
       pageState: {
         isLoading: formsDetail.status === 'loading',
         isError: formsDetail.status === 'error',
@@ -165,15 +181,21 @@ export default function ResponsesSubmit({ formId }: Props) {
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
       isAiEnabled: formsDetail.data?.isAiEnabled ?? false,
       hasEmailInput,
+      // Ujian sekolah dan psikotes kerja sama-sama dinilai, jadi keduanya
+      // dikerjakan dalam layar terkunci.
       isProctored: ['exam', 'psychometric'].includes(getView()),
       hasEventDetail: getView() === 'event',
       isEventDone: getView() === 'event',
       isOrderDone: getView() === 'order',
       isCourseDone: getView() === 'course',
+      // Banner dipakai sebagai poster acara, kelas, restoran, maupun logo
+      // perusahaan yang membuka lowongan.
       hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
         getView()
       ),
       bannerUrl: formsDetail.data?.bannerUrl ?? '',
+      // Sesudah terkirim, keduanya datang dari balasan pengiriman. Sebelum itu
+      // detail form memang mengirimnya kosong untuk pengisi.
       meetingUrl: responses.data?.meetingUrl || formsDetail.data?.meetingUrl || '',
       videoUrl: responses.data?.videoUrl || formsDetail.data?.videoUrl || '',
       qrisUrl: formsDetail.data?.qrisUrl ?? '',
@@ -245,6 +267,8 @@ export default function ResponsesSubmit({ formId }: Props) {
         ? Math.max(Math.round((Date.now() - filters.startedAt) / 1000), 0)
         : 0
 
+    // Jawaban pembayaran disimpan bersama nominalnya, supaya daftar pesanan
+    // tetap terbaca tanpa menghitung ulang harga menu di halaman hasil.
     const getPaidAnswers = () => {
       const answers = { ...filters.answers }
       ;(formsDetail.data?.fields ?? [])
@@ -273,6 +297,7 @@ export default function ResponsesSubmit({ formId }: Props) {
     if (formId) setGetFormsDetail({ id: formId })
   }, [formId, setGetFormsDetail])
 
+  // Stopwatch mulai begitu pertanyaan tampil, berhenti saat jawaban terkirim.
   useEffect(() => {
     if (formsDetail.status !== 'success') return
     if (responses.status === 'success') return
@@ -402,6 +427,8 @@ export default function ResponsesSubmit({ formId }: Props) {
 
       {data.hasBanner && data.bannerUrl ? (
         <div className="border-b-2 border-foreground bg-muted">
+          {/* width/height 0 + sizes: rasio diambil dari berkasnya sendiri,
+              jadi poster tinggi maupun banner lebar sama-sama tampil utuh. */}
           <Image
             src={data.bannerUrl}
             alt={`Banner ${data.title}`}
@@ -485,6 +512,23 @@ export default function ResponsesSubmit({ formId }: Props) {
       {data.submitError ? (
         <p className="brutal-eyebrow border-b-2 border-foreground bg-primary px-7 py-4 text-primary-foreground">
           {data.submitError}
+        </p>
+      ) : null}
+
+      {data.isAiEnabled ? (
+        <p className="border-b-2 border-foreground bg-muted px-5 py-4 font-mono text-xs leading-relaxed text-muted-foreground sm:px-7">
+          {/* Jawaban di form ber-AI dikirim ke layanan pihak ketiga untuk
+              dinilai. Responden berhak tahu itu sebelum mengirim, bukan
+              sesudahnya. */}
+          Jawabanmu di form ini akan dianalisis dengan bantuan AI pihak ketiga
+          (Anthropic) untuk membuat ringkasan dan peringkat bagi pembuat form.{' '}
+          <Link
+            href="/privacy"
+            className="font-bold text-foreground underline underline-offset-4 hover:text-primary"
+          >
+            Kebijakan privasi
+          </Link>
+          .
         </p>
       ) : null}
 

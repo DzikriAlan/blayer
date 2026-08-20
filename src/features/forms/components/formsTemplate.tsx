@@ -37,15 +37,41 @@ export interface FormsTemplateValues {
   description: string
   isAiEnabled: boolean
   purpose: string
+  /** Banner acara; hanya terpakai pada template yang punya detail acara. */
   bannerUrl: string
+  /** Link Google Meet acara; hanya terpakai pada template yang punya detail acara. */
   meetingUrl: string
+  /** Link video kelas; hanya terpakai pada template kursus. */
   videoUrl: string
+  /** Gambar QRIS pembuat form; hanya terpakai pada template berbayar. */
   qrisUrl: string
+  /** Harga tetap, ditulis sebagai angka polos. Kosong berarti tidak dipakai. */
   priceAmount: string
   isPublished: boolean
   fields: FormsTemplateField[]
 }
 
+/**
+ * Satu nilai yang menentukan seluruh tampilan sebuah template.
+ *
+ * Ketiga permukaan — halaman isi, layar setelah kirim, dan dashboard hasil —
+ * diturunkan dari nilai ini, jadi menambah template baru cukup memilih salah
+ * satunya tanpa menyentuh komponen mana pun:
+ *
+ * | view           | halaman isi     | setelah kirim  | hasil          | identitas    |
+ * | -------------- | --------------- | -------------- | -------------- | ------------ |
+ * | `scoring`      | biasa           | konfirmasi     | skor+peringkat | nama + email |
+ * | `exam`         | terkunci        | konfirmasi     | skor+peringkat | nama + email |
+ * | `psychometric` | terkunci        | konfirmasi     | skor+peringkat | nama + email |
+ * | `survey`       | biasa           | konfirmasi     | ringkasan      | nama + email |
+ * | `event`        | banner acara    | tiket acara    | daftar peserta | nama + email |
+ * | `order`        | menu + bayar    | struk pesanan  | daftar pesanan | nama saja    |
+ * | `course`       | harga + bayar   | akses video    | daftar peserta | nama + email |
+ * | `freelance`    | biasa           | konfirmasi     | skor+peringkat | nama + email |
+ *
+ * Kolom email hanya ditanyakan kalau memang ada yang dikirim ke sana — tiket
+ * acara, akses kelas. Pesanan di meja selesai di tempat, jadi tidak usah.
+ */
 export type FormsTemplateView =
   | 'scoring'
   | 'exam'
@@ -56,12 +82,30 @@ export type FormsTemplateView =
   | 'course'
   | 'freelance'
 
+/**
+ * Naskah halaman kategori, ditulis dari sisi orang yang datang untuk ikut.
+ *
+ * Nama dan tagline template menjelaskan apa yang didapat *pembuat* form —
+ * "Banner, link Google Meet, dan daftar peserta" hanya berarti bagi orang yang
+ * sedang menyusun acara. Pengunjung halaman kategori datang untuk mencari acara
+ * yang bisa didaftari, kelas yang bisa diambil, atau makanan yang bisa dipesan,
+ * jadi permukaan itu memakai naskahnya sendiri dan tidak menawarkan template.
+ *
+ * Diambil per `view`, bukan per template, karena yang menentukan apa yang bisa
+ * dilakukan pengunjung adalah bentuk formnya — bukan nama templatenya.
+ */
 export interface FormsViewCopy {
+  /** Judul halaman; menyebut yang bisa dilakukan, bukan nama template. */
   heading: string
+  /** Satu kalimat: apa yang terjadi setelah ikut. */
   lead: string
+  /** Satuan jumlah yang sedang terbuka, mis. "03 ACARA TERBUKA". */
   availabilityLabel: string
+  /** Satuan jumlah orang yang sudah masuk, mis. "12 TERDAFTAR". */
   countLabel: string
+  /** Satuan jumlah isian, mis. "06 SOAL". */
   fieldLabel: string
+  /** Ajakan di tiap kartu. */
   action: string
   emptyTitle: string
   emptySubtitle: string
@@ -158,19 +202,43 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
   },
 }
 
+/** Dipakai kalau form tidak punya template, misal form lama atau buatan tangan. */
 export const FORMS_TEMPLATE_DEFAULT_VIEW: FormsTemplateView = 'scoring'
 
 export interface FormsTemplateItem {
   id: string
   name: string
   tagline: string
+  /** Satu nilai yang menentukan tampilan di ketiga permukaan. */
   view: FormsTemplateView
+  /**
+   * Hanya mengatur tampil/tidaknya di daftar pilihan builder. Entri yang
+   * `false` tetap ada di katalog supaya form lama yang memakainya tetap bisa
+   * diresolusi tampilannya, dan tinggal diubah `true` untuk dimunculkan
+   * kembali.
+   */
   isVisible: boolean
+  /**
+   * Tampil sebagai kategori di halaman depan.
+   *
+   * Dipisah dari `isVisible` karena keduanya menjawab pertanyaan berbeda:
+   * yang satu "boleh dipakai membuat form?", yang satu lagi "layak jadi
+   * etalase untuk pengunjung yang baru datang?". Ujian sekolah tetap bisa
+   * dibuat dan halaman kategorinya tetap bisa dibuka lewat tautan langsung,
+   * tapi etalase depannya diberikan ke psikotes kerja.
+   */
   isFeatured: boolean
   icon: LucideIcon
   values: FormsTemplateValues
 }
 
+/**
+ * Nama dan email tidak pernah jadi field template.
+ *
+ * Halaman isi sudah merender dua kolom identitas bawaan — keduanya yang
+ * mengisi kolom respondentName dan respondentEmail — jadi template yang
+ * menambahkannya lagi hanya menghasilkan pertanyaan kembar.
+ */
 const getField = (
   label: string,
   type: FormsFieldType,
@@ -187,6 +255,14 @@ const getField = (
   optionText,
 })
 
+/**
+ * Urutan di sini adalah urutan yang dilihat orang.
+ *
+ * Halaman depan — daftar di hero maupun kartu kategori — dan daftar pilihan di
+ * builder sama-sama membacanya berurutan, jadi katalog ini satu-satunya tempat
+ * urutannya ditentukan: acara, kelas, psikotes, lalu proyek freelance untuk
+ * yang tampil di etalase; sisanya menyusul.
+ */
 export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
     id: 'event',
@@ -238,6 +314,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       meetingUrl: '',
       videoUrl: '',
       qrisUrl: '',
+      // Kelasnya satu, jadi harganya ditetapkan pembuat form — bukan dipilih
+      // ulang oleh peserta yang sudah membuka tautan kelas ini.
       priceAmount: '350000',
       fields: [
         getField('Nomor WhatsApp', 'PHONE', true, '', '', '08xx'),
@@ -276,6 +354,12 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     icon: Brain,
     values: {
       title: 'Frontend Engineer — PT Nusantara Digital',
+      // Kartu lowongan di halaman kategori hanya memuat judul dan deskripsi,
+      // jadi keduanya ditulis seperti ringkasan lowongan di job portal: posisi
+      // dan perusahaan di judul, sisanya di kepala deskripsi. Ruas yang
+      // dipisah "·" sampai titik pertama dipecah jadi chip di kartu — lokasi,
+      // bentuk kerja, status, gelar, pengalaman — jadi urutannya sengaja
+      // dijaga; kalimat setelahnya tetap jadi paragraf biasa.
       description:
         'Jakarta Selatan · Hybrid · Penuh Waktu · S1 Teknik Informatika · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
       isAiEnabled: true,
@@ -352,6 +436,9 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     icon: Hammer,
     values: {
       title: 'Redesain Landing Page Company Profile',
+      // Kepala deskripsi memakai konvensi yang sama dengan lowongan: ruas
+      // yang dipisah "·" sampai titik pertama dipecah jadi chip di kartu —
+      // bidang, cara kerja, durasi, level — jadi urutannya sengaja dijaga.
       description:
         'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Kami butuh landing page baru yang lebih cepat dan enak dibaca di ponsel. Aset desain sudah tersedia dalam bentuk Figma.',
       isAiEnabled: true,
@@ -362,6 +449,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       meetingUrl: '',
       videoUrl: '',
       qrisUrl: '',
+      // Anggaran ditetapkan pemilik proyek dan tampil sebagai budget di kartu;
+      // freelancer tetap menuliskan tawarannya sendiri lewat field di bawah.
       priceAmount: '4500000',
       fields: [
         getField(
@@ -643,8 +732,10 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
 
 interface Props {
   activeId: string
+  /** Template yang riwayat formnya sedang difilter; kosong berarti semua. */
   filterId?: string
   onLoadFormsTemplate: (templateId: string) => void
+  /** Diisi hanya di halaman yang punya riwayat form untuk difilter. */
   onLoadFormsFilter?: (templateId: string) => void
   onLoadFormsExplore?: (templateId: string) => void
 }
@@ -656,6 +747,7 @@ export default function FormsTemplate({
   onLoadFormsFilter,
   onLoadFormsExplore,
 }: Props) {
+  // Katalog tetap utuh; yang disaring hanya daftar yang ditampilkan.
   const visibleTemplates = FORMS_TEMPLATES.filter(
     (template) => template.isVisible
   )
@@ -717,6 +809,9 @@ export default function FormsTemplate({
                 <h3 className="mt-4 break-words font-display text-xl font-black uppercase leading-none tracking-tight">
                   {template.name}
                 </h3>
+                {/* Kartu di carousel jauh lebih sempit daripada kartu
+                    kategori, jadi keterangan yang sama dipotong di baris
+                    ketiga supaya tinggi tiap kartunya tetap sama. */}
                 <p className="mt-2.5 line-clamp-3 font-mono text-xs leading-relaxed opacity-80">
                   {template.tagline}
                 </p>
@@ -728,6 +823,8 @@ export default function FormsTemplate({
                   FIELDS
                 </span>
                 <div className="flex flex-wrap items-center justify-end gap-2">
+                  {/* "See" hanya muncul di halaman yang memang punya riwayat
+                      form, jadi builder tidak kebagian tombol tanpa tujuan. */}
                   {onLoadFormsFilter ? (
                     <Button
                       type="button"

@@ -25,22 +25,49 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const { formId } = req.query
+  const limitQuery = Number(req.query.limit)
+  const cursor = req.query.cursor ? String(req.query.cursor) : undefined
+
+  // Batasnya tidak pernah opsional; lihat catatan yang sama di forms/public.
+  const limit = Number.isFinite(limitQuery)
+    ? Math.min(Math.max(Math.trunc(limitQuery), 1), 100)
+    : 50
 
   const form = await prisma.form.findUnique({
     where: { id: String(formId) },
     include: {
       fields: { orderBy: { order: 'asc' } },
-      responses: { orderBy: { createdAt: 'desc' } },
     },
   })
 
   if (!form) return res.status(404).json({ message: 'Form tidak ditemukan.' })
 
+  // Jawaban peserta hanya boleh dibaca pemilik formnya.
   if (form.userId !== user.id) {
     return res
       .status(403)
       .json({ message: 'Form ini bukan milik akun yang sedang masuk.' })
   }
+
+  const rawResponses = await prisma.formResponse.findMany({
+    where: { formId: form.id },
+    take: limit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+  })
+
+  const hasMore = rawResponses.length > limit
+  const responses = hasMore ? rawResponses.slice(0, limit) : rawResponses
+  const nextCursor = hasMore ? responses[responses.length - 1].id : null
+
+  const mappedResponses = responses.map((response) => ({
+    id: response.id,
+    respondentName: response.respondentName ?? '',
+    respondentEmail: response.respondentEmail ?? '',
+    answers: (response.answers as Record<string, unknown>) ?? {},
+    durationSeconds: response.durationSeconds ?? 0,
+    createdAt: response.createdAt.toISOString(),
+  }))
 
   return res.status(200).json({
     formId: form.id,
@@ -55,14 +82,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       options: (field.options as string[] | null) ?? [],
       isRequired: field.isRequired,
     })),
-    responses: form.responses.map((response) => ({
-      id: response.id,
-      respondentName: response.respondentName ?? '',
-      respondentEmail: response.respondentEmail ?? '',
-      answers: (response.answers as Record<string, unknown>) ?? {},
-      durationSeconds: response.durationSeconds ?? 0,
-      createdAt: response.createdAt.toISOString(),
-    })),
+    responses: mappedResponses,
+    nextCursor,
+    hasMore,
   })
 }
 

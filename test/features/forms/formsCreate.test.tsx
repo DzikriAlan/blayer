@@ -6,6 +6,8 @@ const push = vi.fn()
 const mutate = vi.fn()
 const updateMutate = vi.fn()
 
+// Router tiruan menyimpan query-nya sendiri supaya sinkronisasi ?template=
+// benar-benar teruji: replace harus mengubah nilai yang dibaca efeknya.
 const router = {
   pathname: '/forms/create',
   query: {} as Record<string, string>,
@@ -134,6 +136,7 @@ describe('judul form di builder', () => {
       })
     )
 
+    // Isian berpindah ke template baru dan tidak ditarik kembali ke yang lama.
     await waitFor(() => {
       expect(screen.getByLabelText('Form Title')).toHaveValue(
         'Pesan Menu — Meja Restoran'

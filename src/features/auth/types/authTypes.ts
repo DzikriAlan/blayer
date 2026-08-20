@@ -1,4 +1,5 @@
 export interface PayloadPostAuthSession {
+  /** Path tujuan setelah login berhasil, mis. `/forms/create`. */
   next: string
 }
 

@@ -13,6 +13,7 @@ import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import ResponsesScoreRow from './responsesScoreRow'
 
+/** Field yang arah "lebih tinggi = lebih baik"-nya tidak ambigu. */
 const SCORABLE_TYPES = ['RATING', 'SCALE', 'CHECKBOX']
 const CHOICE_TYPES = ['RADIO', 'SELECT', 'CHECKBOX']
 
@@ -64,6 +65,7 @@ export default function ResponsesDashboard({
       return String(answer ?? '').trim() || '(tidak dijawab)'
     }
 
+    // Durasi pengerjaan; respons lama tanpa catatan durasi ditandai "—".
     const getDurationText = (totalSecond: number) => {
       if (!totalSecond) return '—'
       const hour = Math.floor(totalSecond / 3600)
@@ -84,9 +86,12 @@ export default function ResponsesDashboard({
         minute: '2-digit',
       })
 
+    // Bentuk hasil diturunkan dari satu nilai view milik template. Form tanpa
+    // template diperkirakan dari isian field karena tidak ada yang bisa dibaca.
     const getResultView = () => {
       const template = FORMS_TEMPLATES.find((item) => item.id === templateId)
 
+      // Acara, pesanan, dan kelas sama-sama daftar orang, bukan peringkat skor.
       if (['event', 'order', 'course'].includes(template?.view ?? ''))
         return 'registry'
       if (template?.view === 'survey') return 'summary'
@@ -98,6 +103,7 @@ export default function ResponsesDashboard({
       return hasScorable ? 'scoring' : 'registry'
     }
 
+    // Tiap komponen skor dinormalisasi ke 0..1 supaya bisa dirata-rata.
     const getScoreRatios = (response: DataResponsesListItem) =>
       fields
         .filter((field) => SCORABLE_TYPES.includes(field.type))
@@ -164,6 +170,7 @@ export default function ResponsesDashboard({
         isTop: index === 0,
       }))
 
+    // Registry dikelompokkan berdasarkan field pilihan pertama, mis. "Sesi".
     const groupField = fields.find(
       (field) => CHOICE_TYPES.includes(field.type) && field.options.length
     )
@@ -201,6 +208,7 @@ export default function ResponsesDashboard({
 
     const resultView = getResultView()
 
+    // Peringkat dihitung sebelum dipotong, jadi nomornya tetap global.
     const totalItem = rankedList.length
     const totalPage = Math.ceil(totalItem / filters.pagination.perPage) || 1
     const currentPage = Math.min(filters.pagination.currentPage, totalPage)
@@ -212,6 +220,7 @@ export default function ResponsesDashboard({
 
     return {
       data: pagedList,
+      // Daftar utuh untuk export — bukan potongan halaman aktif.
       exportList: rankedList,
       resultView,
       isLoading: false,
@@ -236,6 +245,7 @@ export default function ResponsesDashboard({
       topName: rankedList[0]?.respondentName ?? '-',
       isBasisVisible: filters.isBasisVisible,
       openRespondentId: filters.openRespondentId,
+      // Peringkat skor tidak bermakna untuk form pendaftaran.
       showScore: resultView !== 'registry',
     }
   }, [
@@ -248,11 +258,13 @@ export default function ResponsesDashboard({
   ])
 
   const loadResponsesExport = () => {
+    // Bungkus sel kalau mengandung pemisah/kutip/baris baru; kutip di-escape ganda.
     const getCsvCell = (value: string | number) => {
       const text = String(value ?? '')
       return /[",;\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
     }
 
+    // Export sengaja dibatasi tiga kolom: nama, nilai, dan waktu pengerjaan.
     const getHeader = () => ['Nama', 'Nilai', 'Waktu Pengerjaan']
 
     const getRows = () =>
@@ -278,6 +290,7 @@ export default function ResponsesDashboard({
         .map((row) => row.map(getCsvCell).join(','))
         .join('\r\n')
 
+    // BOM supaya Excel membaca UTF-8 dengan benar (huruf beraksen tidak rusak).
     const blob = new Blob([`﻿${csv}`], {
       type: 'text/csv;charset=utf-8;',
     })
@@ -369,6 +382,7 @@ export default function ResponsesDashboard({
         </div>
       </div>
 
+      {/* Daftar orangnya — klik baris untuk membuka jawaban lengkap. */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-foreground bg-muted px-5 py-4 sm:px-7">
         <p className="brutal-eyebrow">
           {data.showScore

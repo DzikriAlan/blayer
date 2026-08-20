@@ -20,6 +20,7 @@ const ALLOWED_TYPES = [
 
 const MAX_BYTE = 4 * 1024 * 1024
 
+// Banner dikirim sebagai base64 di body JSON supaya tidak perlu parser multipart.
 export const config = {
   api: { bodyParser: { sizeLimit: '6mb' } },
 }
@@ -30,11 +31,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
   }
 
+  // Unggahan hanya dipakai builder, jadi tidak ada alasan menerimanya tanpa sesi.
   const user = await getAuthGuard(req, res)
   if (!user) {
     return
   }
 
+  // Tiap unggahan menempati storage permanen, jadi lajunya dibatasi walau
+  // pemanggilnya sudah punya sesi yang sah.
   if (
     !(await enforceRateLimit(req, res, {
       name: 'uploads-banner',
@@ -68,6 +72,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .json({ message: 'Format gambar harus JPG, PNG, WEBP, GIF, atau AVIF.' })
   }
 
+  // Prefix "data:image/png;base64," ikut terkirim dari FileReader, dibuang dulu.
   const buffer = Buffer.from(fileBase64.split(',').pop() ?? '', 'base64')
 
   if (!buffer.length) {
@@ -105,6 +110,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     .upload(objectPath, buffer, { contentType: detectedType, upsert: false })
 
   if (uploaded.error) {
+    // Supabase menolak key dengan pesan mentah yang menyesatkan ("Invalid
+    // Compact JWS"), padahal artinya key-nya tidak dikenali gateway.
     const getUploadErrorMessage = () => {
       const raw = uploaded.error?.message ?? ''
       const isKeyRejected =

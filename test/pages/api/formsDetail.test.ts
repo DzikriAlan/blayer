@@ -97,6 +97,7 @@ describe('detail form untuk pengisi', () => {
       purpose: '',
       meetingUrl: '',
       videoUrl: '',
+      // QRIS tetap ikut: kodenya harus dipindai sebelum jawaban dikirim.
       qrisUrl: 'https://cdn/qris.png',
       isAiEnabled: true,
     })
@@ -192,6 +193,8 @@ describe('menyunting dan menghapus form', () => {
     })
 
     expect(res.statusCode).toBe(200)
+    // Field lama disunting di tempat — jawaban yang sudah masuk memakai id ini
+    // sebagai kunci, jadi id-nya tidak boleh berganti.
     expect(prismaMock.formField.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'field-1', formId: 'form-1' } })
     )

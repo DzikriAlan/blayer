@@ -63,6 +63,9 @@ const analysisSchema = {
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { formId } = req.query
 
+  // Baca maupun jalankan analisis sama-sama menuntut pemilik form. Selain soal
+  // kerahasiaan jawaban, menjalankan analisis memanggil model berbayar — tanpa
+  // pemeriksaan ini siapa pun bisa menagihkan biaya ke pemilik project.
   const user = await getAuthGuard(req, res)
   if (!user) return
 
@@ -79,6 +82,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .json({ message: 'Form ini bukan milik akun yang sedang masuk.' })
   }
 
+  // Ambil hasil analisis terakhir yang tersimpan, supaya dashboard tetap
+  // berisi setelah halaman di-refresh tanpa harus menjalankan AI lagi.
   if (req.method === 'GET') {
     const analysis = await prisma.formAnalysis.findFirst({
       where: { formId: String(formId) },
@@ -103,11 +108,25 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(405).json({ message: `Method ${req.method} not allowed` })
   }
 
+  // Tiap analisis memanggil model berbayar dengan seluruh jawaban sebagai
+  // prompt. Pemiliknya sendiri pun dibatasi supaya klik beruntun tidak
+  // berubah jadi tagihan yang tak terduga.
   if (
     !(await enforceRateLimit(req, res, {
       name: 'analysis-run',
       limit: 5,
       windowMs: 10 * 60_000,
+      scope: user.id,
+    }))
+  ) {
+    return
+  }
+
+  if (
+    !(await enforceRateLimit(req, res, {
+      name: 'analysis-daily-quota',
+      limit: 20,
+      windowMs: 24 * 60 * 60_000,
       scope: user.id,
     }))
   ) {
@@ -137,6 +156,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .json({ message: 'Belum ada jawaban yang bisa dianalisis.' })
   }
 
+  // Cek environment paling akhir: kondisi request yang salah harus dilaporkan
+  // apa adanya, bukan tertutup oleh pesan konfigurasi server.
   if (!process.env.ANTHROPIC_API_KEY) {
     return res
       .status(500)

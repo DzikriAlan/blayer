@@ -71,6 +71,7 @@
 }
 
 @layer components {
+  /* Diagonal hatch bar — the /////// rule next to a section tag. */
   .brutal-hatch {
     background-image: repeating-linear-gradient(
       -50deg,
@@ -79,6 +80,7 @@
     );
   }
 
+  /* Halftone dot field used as a texture block. */
   .brutal-dots {
     background-image: radial-gradient(
       hsl(var(--foreground)) 1.1px,
@@ -91,6 +93,7 @@
     @apply border-2 border-border bg-paper;
   }
 
+  /* Mono micro-label: uppercase, wide tracking, small. */
   .brutal-eyebrow {
     @apply font-mono text-[11px] font-bold uppercase tracking-[0.18em];
   }
@@ -103,11 +106,13 @@
     writing-mode: vertical-rl;
   }
 
+  /* Hatch bar yang berjalan — penanda "sedang memuat" tanpa spinner kedua. */
   .brutal-hatch-run {
     background-size: 200% 100%;
     animation: brutal-hatch-run 1.1s linear infinite;
   }
 
+  /* Pita berjalan — penanda khas neo-brutalism di antara section. */
   .brutal-marquee {
     animation: brutal-marquee 22s linear infinite;
   }
@@ -121,8 +126,14 @@
     }
   }
 
+  /* Teks yang berganti dengan cara digulir ke atas, satu baris sekali.
+     Entri pertama diulang di akhir supaya putarannya menyambung tanpa
+     lompatan — begitu sampai salinan itu, animasi kembali ke awal dan
+     tulisannya sudah sama. */
   .brutal-rotator {
     display: inline-block;
+    /* Tinggi jendela dikunci sama dengan tinggi barisnya, kalau tidak huruf
+       berekor seperti "y" ikut terpotong garis potong jendelanya. */
     height: 1.6em;
     line-height: 1.6em;
     overflow: hidden;
@@ -174,6 +185,7 @@
     }
   }
 
+  /* Scroller horizontal dengan scrollbar bergaya blok, bukan bulat. */
   .brutal-scroll-x {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--foreground)) hsl(var(--muted));
@@ -189,6 +201,8 @@
     background: hsl(var(--foreground));
   }
 
+  /* Varian ramping untuk baris chip di dalam kartu: scrollernya cuma setinggi
+     beberapa piksel, jadi tidak ikut mencuri ruang dari isi kartunya. */
   .brutal-scroll-thin {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--foreground)) transparent;

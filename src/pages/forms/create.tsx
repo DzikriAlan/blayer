@@ -11,6 +11,8 @@ import FormsCreate, {
 const FormsCreatePage: NextPage = () => {
   const [filters, setFilters] = useState({ title: '' })
 
+  // Bilah atas mengikuti judul yang sedang diketik; kosong kembali ke label
+  // bawaan supaya bilahnya tidak pernah tampil melompong.
   const editFormsTitle = useCallback((title: string) => {
     setFilters((prev) => ({ ...prev, title }))
   }, [])

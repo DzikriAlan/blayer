@@ -17,6 +17,12 @@ interface Props {
   children?: React.ReactNode
 }
 
+/**
+ * Isi halaman kesalahan tingkat aplikasi (404, 500).
+ *
+ * Dipisah dari halamannya sendiri supaya tiap kode kesalahan cukup mengirim
+ * angka, judul, dan jalan keluarnya — bentuknya tetap sama.
+ */
 export default function ErrorView({
   code,
   title,
@@ -49,6 +55,10 @@ export default function ErrorView({
               {subtitle}
             </p>
 
+            {/* Label tombol dibiarkan melipat di layar tersempit. Tombol
+                mewarisi whitespace-nowrap, dan pada 320 px "Kembali ke
+                Beranda" lebih lebar daripada ruang yang tersisa — teksnya
+                meluber keluar dan ikut menggeser seluruh halaman. */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Button asChild size="lg" className="whitespace-normal text-center">
                 <Link href="/">

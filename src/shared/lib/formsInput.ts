@@ -1,4 +1,14 @@
+/**
+ * Pembersih payload form yang dipakai bersama oleh pembuatan dan penyuntingan.
+ *
+ * Dulu aturannya hanya ada di handler POST. Begitu PUT ikut menulis kolom yang
+ * sama, aturan yang disalin akan langsung menyimpang — mis. harga negatif
+ * ditolak saat membuat tapi lolos saat menyunting. Semua normalisasi karena itu
+ * tinggal di satu tempat ini.
+ */
+
 export interface FormFieldInput {
+  /** Ada saat menyunting field lama; kosong berarti field baru. */
   id?: string
   label?: string
   description?: string
@@ -22,6 +32,8 @@ export interface FormBodyInput {
   fields?: FormFieldInput[]
 }
 
+/** Jenis field yang dikenal database. Nilai di luar daftar ini akan membuat
+ *  Prisma melempar error mentah, jadi disaring lebih dulu di sini. */
 export const FIELD_TYPES = [
   'SHORT_TEXT',
   'LONG_TEXT',
@@ -46,6 +58,8 @@ const MAX_TITLE = 200
 const getTrimmed = (value: unknown) =>
   typeof value === 'string' ? value.trim() : ''
 
+/** Kosong disimpan sebagai null, bukan string kosong, supaya pengecekan
+ *  `!form.purpose` di seluruh aplikasi punya satu arti saja. */
 const getNullable = (value: unknown) => getTrimmed(value) || null
 
 export interface FormInputError {
@@ -96,6 +110,7 @@ export const getFormsInput = (body: FormBodyInput) => {
       meetingUrl: getNullable(body.meetingUrl),
       videoUrl: getNullable(body.videoUrl),
       qrisUrl: getNullable(body.qrisUrl),
+      // Harga negatif atau bukan angka diabaikan supaya tagihan tetap masuk akal.
       priceAmount:
         typeof body.priceAmount === 'number' &&
         Number.isFinite(body.priceAmount) &&
