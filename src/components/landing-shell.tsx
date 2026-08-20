@@ -45,7 +45,7 @@ export default function LandingShell({ className, children }: Props) {
               className="h-10 w-10 shrink-0 border-2 border-foreground"
             />
             <span className="font-display text-xl font-black uppercase leading-none tracking-tight">
-              Blayer<span className="text-primary">®</span>
+              Blayer
             </span>
           </Link>
 
@@ -68,11 +68,11 @@ export default function LandingShell({ className, children }: Props) {
               className="h-auto w-[180px] border-2 border-background"
             />
             <p className="brutal-eyebrow mt-5 leading-relaxed opacity-70">
-              NO FRILLS.
+              TAKE WHAT YOU NEED.
               <br />
-              JUST ANSWERS.
+              BUILD WHAT YOU NEED.
               <br />
-              PURE INPUT.
+              MAKE WHAT YOU NEED.
             </p>
           </div>
 
