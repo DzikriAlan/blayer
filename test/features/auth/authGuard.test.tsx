@@ -110,3 +110,21 @@ describe('guard halaman', () => {
     expect(router.replace).not.toHaveBeenCalled()
   })
 })
+
+describe('rute yang harus terbuka tanpa sesi', () => {
+  it.each([
+    ['/auth/forgot-password', 'orang yang lupa sandi tidak bisa masuk dulu'],
+    ['/auth/reset-password', 'tautan dari surat dibuka sebelum ada sesi'],
+    ['/privacy', 'responden tanpa akun perlu membacanya'],
+  ])('TC-54 %s terbuka — %s', async (pathname) => {
+    session.data = null
+    router.pathname = pathname
+    router.asPath = pathname
+    router.replace = vi.fn()
+
+    renderGuard()
+
+    expect(await screen.findByText('isi halaman terkunci')).toBeInTheDocument()
+    await waitFor(() => expect(router.replace).not.toHaveBeenCalled())
+  })
+})

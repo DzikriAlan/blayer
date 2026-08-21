@@ -20,6 +20,15 @@ const PUBLIC_PATHNAMES = [
   '/login',
   '/register',
   '/auth/callback',
+  // Pemulihan kata sandi harus terbuka tanpa sesi. Mengunci halaman ini di
+  // belakang login berarti orang yang lupa kata sandinya diminta masuk dulu —
+  // tepat hal yang sedang tidak bisa ia lakukan.
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  // Kebijakan privasi ditautkan dari footer dan dari form yang diisi responden
+  // tanpa akun; pengungkapan yang hanya terbaca setelah masuk tidak ada
+  // gunanya.
+  '/privacy',
   '/forms/[id]',
   '/kategori/[id]',
   '/404',
