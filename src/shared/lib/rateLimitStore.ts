@@ -1,3 +1,4 @@
+import { prisma } from './prisma'
 import { logger } from './logger'
 
 export interface RateLimitHit {
@@ -134,6 +135,61 @@ export const createUpstashStore = ({
   }
 }
 
+/**
+ * Penyimpanan bersama di Postgres yang sudah dipakai aplikasi.
+ *
+ * Dipilih ketika tidak ada Redis: di platform serverless memori proses hilang
+ * setiap cold start dan tidak dibagi antar-instance, sehingga batas yang
+ * disangka aktif sebenarnya bisa dilewati dengan memaksa instance baru.
+ *
+ * Biayanya satu transaksi kecil per permintaan yang melewati rate limit, dan
+ * itu memang harga yang dibayar untuk tidak menambah layanan baru.
+ */
+export const createPrismaStore = (): RateLimitStore => ({
+  name: 'postgres',
+
+  async add(key, now, windowMs) {
+    const cutoff = new Date(now - windowMs)
+
+    // Satu transaksi, supaya hitungannya sudah memuat jejak yang barusan
+    // ditulis dan tidak terpengaruh permintaan lain yang berjalan bersamaan.
+    const [, , total, oldest] = await prisma.$transaction([
+      prisma.rateLimitHit.deleteMany({ where: { key, stamp: { lt: cutoff } } }),
+      prisma.rateLimitHit.create({ data: { key, stamp: new Date(now) } }),
+      prisma.rateLimitHit.count({ where: { key } }),
+      prisma.rateLimitHit.aggregate({
+        where: { key },
+        _min: { stamp: true },
+      }),
+    ])
+
+    // Kunci yang tidak pernah dikunjungi lagi tidak akan terhapus oleh jalur di
+    // atas, jadi sesekali seluruh jejak lama dibersihkan. Dijalankan acak
+    // supaya tidak ada satu permintaan pun yang selalu menanggung biayanya.
+    if (Math.random() < 0.01) {
+      const stale = new Date(now - 24 * 60 * 60_000)
+      await prisma.rateLimitHit
+        .deleteMany({ where: { stamp: { lt: stale } } })
+        .catch(() => undefined)
+    }
+
+    return {
+      total,
+      oldest: oldest._min.stamp ? oldest._min.stamp.getTime() : now,
+    }
+  },
+
+  async remove(key, stamp) {
+    await prisma.rateLimitHit.deleteMany({
+      where: { key, stamp: new Date(stamp) },
+    })
+  },
+
+  async clear() {
+    await prisma.rateLimitHit.deleteMany({})
+  },
+})
+
 const readConfig = (): UpstashConfig | null => {
   const url = (
     process.env.UPSTASH_REDIS_REST_URL ||
@@ -154,25 +210,34 @@ const readConfig = (): UpstashConfig | null => {
 
 let store: RateLimitStore | null = null
 
+/**
+ * Memilih penyimpanan.
+ *
+ * Urutannya disengaja. Redis dipakai kalau ada. Kalau tidak, Postgres — bukan
+ * memori — karena di produksi target aplikasinya serverless, dan memori proses
+ * di sana bukan sekadar kurang optimal melainkan tidak berlaku sama sekali.
+ *
+ * Memori hanya dipakai di luar produksi, tempat aplikasinya satu proses dan
+ * tesnya tidak boleh menyentuh basis data.
+ */
 export const getRateLimitStore = () => {
   if (store) return store
 
+  const mode = (process.env.RATE_LIMIT_STORE ?? '').trim().toLowerCase()
   const config = readConfig()
 
-  if (config) {
-    store = createUpstashStore(config)
-  } else {
-    store = createMemoryStore()
+  if (mode === 'memory') store = createMemoryStore()
+  else if (mode === 'postgres') store = createPrismaStore()
+  else if (config) store = createUpstashStore(config)
+  else if (process.env.NODE_ENV === 'production') store = createPrismaStore()
+  else store = createMemoryStore()
 
-    if (process.env.NODE_ENV === 'production') {
-      // Di produksi ini hampir selalu salah konfigurasi, bukan pilihan sadar,
-      // dan diamnya berarti batas yang disangka aktif sebenarnya tidak berlaku.
-      logger.warn('rate limit memakai memori proses', {
-        alasan:
-          'UPSTASH_REDIS_REST_URL dan UPSTASH_REDIS_REST_TOKEN belum terbaca',
-        dampak: 'batas tidak berlaku lintas instance',
-      })
-    }
+  if (store.name === 'memory' && process.env.NODE_ENV === 'production') {
+    // Hanya tercapai lewat RATE_LIMIT_STORE=memory yang disetel sengaja, dan
+    // di produksi itu berarti batasnya tidak berlaku lintas instance.
+    logger.warn('rate limit memakai memori proses', {
+      dampak: 'batas tidak berlaku lintas instance',
+    })
   }
 
   return store

@@ -27,6 +27,29 @@ describe('penyimpanan rate limit', () => {
     expect(getRateLimitStore().name).toBe('upstash')
   })
 
+  it('TC-43c tanpa Redis, produksi jatuh ke Postgres — bukan ke memori', () => {
+    // Ini yang paling gampang salah: memori di serverless bukan sekadar kurang
+    // optimal, ia tidak berlaku sama sekali karena tiap instance punya
+    // salinannya sendiri dan kehilangannya saat cold start.
+    vi.stubEnv('NODE_ENV', 'production')
+
+    setRateLimitStore(null)
+    expect(getRateLimitStore().name).toBe('postgres')
+
+    vi.unstubAllEnvs()
+  })
+
+  it('TC-43c Redis tetap menang kalau memang dikonfigurasi', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    process.env.UPSTASH_REDIS_REST_URL = 'https://contoh.upstash.io'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'token-rahasia'
+
+    setRateLimitStore(null)
+    expect(getRateLimitStore().name).toBe('upstash')
+
+    vi.unstubAllEnvs()
+  })
+
   it('TC-43a hitungan dalam memori membuang jejak di luar jendela', async () => {
     const store = createMemoryStore()
     const now = 1_000_000

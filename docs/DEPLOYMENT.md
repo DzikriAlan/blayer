@@ -6,18 +6,25 @@ mematikan fitur.
 
 > `.env.example` belum memuat empat variabel terbawah. Salin bagian itu ke sana.
 
-## Rate limit — wajib
+## Rate limit
+
+Tidak ada yang wajib diisi. Di produksi hitungannya disimpan di Postgres yang
+sudah dipakai aplikasi, lewat tabel `rate_limit_hits`, sehingga batasnya berlaku
+lintas instance tanpa layanan tambahan.
+
+Redis opsional, dan dipakai kalau ada — lebih cepat, dan tidak menambah beban ke
+basis data:
 
 ```
 UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
 UPSTASH_REDIS_REST_TOKEN=xxx
 ```
 
-Tanpa keduanya, hitungan rate limit jatuh ke memori proses. Di platform
-serverless setiap instance punya salinan sendiri dan kehilangannya saat cold
-start, sehingga batas pendaftaran dan pengiriman jawaban bisa dilewati dengan
-memaksa instance baru. Aplikasi tetap berjalan dan menulis peringatan ke log,
-tetapi perlindungannya tidak nyata.
+Pilihan penyimpanan bisa dipaksa lewat `RATE_LIMIT_STORE` bernilai `postgres`
+atau `memory`. **Jangan pakai `memory` di produksi serverless**: setiap instance
+punya salinannya sendiri dan kehilangannya saat cold start, jadi batasnya bisa
+dilewati dengan memaksa instance baru. Kalau tetap dipaksa, log produksi akan
+memperingatkannya.
 
 ## Alamat pemanggil — wajib
 

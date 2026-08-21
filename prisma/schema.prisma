@@ -118,3 +118,17 @@ enum FieldType {
   /// Pilihan metode pembayaran. Tiap opsi: "Metode|Petunjuk".
   PAYMENT
 }
+
+/// Hitungan rate limit, dipakai saat tidak ada Redis.
+///
+/// Ditaruh di basis data supaya batasnya berlaku lintas instance di platform
+/// serverless, tempat memori proses hilang setiap cold start.
+model RateLimitHit {
+  id    String   @id @default(cuid())
+  key   String
+  stamp DateTime
+
+  @@index([key, stamp])
+  @@index([stamp])
+  @@map("rate_limit_hits")
+}
