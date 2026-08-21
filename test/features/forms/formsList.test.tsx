@@ -40,8 +40,8 @@ const getForm = (overrides: Partial<DataForms> = {}): DataForms => ({
   isAiEnabled: false,
   templateId: 'exam',
   isPublished: true,
-  totalField: 6,
-  totalResponse: 5,
+  totalFields: 6,
+  totalResponses: 5,
   createdAt: '2026-08-18T00:00:00.000Z',
   ...overrides,
 })

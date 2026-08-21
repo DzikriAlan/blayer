@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 
 interface Props {
   rank: number
-  respondentName: string
+  name: string
   score: number
   verdict: string
   strengths: string[]
@@ -16,7 +16,7 @@ interface Props {
 
 export default function AnalysisRankingCard({
   rank,
-  respondentName,
+  name,
   score,
   verdict,
   strengths,
@@ -46,7 +46,7 @@ export default function AnalysisRankingCard({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="break-words font-display text-2xl font-black uppercase leading-none tracking-tight">
-              {respondentName}
+              {name}
             </h3>
             <Badge
               variant={isTop ? 'secondary' : 'outline'}

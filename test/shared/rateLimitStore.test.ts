@@ -28,9 +28,6 @@ describe('penyimpanan rate limit', () => {
   })
 
   it('TC-43c tanpa Redis, produksi jatuh ke Postgres — bukan ke memori', () => {
-    // Ini yang paling gampang salah: memori di serverless bukan sekadar kurang
-    // optimal, ia tidak berlaku sama sekali karena tiap instance punya
-    // salinannya sendiri dan kehilangannya saat cold start.
     vi.stubEnv('NODE_ENV', 'production')
 
     setRateLimitStore(null)
@@ -61,7 +58,6 @@ describe('penyimpanan rate limit', () => {
     expect(inside.total).toBe(3)
     expect(inside.oldest).toBe(now)
 
-    // Jauh setelah jendela lewat, dua jejak pertama tidak boleh ikut dihitung.
     const outside = await store.add('kunci', now + 120_000, 60_000)
     expect(outside.total).toBe(1)
   })
@@ -96,8 +92,6 @@ describe('penyimpanan bersama lewat Upstash', () => {
     const hit = await store.add('kunci', 1_000_500, 60_000)
 
     const commands = sent.map((item) => String((item as string[])[0]))
-    // Jejak lama dibuang berdasarkan skor waktunya. Penghitung jendela tetap
-    // bisa dilipatduakan dengan menembak tepat di pergantian jendela.
     expect(commands).toContain('ZREMRANGEBYSCORE')
     expect(commands).toContain('ZADD')
     expect(commands).toContain('ZCARD')

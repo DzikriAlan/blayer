@@ -32,7 +32,6 @@ export const useAnalysisControllers = () => {
 
   useEffect(() => {
     if (!payloadGetAnalysis.formId) return
-    // Jangan timpa hasil analisis yang baru saja dijalankan lewat mutation.
     if (storeAnalysis.isPending || storeAnalysis.isSuccess) return
     if (fetchAnalysis.isPending) return setAnalysis({ status: 'loading' })
     if (fetchAnalysis.isError) return setAnalysis({ status: 'error' })

@@ -1,5 +1,8 @@
 import { fetchPages } from '@/shared/lib/fetchPages'
 import type {
+  DataForms,
+  DataFormsCreated,
+  DataFormsDetail,
   DataFormsPublic,
   PayloadDeleteForms,
   PayloadGetFormsDetail,
@@ -8,6 +11,7 @@ import type {
 } from '../types/formsTypes'
 import { getAuthHeaders } from '@/shared/lib/authClient'
 import { throwApiError } from '@/shared/lib/httpError'
+import { getApiData, getApiPage } from '@/shared/lib/apiClient'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
@@ -18,7 +22,7 @@ export const getForms = async () => {
       headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
     })
     if (!res.ok) await throwApiError(res)
-    return res.json()
+    return getApiData<DataForms[]>(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -27,8 +31,6 @@ export const getForms = async () => {
 
 export const getFormsPublic = async () => {
   try {
-    // Tanpa header Authorization: katalog ini memang dibaca pengunjung yang
-    // belum punya akun.
     return await fetchPages<DataFormsPublic>(async (cursor) => {
       const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''
       const res = await fetch(`${baseUrl}/api/v1/forms/public${query}`, {
@@ -36,7 +38,7 @@ export const getFormsPublic = async () => {
         headers: { 'Content-Type': 'application/json' },
       })
       if (!res.ok) await throwApiError(res)
-      return res.json()
+      return getApiPage<DataFormsPublic>(res)
     })
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
@@ -52,7 +54,7 @@ export const postForms = async (payload: PayloadPostForms) => {
       body: JSON.stringify(payload),
     })
     if (!res.ok) await throwApiError(res)
-    return res.json()
+    return getApiData<DataFormsCreated>(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -66,7 +68,7 @@ export const getFormsDetail = async (payload: PayloadGetFormsDetail) => {
       headers: { 'Content-Type': 'application/json' },
     })
     if (!res.ok) await throwApiError(res)
-    return res.json()
+    return getApiData<DataFormsDetail>(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -84,7 +86,7 @@ export const putForms = async ({ id, ...payload }: PayloadPutForms) => {
       body: JSON.stringify(payload),
     })
     if (!res.ok) await throwApiError(res)
-    return res.json()
+    return getApiData<DataFormsCreated>(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -101,7 +103,7 @@ export const deleteForms = async (payload: PayloadDeleteForms) => {
       },
     })
     if (!res.ok) await throwApiError(res)
-    return res.json()
+    return getApiData<DataFormsCreated>(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error

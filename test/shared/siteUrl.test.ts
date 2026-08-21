@@ -1,6 +1,3 @@
-/**
- * @vitest-environment node
- */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { getSiteUrl } from '@/shared/lib/siteUrl'
@@ -19,9 +16,6 @@ describe('alamat dasar untuk tautan di surat', () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
 
-    // Kalau ini mengembalikan situs-jahat.test, penyerang cukup meminta
-    // pemulihan untuk username korban sambil memalsukan Host: korban menerima
-    // surat sah yang tautannya menunjuk ke penyerang.
     expect(getSiteUrl(getRequest('situs-jahat.test', 'https'))).toBe('')
   })
 

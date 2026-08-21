@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// vi.hoisted dipakai karena vi.mock diangkat ke atas berkas — tiruan harus
-// sudah ada sebelum modul yang diuji diimpor.
 const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: { form: { findMany: vi.fn() } },
   authMock: { called: false },
@@ -9,8 +7,6 @@ const { prismaMock, authMock } = vi.hoisted(() => ({
 
 vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
 
-// Katalog publik tidak boleh menyentuh penjaga sesi sama sekali. Kalau suatu
-// saat ada yang memasangnya, tiruan ini yang akan menangkap.
 vi.mock('@/shared/lib/authServer', () => ({
   getAuthGuard: async () => {
     authMock.called = true
@@ -28,7 +24,13 @@ const getResponse = () => {
   const res = {
     statusCode: 0,
     body: null as unknown,
-    setHeader: vi.fn(),
+    headers: {} as Record<string, string>,
+    setHeader(key: string, value: string) {
+      res.headers[key] = String(value)
+    },
+    getHeader(key: string) {
+      return res.headers[key]
+    },
     status(code: number) {
       res.statusCode = code
       return res
@@ -55,8 +57,8 @@ beforeEach(() => {
       title: 'Ujian Matematika',
       description: 'Ujian bab satu',
       templateId: 'exam',
-      bannerUrl: null,
-      priceAmount: null,
+      image: null,
+      price: null,
       createdAt: new Date('2026-08-01T00:00:00.000Z'),
       _count: { fields: 5, responses: 12 },
     },
@@ -69,12 +71,13 @@ describe('katalog form publik', () => {
 
     expect(res.statusCode).toBe(200)
     expect(authMock.called).toBe(false)
-    // Jawabannya selalu beramplop sekarang, karena batas jumlahnya tidak
-    // pernah opsional — tanpa itu jalur default membaca seluruh tabel.
-    const body = res.body as { items: unknown[]; hasMore: boolean }
-    expect(Array.isArray(body.items)).toBe(true)
-    expect(body).toHaveProperty('nextCursor')
-    expect(body).toHaveProperty('hasMore')
+    const body = res.body as {
+      data: unknown[]
+      meta: { pagination: Record<string, unknown> }
+    }
+    expect(Array.isArray(body.data)).toBe(true)
+    expect(body.meta.pagination).toHaveProperty('next_cursor')
+    expect(body.meta.pagination).toHaveProperty('has_more')
   })
 
   it('TC-26aa hanya form yang sudah dipublikasikan yang ikut terbaca', async () => {
@@ -88,25 +91,24 @@ describe('katalog form publik', () => {
   it('TC-26ab tidak membocorkan purpose maupun kolom milik pembuat form', async () => {
     const res = await call({ method: 'GET', headers: {}, query: {} })
 
-    const [form] = (res.body as { items: Record<string, unknown>[] }).items
+    const [form] = (res.body as { data: Record<string, unknown>[] }).data
     expect(Object.keys(form).sort()).toEqual([
-      'bannerUrl',
       'createdAt',
       'description',
       'id',
-      'priceAmount',
+      'image',
+      'price',
       'templateId',
       'title',
-      'totalField',
-      'totalResponse',
+      'totalFields',
+      'totalResponses',
     ])
 
-    // Kolom rahasia tidak boleh ikut diminta dari database sejak awal.
     const select = prismaMock.form.findMany.mock.calls[0][0].select
     expect(select.purpose).toBeUndefined()
-    expect(select.qrisUrl).toBeUndefined()
-    expect(select.meetingUrl).toBeUndefined()
-    expect(select.videoUrl).toBeUndefined()
+    expect(select.qrisImage).toBeUndefined()
+    expect(select.meeting).toBeUndefined()
+    expect(select.video).toBeUndefined()
     expect(select.userId).toBeUndefined()
   })
 })

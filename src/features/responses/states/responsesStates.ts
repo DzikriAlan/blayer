@@ -22,10 +22,10 @@ interface ResponsesStore {
 export const useResponsesStates = create<ResponsesStore>((set) => ({
   payloadPostResponses: {
     formId: '',
-    respondentName: '',
-    respondentEmail: '',
+    name: '',
+    email: '',
     answers: {},
-    durationSeconds: 0,
+    duration: 0,
   },
 
   payloadGetResponsesList: {

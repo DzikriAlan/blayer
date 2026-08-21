@@ -3,6 +3,7 @@ import { prisma } from '@/shared/lib/prisma'
 import { anthropic } from '@/shared/lib/anthropic'
 import { getAuthGuard } from '@/shared/lib/authServer'
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
 const analysisSchema = {
@@ -63,9 +64,6 @@ const analysisSchema = {
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { formId } = req.query
 
-  // Baca maupun jalankan analisis sama-sama menuntut pemilik form. Selain soal
-  // kerahasiaan jawaban, menjalankan analisis memanggil model berbayar — tanpa
-  // pemeriksaan ini siapa pun bisa menagihkan biaya ke pemilik project.
   const user = await getAuthGuard(req, res)
   if (!user) return
 
@@ -74,43 +72,50 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     select: { userId: true },
   })
 
-  if (!owner) return res.status(404).json({ message: 'Form tidak ditemukan.' })
-
-  if (owner.userId !== user.id) {
-    return res
-      .status(403)
-      .json({ message: 'Form ini bukan milik akun yang sedang masuk.' })
+  if (!owner) {
+    return sendFailure(res, {
+      status: 404,
+      message: 'Form tidak ditemukan.',
+      errors: [{ code: 'FORM_NOT_FOUND', field: 'formId', message: 'Form tidak ditemukan.' }],
+    })
   }
 
-  // Ambil hasil analisis terakhir yang tersimpan, supaya dashboard tetap
-  // berisi setelah halaman di-refresh tanpa harus menjalankan AI lagi.
+  if (owner.userId !== user.id) {
+    return sendFailure(res, {
+      status: 403,
+      message: 'Form ini bukan milik akun yang sedang masuk.',
+      errors: [{ code: 'FORBIDDEN', field: '', message: 'Form ini milik akun lain.' }],
+    })
+  }
+
   if (req.method === 'GET') {
     const analysis = await prisma.formAnalysis.findFirst({
       where: { formId: String(formId) },
       orderBy: { createdAt: 'desc' },
     })
 
-    if (!analysis) return res.status(200).json(null)
+    if (!analysis) {
+      return sendSuccess(res, { message: 'Belum ada analisis tersimpan', data: null })
+    }
 
-    return res.status(200).json({
-      id: analysis.id,
-      formId: analysis.formId,
-      purpose: analysis.purpose,
-      summary: analysis.summary,
-      recommendation: analysis.recommendation,
-      ranking: analysis.ranking,
-      createdAt: analysis.createdAt.toISOString(),
+    return sendSuccess(res, {
+      message: 'Analisis berhasil dimuat',
+      data: {
+        id: analysis.id,
+        formId: analysis.formId,
+        purpose: analysis.purpose,
+        summary: analysis.summary,
+        recommendation: analysis.recommendation,
+        ranking: analysis.ranking,
+        createdAt: analysis.createdAt.toISOString(),
+      },
     })
   }
 
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['GET', 'POST'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
+    return sendMethodNotAllowed(res, req.method, ['GET', 'POST'])
   }
 
-  // Tiap analisis memanggil model berbayar dengan seluruh jawaban sebagai
-  // prompt. Pemiliknya sendiri pun dibatasi supaya klik beruntun tidak
-  // berubah jadi tagihan yang tak terduga.
   if (
     !(await enforceRateLimit(req, res, {
       name: 'analysis-run',
@@ -141,23 +146,30 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   })
 
-  if (!form) return res.status(404).json({ message: 'Form tidak ditemukan.' })
+  if (!form) {
+    return sendFailure(res, {
+      status: 404,
+      message: 'Form tidak ditemukan.',
+      errors: [{ code: 'FORM_NOT_FOUND', field: 'formId', message: 'Form tidak ditemukan.' }],
+    })
+  }
 
   if (!form.purpose) {
-    return res.status(400).json({
-      message:
-        'Form ini tidak mengaktifkan analisis AI. Tambahkan tujuan form terlebih dahulu.',
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'AI_NOT_ENABLED', field: 'purpose', message: 'Form ini tidak mengaktifkan analisis AI. Tambahkan tujuan form terlebih dahulu.' }],
     })
   }
 
   if (!form.responses.length) {
-    return res
-      .status(400)
-      .json({ message: 'Belum ada jawaban yang bisa dianalisis.' })
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'NO_RESPONSES', field: '', message: 'Belum ada jawaban yang bisa dianalisis.' }],
+    })
   }
 
-  // Cek environment paling akhir: kondisi request yang salah harus dilaporkan
-  // apa adanya, bukan tertutup oleh pesan konfigurasi server.
   if (!process.env.ANTHROPIC_API_KEY) {
     return res
       .status(500)
@@ -228,9 +240,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     } as never)
 
     if (message.stop_reason === 'refusal') {
-      return res.status(422).json({
-        message:
-          'Analisis ditolak oleh sistem keamanan model. Coba sesuaikan tujuan form atau isi jawaban.',
+      return sendFailure(res, {
+        status: 422,
+        message: 'Analisis ditolak oleh sistem keamanan model. Coba sesuaikan tujuan form atau isi jawaban.',
+        errors: [{ code: 'MODEL_REFUSED', field: '', message: 'Model menolak memproses permintaan ini.' }],
       })
     }
 
@@ -258,20 +271,26 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     })
 
-    return res.status(201).json({
-      id: analysis.id,
-      formId: analysis.formId,
-      purpose: analysis.purpose,
-      summary: analysis.summary,
-      recommendation: analysis.recommendation,
-      ranking: parsed.ranking,
-      createdAt: analysis.createdAt.toISOString(),
+    return sendSuccess(res, {
+      status: 201,
+      message: 'Analisis berhasil dibuat',
+      data: {
+        id: analysis.id,
+        formId: analysis.formId,
+        purpose: analysis.purpose,
+        summary: analysis.summary,
+        recommendation: analysis.recommendation,
+        ranking: parsed.ranking,
+        createdAt: analysis.createdAt.toISOString(),
+      },
     })
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Unknown error'
-    return res
-      .status(502)
-      .json({ message: `Gagal menjalankan analisis AI: ${detail}` })
+    return sendFailure(res, {
+      status: 502,
+      message: `Gagal menjalankan analisis AI: ${detail}`,
+      errors: [{ code: 'ANALYSIS_FAILED', field: '', message: detail }],
+    })
   }
 }
 

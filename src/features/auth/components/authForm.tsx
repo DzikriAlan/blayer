@@ -19,12 +19,6 @@ import {
 import { useAuthStates } from '../states/authStates'
 import { useAuthControllers } from '../controllers/authControllers'
 
-/**
- * Aturannya tidak ditulis ulang sebagai rantai zod supaya browser dan API route
- * menolak dengan kalimat yang sama persis. Salinan yang terpisah sempat membuat
- * isian berupa email lengkap dijelaskan sebagai masalah karakter di sini,
- * padahal penyebabnya domain yang ditempel dua kali.
- */
 const check =
   (getProblem: (value: string) => string) =>
   (value: string, ctx: z.RefinementCtx) => {
@@ -32,19 +26,8 @@ const check =
     if (problem) ctx.addIssue({ code: z.ZodIssueCode.custom, message: problem })
   }
 
-/**
- * Masuk menerima username maupun alamat email, sedangkan mendaftar hanya
- * menerima username.
- *
- * Bedanya disengaja: saat mendaftar alamatnya memang dibentuk dari username,
- * jadi membiarkan isian berupa email di sana hanya akan membuat akun dengan
- * alamat ganda. Saat masuk, akunnya sudah ada dan yang dibutuhkan cuma cara
- * menemukannya.
- */
 const getSchema = (isRegister: boolean) =>
   z.object({
-    // Spasi di ujung dibuang di sini juga, supaya nilai yang terkirim sama
-    // dengan nilai yang barusan divalidasi.
     username: z
       .string()
       .trim()
@@ -54,12 +37,6 @@ const getSchema = (isRegister: boolean) =>
 
 type FormValues = z.infer<ReturnType<typeof getSchema>>
 
-/**
- * Tujuan hanya diterima bila berupa path internal.
- *
- * Tanpa saringan ini, `?next=https://situs-lain` akan membuat halaman login
- * sendiri jadi alat pengalihan ke domain luar.
- */
 const getSafeNext = (next: unknown) => {
   if (typeof next !== 'string') return ''
   if (!next.startsWith('/') || next.startsWith('//')) return ''
@@ -76,9 +53,6 @@ export default function AuthForm({ mode }: Props) {
   const { storeAuthSession, storeAuthPassword, storeAuthRegister } =
     useAuthControllers()
 
-  // Kata sandi di sini tidak bisa dipulihkan lewat email, karena alamatnya
-  // sintetis. Bisa memeriksa apa yang diketik jauh lebih berarti daripada di
-  // form login biasa.
   const [isPasswordShown, setIsPasswordShown] = useState(false)
 
   const form = useForm<FormValues>({
@@ -95,8 +69,6 @@ export default function AuthForm({ mode }: Props) {
       isRegister,
       next: getSafeNext(router.query.next) || '/forms',
       isSignedIn,
-      // Tiga tombol punya keadaan sibuk sendiri-sendiri supaya yang berputar
-      // hanya tombol yang benar-benar sedang bekerja.
       isCredentialPending: credential.isPending,
       isGooglePending: storeAuthSession.isPending,
       isBusy:
@@ -140,7 +112,6 @@ export default function AuthForm({ mode }: Props) {
   useEffect(() => {
     if (!data.isSignedIn) return
 
-    // Sudah punya sesi — halaman ini tidak perlu ditampilkan lagi.
     router.replace(data.next)
   }, [data.isSignedIn, data.next, router])
 
@@ -187,7 +158,6 @@ export default function AuthForm({ mode }: Props) {
                   data.isRegister ? 'new-password' : 'current-password'
                 }
                 placeholder="••••••••"
-                // Ruang untuk tombol mata, supaya sandi panjang tidak tertimpa.
                 className="pr-10"
                 aria-invalid={!!form.formState.errors.password}
                 {...form.register('password')}
@@ -195,8 +165,6 @@ export default function AuthForm({ mode }: Props) {
               <button
                 type="button"
                 onClick={() => setIsPasswordShown((shown) => !shown)}
-                // Tanpa type="button" tombol ini akan ikut mengirim form, dan
-                // memeriksa ketikan justru berujung percobaan login.
                 aria-label={
                   isPasswordShown
                     ? 'Sembunyikan kata sandi'

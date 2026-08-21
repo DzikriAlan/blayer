@@ -11,6 +11,9 @@ const getResponse = () => {
     setHeader(key: string, value: string) {
       res.headers[key] = value
     },
+    getHeader(key: string) {
+      return res.headers[key]
+    },
     status(code: number) {
       res.statusCode = code
       return res
@@ -34,7 +37,6 @@ describe('pembungkus handler API', () => {
     await handler({ method: 'POST', headers: {} } as never, res as never)
 
     expect(res.statusCode).toBe(500)
-    // Pesan asli menyebut detail koneksi database, jadi tidak diteruskan.
     expect(res.body?.message).not.toContain('database server')
     expect(res.body?.message).toContain(res.headers['X-Request-Id'])
     errorSpy.mockRestore()

@@ -36,8 +36,6 @@ export default function AuthAccount({ tone = 'light' }: Props) {
 
   const clearAuthSession = () => {
     removeAuthSession.mutate(undefined, {
-      // Setelah logout, halaman terkunci yang sedang dibuka harus ditinggalkan
-      // sendiri — jangan menunggu guard menendang dari halaman kosong.
       onSuccess: () => router.replace('/'),
     })
   }

@@ -14,9 +14,7 @@ const MAX_BYTE = 4 * 1024 * 1024
 
 interface Props {
   value: string
-  /** Teks alternatif pratinjau; dibedakan karena unggahan tidak selalu banner. */
   alt?: string
-  /** Label tombol saat belum ada gambar. */
   emptyLabel?: string
   onEditBanner: (url: string) => void
 }

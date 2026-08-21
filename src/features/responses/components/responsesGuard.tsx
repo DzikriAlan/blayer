@@ -6,7 +6,6 @@ import { Expand, ShieldAlert, TimerReset } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/components/ui/button'
 
-/** Kombinasi tombol untuk buka tab/jendela baru, cari, cetak, simpan, dan devtools. */
 const BLOCKED_KEYS = [
   't',
   'n',
@@ -80,7 +79,6 @@ export default function ResponsesGuard({
   useEffect(() => {
     if (!isActive) return
 
-    // Semua aksi menyalin, menempel, dan menu klik-kanan dimatikan.
     const getBlocked = (event: Event) => event.preventDefault()
 
     const getBlockedKey = (event: KeyboardEvent) => {
@@ -98,8 +96,6 @@ export default function ResponsesGuard({
       if (document.visibilityState === 'hidden') editViolation('pindah tab')
     }
 
-    // Pindah tab sudah tercatat lewat visibilitychange, jadi blur hanya
-    // dihitung saat halaman masih terlihat — yaitu pindah aplikasi/jendela.
     const getBlur = () => {
       if (document.visibilityState === 'visible')
         editViolation('pindah aplikasi')

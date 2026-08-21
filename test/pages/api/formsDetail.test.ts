@@ -36,7 +36,7 @@ const getForm = (patch: Record<string, unknown> = {}) => ({
   meetingUrl: 'https://meet.google.com/rahasia',
   videoUrl: 'https://youtu.be/rahasia',
   qrisUrl: 'https://cdn/qris.png',
-  priceAmount: 50000,
+  price: 50000,
   isPublished: true,
   createdAt: new Date('2026-08-01T00:00:00.000Z'),
   fields: [
@@ -57,14 +57,27 @@ const getForm = (patch: Record<string, unknown> = {}) => ({
 const getResponse = () => {
   const res = {
     statusCode: 0,
-    body: null as never,
-    setHeader: vi.fn(),
+    body: null as unknown as {
+      success: boolean
+      status: number
+      message: string
+      data: never
+      meta: { request_id: string; timestamp: string; version: string }
+      errors: { code: string; field: string; message: string }[] | null
+    },
+    headers: {} as Record<string, string>,
+    setHeader(key: string, value: string) {
+      res.headers[key] = String(value)
+    },
+    getHeader(key: string) {
+      return res.headers[key]
+    },
     status(code: number) {
       res.statusCode = code
       return res
     },
     json(body: unknown) {
-      res.body = body as never
+      res.body = body as typeof res.body
       return res
     },
   }
@@ -93,12 +106,11 @@ describe('detail form untuk pengisi', () => {
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
     expect(res.statusCode).toBe(200)
-    expect(res.body).toMatchObject({
+    expect(res.body.data).toMatchObject({
       purpose: '',
-      meetingUrl: '',
-      videoUrl: '',
-      // QRIS tetap ikut: kodenya harus dipindai sebelum jawaban dikirim.
-      qrisUrl: 'https://cdn/qris.png',
+      meeting: '',
+      video: '',
+      qrisImage: 'https://cdn/qris.png',
       isAiEnabled: true,
     })
   })
@@ -108,7 +120,7 @@ describe('detail form untuk pengisi', () => {
 
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
-    expect(res.body).toMatchObject({ purpose: '', meetingUrl: '', videoUrl: '' })
+    expect(res.body.data).toMatchObject({ purpose: '', meeting: '', video: '' })
   })
 
   it('TC-40c memberi isi utuh kepada pemiliknya', async () => {
@@ -116,10 +128,10 @@ describe('detail form untuk pengisi', () => {
 
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
-    expect(res.body).toMatchObject({
+    expect(res.body.data).toMatchObject({
       purpose: 'Pilih peserta paling relevan dengan materi',
-      meetingUrl: 'https://meet.google.com/rahasia',
-      videoUrl: 'https://youtu.be/rahasia',
+      meeting: 'https://meet.google.com/rahasia',
+      video: 'https://youtu.be/rahasia',
     })
   })
 
@@ -193,8 +205,6 @@ describe('menyunting dan menghapus form', () => {
     })
 
     expect(res.statusCode).toBe(200)
-    // Field lama disunting di tempat — jawaban yang sudah masuk memakai id ini
-    // sebagai kunci, jadi id-nya tidak boleh berganti.
     expect(prismaMock.formField.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'field-1', formId: 'form-1' } })
     )

@@ -1,10 +1,9 @@
 export interface PayloadPostResponses {
   formId: string
-  respondentName: string
-  respondentEmail: string
+  name: string
+  email: string
   answers: Record<string, string | string[]>
-  /** Lama pengerjaan dalam detik, dihitung sejak form terbuka. */
-  durationSeconds: number
+  duration: number
 }
 
 export interface PayloadGetResponsesList {
@@ -13,16 +12,10 @@ export interface PayloadGetResponsesList {
 
 export interface DataResponses {
   id: string
-  /** Jumlah pendaftar setelah jawaban ini masuk. */
-  totalResponse: number
+  totalResponses: number
   createdAt: string
-  /**
-   * Link acara dan video kelas datang bersama balasan pengiriman, bukan dari
-   * detail form: detail form dibaca siapa saja yang punya tautannya, sedangkan
-   * dua link ini hanya untuk yang benar-benar sudah mendaftar.
-   */
-  meetingUrl: string
-  videoUrl: string
+  meeting: string
+  video: string
 }
 
 export interface Responses {
@@ -42,16 +35,16 @@ export interface DataResponsesListField {
 
 export interface DataResponsesListItem {
   id: string
-  respondentName: string
-  respondentEmail: string
+  name: string
+  email: string
   answers: Record<string, string | string[]>
-  durationSeconds: number
+  duration: number
   createdAt: string
 }
 
 export interface DataResponsesList {
   formId: string
-  formTitle: string
+  title: string
   purpose: string
   isAiEnabled: boolean
   templateId: string

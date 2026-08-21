@@ -50,8 +50,8 @@ export default function FormsList() {
       purpose: item.purpose,
       isAiEnabled: item.isAiEnabled,
       status: item.isPublished ? 'LIVE' : 'DRAFT',
-      totalField: item.totalField,
-      totalResponse: item.totalResponse,
+      totalFields: item.totalFields,
+      totalResponses: item.totalResponses,
       createdAt: getFormattedDate(item.createdAt),
     })
 
@@ -78,8 +78,8 @@ export default function FormsList() {
       .slice(startIndex, startIndex + filters.pagination.perPage)
       .map((raw) => getMappedItem(raw))
 
-    const totalResponse = forms.data.reduce(
-      (total, raw) => total + raw.totalResponse,
+    const totalResponses = forms.data.reduce(
+      (total, raw) => total + raw.totalResponses,
       0
     )
 
@@ -100,7 +100,7 @@ export default function FormsList() {
       pagination: { ...filters.pagination, totalItem, totalPage, currentPage },
       startIndex,
       totalForm: forms.data.length,
-      totalResponse,
+      totalResponses,
       templateId: filters.templateId,
       templateName: getTemplateName(filters.templateId),
       search: filters.search,
@@ -119,7 +119,6 @@ export default function FormsList() {
     }))
   }
 
-  // Dari beranda, template diteruskan ke builder lewat query string.
   const loadFormsTemplate = (templateId: string) => {
     router.push(`/forms/create?template=${templateId}`)
   }
@@ -128,7 +127,6 @@ export default function FormsList() {
     router.push(`/kategori/${templateId}`)
   }
 
-  // "See" pada kartu template menyaring riwayat form; klik ulang melepas filter.
   const loadFormsFilter = (templateId: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -145,17 +143,12 @@ export default function FormsList() {
     }))
   }
 
-  /**
-   * Menghapus form ikut menghapus seluruh jawaban dan analisisnya lewat
-   * cascade di database, jadi jumlah jawaban disebut lebih dulu di konfirmasi
-   * — angka itu yang membuat orang berhenti sejenak sebelum menekan OK.
-   */
   const clearForms = (id: string) => {
     const target = forms.data.find((item) => item.id === id)
     if (!target) return
 
-    const warning = target.totalResponse
-      ? `Hapus form "${target.title}"? ${target.totalResponse} jawaban yang sudah masuk ikut terhapus dan tidak bisa dikembalikan.`
+    const warning = target.totalResponses
+      ? `Hapus form "${target.title}"? ${target.totalResponses} jawaban yang sudah masuk ikut terhapus dan tidak bisa dikembalikan.`
       : `Hapus form "${target.title}"? Tindakan ini tidak bisa dibatalkan.`
 
     if (!window.confirm(warning)) return
@@ -164,8 +157,6 @@ export default function FormsList() {
     destroyForms.mutate(
       { id },
       {
-        // Kegagalan hapus harus terlihat: tanpa ini kartunya sekadar tetap
-        // di tempat dan pengguna mengira aplikasinya menggantung.
         onError: (error: Error) =>
           setFilters((prev) => ({
             ...prev,
@@ -206,7 +197,7 @@ export default function FormsList() {
           <div className="border-b-2 border-foreground px-5 py-5 sm:border-b-0 sm:border-r-2 sm:px-7">
             <p className="brutal-eyebrow text-muted-foreground">RESPONSES</p>
             <p className="mt-2 font-display text-4xl font-black leading-none">
-              {String(data.totalResponse).padStart(2, '0')}
+              {String(data.totalResponses).padStart(2, '0')}
             </p>
           </div>
           <div className="col-span-2 bg-primary px-5 py-5 text-primary-foreground sm:col-span-1 sm:px-7">
@@ -235,7 +226,6 @@ export default function FormsList() {
         </div>
       </section>
 
-      {/* border-b datang dari FormsTemplate sendiri, jadi cukup tiga sisi di sini. */}
       <section className="border-x-2 border-t-2 border-foreground">
         <FormsTemplate
           activeId=""
@@ -277,8 +267,6 @@ export default function FormsList() {
         </p>
       ) : null}
 
-      {/* Satu pintu untuk memuat, gagal, dan kosong; isian hanya dirender
-          kalau memang ada datanya. */}
       <LoadData response={data} minHeight="30vh">
         <section className="border-x-2 border-t-2 border-foreground">
           {data.data.map((item, index) => (
@@ -290,8 +278,8 @@ export default function FormsList() {
               purpose={item.purpose}
               isAiEnabled={item.isAiEnabled}
               status={item.status}
-              totalField={item.totalField}
-              totalResponse={item.totalResponse}
+              totalFields={item.totalFields}
+              totalResponses={item.totalResponses}
               createdAt={item.createdAt}
               isDeleting={data.deletingId === item.id}
               onClearForms={clearForms}
@@ -300,8 +288,6 @@ export default function FormsList() {
         </section>
       </LoadData>
 
-      {/* Placeholder LoadData tidak punya slot aksi, jadi jalan keluarnya
-          diletakkan tepat di bawahnya. */}
       {data.isError ? (
         <div className="flex justify-center">
           <Button onClick={() => fetchForms.refetch()}>Retry</Button>

@@ -72,11 +72,11 @@ const getDetail = (
   purpose: '',
   isAiEnabled: false,
   templateId: 'restaurant',
-  bannerUrl: '',
-  meetingUrl: '',
-  videoUrl: '',
-  qrisUrl: '/qris-demo.svg',
-  priceAmount: 0,
+  image: '',
+  meeting: '',
+  video: '',
+  qrisImage: '/qris-demo.svg',
+  price: 0,
   isPublished: true,
   createdAt: '2026-08-18T00:00:00.000Z',
   fields: [
@@ -139,7 +139,6 @@ describe('identitas pengisi', () => {
   it('TC-21 penomoran pertanyaan menyambung dari identitas yang tampil', async () => {
     await loadSubmit()
 
-    // Nama = 01, jadi pertanyaan pertama form mulai dari 02.
     expect(screen.getByText('02')).toBeInTheDocument()
   })
 
@@ -196,14 +195,14 @@ describe('pengiriman jawaban', () => {
     await user.click(screen.getByRole('button', { name: /Tunai/ }))
     await user.click(screen.getByRole('button', { name: /Submit/ }))
 
-    expect(mutate.mock.calls[0][0].durationSeconds).toBeGreaterThanOrEqual(0)
+    expect(mutate.mock.calls[0][0].duration).toBeGreaterThanOrEqual(0)
   })
 
   it('TC-20 form berharga tetap menagih angka dari pembuat form', async () => {
     const user = userEvent.setup()
     state.formsDetail.data = getDetail({
       templateId: 'course',
-      priceAmount: 350000,
+      price: 350000,
       fields: [
         getField({
           id: 'bayar',

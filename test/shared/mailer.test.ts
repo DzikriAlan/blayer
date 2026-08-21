@@ -1,6 +1,3 @@
-/**
- * @vitest-environment node
- */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const send = vi.fn()
@@ -46,8 +43,6 @@ describe('pengiriman surat', () => {
   })
 
   it('TC-49b kegagalan dikembalikan, bukan dilempar', async () => {
-    // Pemanggilnya yang memutuskan apakah gagal kirim layak menjatuhkan
-    // seluruh permintaan. Untuk pemulihan kata sandi jawabannya tidak.
     send.mockResolvedValue({ data: null, error: { message: 'kuota habis' } })
 
     const result = await sendMail({ to: 'a@b.id', subject: 'Uji', html: '<p>x</p>' })

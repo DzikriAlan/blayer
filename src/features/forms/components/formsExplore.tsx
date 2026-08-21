@@ -21,23 +21,6 @@ import {
   type FormsTemplateView,
 } from './formsTemplate'
 
-/**
- * Bentuk sajian tiap kategori.
- *
- * Diturunkan dari `view` yang sama dengan yang sudah menentukan halaman isi,
- * layar setelah kirim, dan dashboard hasil — jadi menambah template baru tidak
- * menuntut komponen baru di sini.
- *
- * | view           | bentuk    | alasan                                              |
- * | -------------- | --------- | --------------------------------------------------- |
- * | `event`        | `poster`  | acara dijual lewat posternya, bukan lewat judul saja |
- * | `course`       | `poster`  | katalog kelas selalu memajang sampul dan harga       |
- * | `order`        | `menu`    | menu dibaca sekilas dan berdampingan, bukan berderet |
- * | `psychometric` | `job`     | lowongan dibaca seperti di job portal: logo, posisi, |
- * |                |           | keterangan singkat, lalu tombol melamar              |
- * | `freelance`    | `project` | papan proyek: anggaran dulu, baru pekerjaannya       |
- * | lainnya        | `list`    | ujian dan survei dibaca berurutan seperti daftar     |
- */
 const getLayout = (view: FormsTemplateView) => {
   if (view === 'event' || view === 'course') return 'poster'
   if (view === 'order') return 'menu'
@@ -46,12 +29,6 @@ const getLayout = (view: FormsTemplateView) => {
   return 'list'
 }
 
-/**
- * Umur lowongan, ditulis seperti di job portal.
- *
- * Pelamar memakai ini untuk menakar peluang: lowongan yang baru dibuka masih
- * sepi pesaing, yang sudah sebulan biasanya sudah menutup diri diam-diam.
- */
 const getPostedText = (createdAt: string) => {
   const days = Math.floor(
     (Date.now() - new Date(createdAt).getTime()) / 86400000
@@ -65,17 +42,6 @@ const getPostedText = (createdAt: string) => {
   return `${months} BULAN LALU`
 }
 
-/**
- * Keterangan kartu yang dipisah jadi chip.
- *
- * Papan lowongan dan papan proyek sama-sama memajang lokasi, bentuk kerja,
- * durasi, dan tingkat pengalaman sebagai potongan pendek yang bisa dipindai
- * sekilas — bukan sebagai kalimat yang harus dibaca sampai habis. Semuanya
- * tidak punya kolom sendiri di basis data, jadi diambil dari kepala deskripsi:
- * ruas-ruas yang dipisah "·" sampai kalimat pertama berakhir. Deskripsi yang
- * tidak menuruti bentuk itu ditinggal utuh sebagai paragraf, jadi form buatan
- * siapa pun tetap aman.
- */
 const getCardDetail = (description: string) => {
   const parts = description
     .split('·')
@@ -118,18 +84,15 @@ export default function FormsExplore({ templateId }: Props) {
         id: item.id,
         title: item.title,
         description: item.description,
-        bannerUrl: item.bannerUrl,
-        priceText: getPriceText(item.priceAmount),
-        isPaid: item.priceAmount > 0,
+        image: item.image,
+        priceText: getPriceText(item.price),
+        isPaid: item.price > 0,
         postedText: getPostedText(item.createdAt),
-        // Judul kartu dipangkas supaya barisannya rata, jadi judul utuhnya
-        // disediakan lewat tooltip bawaan peramban. Hanya judulnya — keterangan
-        // sudah terbaca di kartunya sendiri.
         tooltip: item.title,
         tags: detail.tags,
         summary: detail.text,
-        totalField: item.totalField,
-        totalResponse: item.totalResponse,
+        totalFields: item.totalFields,
+        totalResponses: item.totalResponses,
       }
     }
 
@@ -147,8 +110,6 @@ export default function FormsExplore({ templateId }: Props) {
       layout: getLayout(view),
       isLoading,
       isError: formsPublic.status === 'error',
-      // Kategori yang tidak dikenal diperlakukan sebagai kosong, bukan gagal —
-      // yang keliru alamatnya, bukan servernya.
       isEmpty: isUnknown || (!isLoading && !mappedList.length),
       heading: isUnknown ? 'Kategori Tidak Dikenal' : copy.heading,
       lead: isUnknown ? '' : copy.lead,
@@ -212,27 +173,18 @@ export default function FormsExplore({ templateId }: Props) {
               fieldLabel={data.fieldLabel}
             />
           ) : data.layout === 'job' ? (
-            // Papan lowongan: tiap kartu memuat logo perusahaan, posisi, umur
-            // lowongan, lalu tombol melamar — sama seperti di job portal. Tiga
-            // kolom di layar lebar, sebaris dengan poster dan menu, supaya
-            // pelamar bisa memindai banyak posisi tanpa menggulir jauh.
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.data.map((form) => (
                 <Link
                   key={form.id}
                   href={`/forms/${form.id}`}
-                  // min-w-0 wajib, alasannya sama seperti di papan proyek:
-                  // tanpa itu baris chip yang tidak melipat menetapkan lebar
-                  // minimum kartu, dan halamannya ikut melebar.
                   className="group flex min-w-0 flex-col gap-4 border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
                 >
                   <div className="flex items-start gap-4">
-                    {/* Logo perusahaan kalau diunggah; kalau tidak, lambang
-                        posisi supaya barisan kartunya tetap sejajar. */}
                     <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border-2 border-foreground bg-muted">
-                      {form.bannerUrl ? (
+                      {form.image ? (
                         <Image
-                          src={form.bannerUrl}
+                          src={form.image}
                           alt={`Logo ${form.title}`}
                           fill
                           unoptimized
@@ -245,10 +197,6 @@ export default function FormsExplore({ templateId }: Props) {
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      {/* Judul lowongan memuat posisi sekaligus perusahaan,
-                          jadi ukurannya ditahan lebih kecil dari kartu lain
-                          dan dipotong di baris kedua — kalau tidak, satu judul
-                          panjang mendorong sisa kartunya turun sendirian. */}
                       <h2
                         title={form.tooltip}
                         className="line-clamp-2 break-words font-display text-base font-black uppercase leading-tight tracking-tight sm:text-lg"
@@ -262,13 +210,7 @@ export default function FormsExplore({ templateId }: Props) {
                     </div>
                   </div>
 
-                  {/* Chip dibiarkan satu baris dan digeser ke samping, bukan
-                      dilipat: kartunya sempit, dan chip yang melipat membuat
-                      tinggi tiap kartu berbeda-beda tergantung panjang nama
-                      kotanya. */}
                   <div className="brutal-scroll-thin flex gap-2 overflow-x-auto pb-1">
-                    {/* Yang wajib diketahui pelamar sebelum membuka: psikotesnya
-                        dikerjakan dalam layar terkunci. */}
                     <Badge className="shrink-0 whitespace-nowrap">
                       Psikotes Terkunci
                     </Badge>
@@ -291,18 +233,16 @@ export default function FormsExplore({ templateId }: Props) {
 
                   <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
                     <FormsFacepile
-                      total={form.totalResponse}
+                      total={form.totalResponses}
                       seed={form.id}
                       label={data.countLabel}
                     />
                     <span className="brutal-eyebrow text-muted-foreground">
-                      · {String(form.totalField).padStart(2, '0')}{' '}
+                      · {String(form.totalFields).padStart(2, '0')}{' '}
                       {data.fieldLabel}
                     </span>
                   </div>
 
-                  {/* Harga tidak pernah berlaku untuk lowongan, jadi kakinya
-                      hanya berisi ajakan melamar. */}
                   <div className="flex justify-end">
                     <span className="brutal-eyebrow flex items-center gap-2 border-2 border-foreground px-3 py-2 transition-colors group-hover:bg-foreground group-hover:text-background">
                       {data.actionLabel}
@@ -338,11 +278,11 @@ export default function FormsExplore({ templateId }: Props) {
                     ) : null}
                     <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="brutal-eyebrow text-muted-foreground">
-                        {String(form.totalField).padStart(2, '0')}{' '}
+                        {String(form.totalFields).padStart(2, '0')}{' '}
                         {data.fieldLabel} ·
                       </span>
                       <FormsFacepile
-                        total={form.totalResponse}
+                        total={form.totalResponses}
                         seed={form.id}
                         label={data.countLabel}
                       />
@@ -360,9 +300,6 @@ export default function FormsExplore({ templateId }: Props) {
               ))}
             </div>
           ) : (
-            // Poster dan menu sama-sama dibaca dengan cara memindai, jadi
-            // keduanya memakai grid yang sama: dua kolom begitu muat, tiga di
-            // layar lebar. Yang membedakan tetap isinya — sampul dan harga.
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.data.map((form) => (
                 <Link
@@ -370,36 +307,18 @@ export default function FormsExplore({ templateId }: Props) {
                   href={`/forms/${form.id}`}
                   className="group flex flex-col border-2 border-foreground bg-paper transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
                 >
-                  {/* Poster acara dan sampul kelas adalah alasan orang berhenti
-                      menggulir, jadi gambarnya diberi ruang lebih dulu. */}
                   {data.layout === 'poster' ? (
                     <div className="relative min-h-32 w-full overflow-hidden border-b-2 border-foreground bg-muted">
-                      {/* Latar bergaris menutup sisa ruang saat poster tidak
-                          sebangun dengan bingkainya. */}
                       <span
                         aria-hidden
                         className="brutal-hatch absolute inset-0 opacity-20"
                       />
-                      {form.bannerUrl ? (
-                        // Bingkainya sengaja tidak dikunci ke satu perbandingan
-                        // dan tingginya mengikuti gambar: poster acara maupun
-                        // sampul kelas tampil utuh, tanpa terpotong dan tanpa
-                        // menyisakan pita kosong di kiri-kanannya.
-                        //
-                        // Memakai <img> biasa, bukan next/image, justru karena
-                        // ukuran asli banner tidak diketahui di server — dan
-                        // next/image menuntut ukuran itu ditulis di muka, yang
-                        // berarti mengarang perbandingan yang belum tentu benar.
+                      {form.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={form.bannerUrl}
-                          // Poster acara dan sampul kelas kerap memuat tanggal
-                          // dan tempat, jadi bukan gambar hiasan — namanya
-                          // disebut seperti pada halaman isi form.
+                          src={form.image}
                           alt={`Banner ${form.title}`}
                           loading="lazy"
-                          // Batas tinggi menahan poster yang sangat jangkung
-                          // supaya tidak mendorong seluruh isi kartu ke bawah.
                           className="relative block h-auto max-h-[22rem] w-full object-contain"
                         />
                       ) : null}
@@ -426,12 +345,12 @@ export default function FormsExplore({ templateId }: Props) {
 
                     <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
                       <FormsFacepile
-                        total={form.totalResponse}
+                        total={form.totalResponses}
                         seed={form.id}
                         label={data.countLabel}
                       />
                       <span className="brutal-eyebrow text-muted-foreground">
-                        · {String(form.totalField).padStart(2, '0')}{' '}
+                        · {String(form.totalFields).padStart(2, '0')}{' '}
                         {data.fieldLabel}
                       </span>
                     </div>
@@ -454,7 +373,6 @@ export default function FormsExplore({ templateId }: Props) {
           )}
         </LoadData>
 
-        {/* Placeholder LoadData tidak punya slot aksi. */}
         {data.isError ? (
           <div className="mt-6 flex justify-center">
             <Button onClick={() => fetchFormsPublic.refetch()}>Retry</Button>

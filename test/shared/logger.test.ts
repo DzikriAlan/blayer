@@ -1,6 +1,3 @@
-/**
- * @vitest-environment node
- */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { logger, resetAlertSilence } from '@/shared/lib/logger'
@@ -38,12 +35,10 @@ describe('alert kegagalan', () => {
   })
 
   it('TC-45a data yang menunjuk orang tidak ikut keluar', () => {
-    // Log tetap memuatnya; webhook mengirim ke pihak ketiga, biasanya kanal
-    // chat yang dibaca banyak orang dan disimpan tanpa kedaluwarsa.
     logger.error('gagal menyimpan jawaban', {
       route: 'responses',
       ip: '203.0.113.9',
-      respondentEmail: 'orang@contoh.test',
+      email: 'orang@contoh.test',
       errorMessage: 'timeout',
     })
 
@@ -51,13 +46,10 @@ describe('alert kegagalan', () => {
     expect(sent[0].body).not.toContain('203.0.113.9')
     expect(sent[0].body).not.toContain('orang@contoh.test')
     expect(sent[0].body).toContain('[disaring]')
-    // Yang bukan penunjuk orang tetap terkirim supaya alertnya berguna.
     expect(sent[0].body).toContain('timeout')
   })
 
   it('TC-45b insiden yang sama tidak membanjiri kanal alert', () => {
-    // Basis data yang tumbang memicu satu error per request; tanpa jeda, satu
-    // insiden mengirim ribuan pesan dan kanalnya berhenti dibaca.
     for (let index = 0; index < 50; index += 1) {
       logger.error('basis data tidak terjangkau', { attempt: index })
     }
@@ -80,8 +72,6 @@ describe('alert kegagalan', () => {
     logger.error('basis data tidak terjangkau')
     await new Promise((resolve) => setTimeout(resolve, 0))
 
-    // Kegagalannya dicatat sebagai warn. Memakai error akan memanggil pengirim
-    // alert ini lagi dan berputar tanpa henti.
     expect(console.warn).toHaveBeenCalled()
   })
 })

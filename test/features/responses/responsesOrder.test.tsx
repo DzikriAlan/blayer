@@ -15,8 +15,8 @@ const renderOrder = (props: Partial<Parameters<typeof ResponsesOrder>[0]> = {}) 
     <ResponsesOrder
       formId="form-1"
       title="Pesan Menu — Warung Blayer"
-      bannerUrl=""
-      respondentName="Bagas Wicaksono"
+      image=""
+      name="Bagas Wicaksono"
       items={ITEMS}
       amount={64000}
       paymentMethod="QRIS"
@@ -71,8 +71,8 @@ describe('struk pesanan', () => {
       <ResponsesOrder
         formId="form-1"
         title="Pesan Menu — Warung Blayer"
-        bannerUrl="/menu-nasi-goreng.svg"
-        respondentName="Bagas Wicaksono"
+        image="/menu-nasi-goreng.svg"
+        name="Bagas Wicaksono"
         items={ITEMS}
         amount={64000}
         paymentMethod="QRIS"

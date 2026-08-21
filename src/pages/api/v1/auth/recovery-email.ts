@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { getSiteUrl } from '@/shared/lib/siteUrl'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import { getAuthGuard } from '@/shared/lib/authServer'
@@ -24,30 +25,40 @@ const getConfirmationHtml = (link: string) => `
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'PUT' && req.method !== 'GET') {
-    res.setHeader('Allow', ['GET', 'PUT'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
+    return sendMethodNotAllowed(res, req.method, ['GET', 'PUT'])
   }
 
   const user = await getAuthGuard(req, res)
   if (!user) return
 
   if (!isSupabaseReady || !supabase) {
-    return res.status(503).json({ message: getSupabaseSetupMessage() })
+    return sendFailure(res, {
+      status: 503,
+      message: getSupabaseSetupMessage(),
+      errors: [{ code: 'SERVICE_UNAVAILABLE', field: '', message: getSupabaseSetupMessage() }],
+    })
   }
 
   const { data: account, error: accountError } =
     await supabase.auth.admin.getUserById(user.id)
 
   if (accountError || !account.user) {
-    return res.status(404).json({ message: 'Akun tidak ditemukan.' })
+    return sendFailure(res, {
+      status: 404,
+      message: 'Akun tidak ditemukan.',
+      errors: [{ code: 'ACCOUNT_NOT_FOUND', field: '', message: 'Akun tidak ditemukan.' }],
+    })
   }
 
   const meta = (account.user.user_metadata ?? {}) as RecoveryMetadata
 
   if (req.method === 'GET') {
-    return res.status(200).json({
-      recoveryEmail: meta.recoveryEmail ?? '',
-      isVerified: !!meta.isRecoveryEmailVerified,
+    return sendSuccess(res, {
+      message: 'Status alamat pemulihan berhasil dimuat',
+      data: {
+        email: meta.recoveryEmail ?? '',
+        isVerified: !!meta.isRecoveryEmailVerified,
+      },
     })
   }
 
@@ -65,16 +76,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { email, password } = req.body as { email?: string; password?: string }
 
   const problem = getRecoveryEmailProblem(email ?? '', USERNAME_DOMAIN)
-  if (problem) return res.status(400).json({ message: problem })
-
-  if (!password) {
-    return res.status(400).json({ message: 'Kata sandi saat ini wajib diisi.' })
+  if (problem) {
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'INVALID_EMAIL', field: 'email', message: problem }],
+    })
   }
 
-  // Kata sandi diminta ulang di sini, bukan sekadar sesi yang sah. Sesi yang
-  // sempat dipakai orang lain — perangkat yang tertinggal terbuka — bisa
-  // memindahkan alamat pemulihan ke alamat penyerang dan menjadikan
-  // pengambilalihannya permanen.
+  if (!password) {
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'PASSWORD_REQUIRED', field: 'password', message: 'Kata sandi saat ini wajib diisi.' }],
+    })
+  }
+
   const checker = createClient(
     (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim(),
     (
@@ -91,19 +108,28 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   })
 
   if (passwordError) {
-    return res.status(403).json({ message: 'Kata sandi saat ini salah.' })
+    return sendFailure(res, {
+      status: 403,
+      message: 'Kata sandi saat ini salah.',
+      errors: [{ code: 'PASSWORD_INCORRECT', field: 'password', message: 'Kata sandi saat ini salah.' }],
+    })
   }
 
   if (!isMailerReady()) {
-    return res.status(503).json({ message: getMailerSetupMessage() })
+    return sendFailure(res, {
+      status: 503,
+      message: getMailerSetupMessage(),
+      errors: [{ code: 'MAILER_UNAVAILABLE', field: '', message: getMailerSetupMessage() }],
+    })
   }
 
   const siteUrl = getSiteUrl(req)
 
   if (!siteUrl) {
-    return res.status(503).json({
-      message:
-        'Tautan konfirmasi belum bisa dibuat — NEXT_PUBLIC_SITE_URL belum diisi di server.',
+    return sendFailure(res, {
+      status: 503,
+      message: 'Tautan konfirmasi belum bisa dibuat — NEXT_PUBLIC_SITE_URL belum diisi di server.',
+      errors: [{ code: 'SITE_URL_MISSING', field: '', message: 'Konfigurasi server belum lengkap.' }],
     })
   }
 
@@ -113,8 +139,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     user_metadata: {
       ...account.user.user_metadata,
       recoveryEmail: (email ?? '').trim().toLowerCase(),
-      // Belum terbukti bisa dibuka sampai tautannya diklik. Alamat yang salah
-      // ketik akan tampak tersimpan padahal tidak akan pernah menerima apa pun.
       isRecoveryEmailVerified: false,
       recoveryTokenHash: hash,
       recoveryTokenExpiresAt: Date.now() + RECOVERY_TOKEN_TTL_MS,
@@ -122,7 +146,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   })
 
   if (updateError) {
-    return res.status(500).json({ message: updateError.message })
+    return sendFailure(res, {
+      status: 500,
+      message: updateError.message,
+      errors: [{ code: 'UPDATE_FAILED', field: '', message: updateError.message }],
+    })
   }
 
   const link = `${siteUrl}/api/v1/auth/recovery-email/confirm?uid=${user.id}&token=${token}`
@@ -134,14 +162,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   })
 
   if (!sent.isSent) {
-    return res.status(502).json({
+    return sendFailure(res, {
+      status: 502,
       message: `Alamat tersimpan, tetapi surat konfirmasi gagal terkirim: ${sent.error}`,
+      errors: [{ code: 'MAIL_SEND_FAILED', field: '', message: sent.error }],
     })
   }
 
-  return res.status(200).json({
-    recoveryEmail: (email ?? '').trim().toLowerCase(),
-    isVerified: false,
+  return sendSuccess(res, {
+    message: 'Alamat pemulihan tersimpan, surat konfirmasi terkirim',
+    data: { email: (email ?? '').trim().toLowerCase(), isVerified: false },
   })
 }
 

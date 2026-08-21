@@ -1,18 +1,3 @@
-/**
- * @vitest-environment node
- *
- * Benchmark paginasi terhadap basis data sungguhan.
- *
- * Sengaja tidak ikut berjalan di `npm test`. Ia menulis puluhan ribu baris,
- * jadi hanya dijalankan dengan sengaja ke basis data sekali pakai:
- *
- *   BENCHMARK_DATABASE_URL=postgresql://... npx vitest run test/benchmark
- *
- * Versi sebelumnya memotong array JavaScript di memori dan memastikan itu
- * selesai di bawah 50ms. Angkanya selalu hijau — bahkan kalau paginasi,
- * index, dan basis datanya dihapus seluruhnya — sehingga yang dihasilkannya
- * bukan bukti melainkan rasa aman yang keliru.
- */
 import { PrismaClient } from '@prisma/client'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -23,9 +8,6 @@ const TOTAL = 10_000
 const PAGE = 50
 
 run('benchmark paginasi cursor', () => {
-  // Dibuat di dalam beforeAll, bukan di badan describe: `describe.skip` tetap
-  // mengeksekusi callback-nya untuk mengumpulkan daftar tes, sehingga klien
-  // yang dibangun di sini akan meledak walau tesnya dilewati.
   let prisma: PrismaClient
   let formId = ''
 
@@ -45,7 +27,7 @@ run('benchmark paginasi cursor', () => {
     await prisma.formResponse.createMany({
       data: Array.from({ length: TOTAL }, (_, index) => ({
         formId,
-        respondentName: `Peserta ${index}`,
+        name: `Peserta ${index}`,
         answers: { catatan: 'jawaban benchmark' },
       })),
     })
@@ -83,9 +65,6 @@ run('benchmark paginasi cursor', () => {
       pages += 1
     }
 
-    // Pembanding: halaman yang sama diambil dengan OFFSET. Inilah yang
-    // membedakan keduanya — OFFSET harus memindai dan membuang semua baris
-    // sebelumnya, cursor langsung meloncat lewat index.
     const offsetStart = performance.now()
     await prisma.formResponse.findMany({
       where: { formId },
@@ -103,9 +82,6 @@ run('benchmark paginasi cursor', () => {
       ].join('\n')
     )
 
-    // Inti paginasi cursor: biaya per halaman tidak tumbuh mengikuti posisi.
-    // OFFSET melambat linear di sini. Ambangnya longgar karena mesin CI
-    // berisik; yang dicari adalah pertumbuhan linear, bukan selisih milidetik.
     expect(pages).toBeGreaterThan(10)
     expect(last.ms).toBeLessThan(first.ms * 5 + 50)
   }, 300_000)

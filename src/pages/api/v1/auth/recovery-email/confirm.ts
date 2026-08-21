@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import { getSupabaseSetupMessage, isSupabaseReady, supabase } from '@/shared/lib/supabase'
 import {
@@ -9,16 +10,9 @@ import {
   type RecoveryMetadata,
 } from '@/shared/lib/recoveryEmail'
 
-/**
- * Menutup pendaftaran alamat pemulihan.
- *
- * Dibuka dari tautan di surat, jadi jawabannya berupa pengalihan ke halaman
- * akun — bukan JSON, yang akan tampil sebagai teks mentah di peramban.
- */
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
+    return sendMethodNotAllowed(res, req.method, ['GET'])
   }
 
   if (
@@ -32,7 +26,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (!isSupabaseReady || !supabase) {
-    return res.status(503).json({ message: getSupabaseSetupMessage() })
+    return sendFailure(res, {
+      status: 503,
+      message: getSupabaseSetupMessage(),
+      errors: [{ code: 'SERVICE_UNAVAILABLE', field: '', message: getSupabaseSetupMessage() }],
+    })
   }
 
   const uid = String(req.query.uid ?? '')
@@ -56,8 +54,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     user_metadata: {
       ...data.user.user_metadata,
       isRecoveryEmailVerified: true,
-      // Token dibuang setelah dipakai, supaya tautan yang sama tidak bisa
-      // dipakai ulang kalau suratnya bocor di kemudian hari.
       recoveryTokenHash: null,
       recoveryTokenExpiresAt: null,
     },

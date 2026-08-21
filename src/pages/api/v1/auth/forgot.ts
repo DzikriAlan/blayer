@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import { getSupabaseSetupMessage, isSupabaseReady, supabase } from '@/shared/lib/supabase'
 import { getEmailFromUsername, getUsernameProblem } from '@/shared/lib/authIdentity'
@@ -9,17 +10,11 @@ import { logger } from '@/shared/lib/logger'
 import { getSiteUrl } from '@/shared/lib/siteUrl'
 import type { RecoveryMetadata } from '@/shared/lib/recoveryEmail'
 
-/**
- * Jawaban yang sama untuk semua keadaan.
- *
- * Username terdaftar atau tidak, punya alamat pemulihan atau tidak, suratnya
- * terkirim atau gagal — pemanggil menerima kalimat yang sama. Perbedaan sekecil
- * apa pun di sini bisa dipakai untuk memetakan akun mana yang ada.
- */
-const SAME_ANSWER = {
-  message:
-    'Kalau username itu terdaftar dan punya alamat pemulihan yang sudah dikonfirmasi, tautan pemulihan sudah dikirim ke alamat tersebut.',
-}
+const SAME_MESSAGE =
+  'Kalau username itu terdaftar dan punya alamat pemulihan yang sudah dikonfirmasi, tautan pemulihan sudah dikirim ke alamat tersebut.'
+
+const sendSameAnswer = (res: NextApiResponse) =>
+  sendSuccess(res, { message: SAME_MESSAGE, data: null })
 
 const getRecoveryHtml = (link: string) => `
   <p>Ada permintaan pemulihan kata sandi untuk akun Blayer-mu.</p>
@@ -30,8 +25,7 @@ const getRecoveryHtml = (link: string) => `
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
+    return sendMethodNotAllowed(res, req.method, ['POST'])
   }
 
   if (
@@ -46,13 +40,21 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const { username } = req.body as { username?: string }
 
-  // Bentuk username yang jelas keliru tetap ditolak, karena itu tidak
-  // membocorkan apa pun tentang akun yang ada.
   const problem = getUsernameProblem(username ?? '')
-  if (problem) return res.status(400).json({ message: problem })
+  if (problem) {
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'INVALID_USERNAME_FORMAT', field: 'username', message: problem }],
+    })
+  }
 
   if (!isSupabaseReady || !supabase) {
-    return res.status(503).json({ message: getSupabaseSetupMessage() })
+    return sendFailure(res, {
+      status: 503,
+      message: getSupabaseSetupMessage(),
+      errors: [{ code: 'SERVICE_UNAVAILABLE', field: '', message: getSupabaseSetupMessage() }],
+    })
   }
 
   const loginEmail = getEmailFromUsername(username ?? '')
@@ -60,38 +62,32 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 })
   if (error) {
     logger.error('pemulihan gagal membaca daftar akun', { errorMessage: error.message })
-    return res.status(200).json(SAME_ANSWER)
+    return sendSameAnswer(res)
   }
 
   const account = data.users.find((item) => item.email === loginEmail)
   const meta = (account?.user_metadata ?? {}) as RecoveryMetadata
 
   if (!account || !meta.recoveryEmail || !meta.isRecoveryEmailVerified) {
-    return res.status(200).json(SAME_ANSWER)
+    return sendSameAnswer(res)
   }
 
   if (!isMailerReady()) {
     logger.error('pemulihan tidak bisa mengirim surat', {
       alasan: 'RESEND_API_KEY kosong',
     })
-    return res.status(200).json(SAME_ANSWER)
+    return sendSameAnswer(res)
   }
 
   const siteUrl = getSiteUrl(req)
 
   if (!siteUrl) {
-    // Tanpa alamat tepercaya, tautannya hanya bisa dibangun dari header Host
-    // yang dikirim pemanggil — dan tautan pemulihan menuju domain penyerang
-    // lebih berbahaya daripada tidak ada surat sama sekali.
     logger.error('pemulihan dibatalkan', {
       alasan: 'NEXT_PUBLIC_SITE_URL belum diisi di produksi',
     })
-    return res.status(200).json(SAME_ANSWER)
+    return sendSameAnswer(res)
   }
 
-  // Tautan dibuat, bukan dikirim, oleh Supabase. Alamat login akun ini sintetis
-  // sehingga surat dari Supabase tidak akan pernah sampai; yang mengirim ke
-  // alamat pemulihan adalah aplikasi ini sendiri.
   const { data: linkData, error: linkError } =
     await supabase.auth.admin.generateLink({
       type: 'recovery',
@@ -103,7 +99,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     logger.error('pemulihan gagal membuat tautan', {
       errorMessage: linkError?.message ?? 'tautan kosong',
     })
-    return res.status(200).json(SAME_ANSWER)
+    return sendSameAnswer(res)
   }
 
   const sent = await sendMail({
@@ -116,7 +112,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     logger.error('pemulihan gagal mengirim surat', { errorMessage: sent.error })
   }
 
-  return res.status(200).json(SAME_ANSWER)
+  return sendSameAnswer(res)
 }
 
 export default withApi('auth-forgot', handler)

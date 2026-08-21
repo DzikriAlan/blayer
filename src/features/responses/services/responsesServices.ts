@@ -1,5 +1,6 @@
 import { fetchPages } from '@/shared/lib/fetchPages'
 import type {
+  DataResponses,
   DataResponsesList,
   DataResponsesListItem,
   PayloadGetResponsesList,
@@ -7,6 +8,7 @@ import type {
 } from '../types/responsesTypes'
 import { getAuthHeaders } from '@/shared/lib/authClient'
 import { throwApiError } from '@/shared/lib/httpError'
+import { getApiData } from '@/shared/lib/apiClient'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
@@ -18,7 +20,7 @@ export const postResponses = async (payload: PayloadPostResponses) => {
       body: JSON.stringify(payload),
     })
     if (!res.ok) await throwApiError(res)
-    return res.json()
+    return getApiData<DataResponses>(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -37,17 +39,21 @@ export const getResponsesList = async (payload: PayloadGetResponsesList) => {
     )
     if (!res.ok) await throwApiError(res)
 
-    return (await res.json()) as DataResponsesList & {
-      nextCursor: string | null
-      hasMore: boolean
+    const json = (await res.json()) as {
+      data: DataResponsesList
+      meta?: { pagination?: { next_cursor: string | null; has_more: boolean } }
+    }
+
+    return {
+      ...json.data,
+      nextCursor: json.meta?.pagination?.next_cursor ?? null,
+      hasMore: !!json.meta?.pagination?.has_more,
     }
   }
 
   try {
     const first = await loadPage(null)
 
-    // Statistik di dashboard dihitung dari seluruh jawaban, jadi halamannya
-    // diikuti sampai habis; yang dibatasi adalah tiap kueri, bukan hasilnya.
     const rest = first.hasMore
       ? await fetchPages<DataResponsesListItem>(async (cursor) => {
           const page = await loadPage(cursor ?? first.nextCursor)
