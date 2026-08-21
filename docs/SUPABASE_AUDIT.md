@@ -45,6 +45,11 @@ terpengaruh karena Prisma menyambung sebagai `postgres` yang ber-`BYPASSRLS`.
 
 ### Tabel di luar skema Prisma
 
-- [ ] Tabel `tasks` ada di skema `public` tetapi tidak dikenal Prisma dan tidak
-  dipakai aplikasi. RLS-nya masih mati, jadi ia terbaca lewat anon key. Pastikan
-  isinya bukan data sungguhan, lalu hapus tabelnya atau nyalakan RLS-nya.
+Tabel `tasks` ada di skema `public` tetapi tidak dikenal Prisma dan tidak dipakai
+aplikasi ini. Isinya kosong (0 baris, diperiksa 20 Agustus 2026), dan RLS-nya
+sudah dinyalakan lewat migrasi `20260820040000_tasks_rls`.
+
+- [ ] Putuskan apakah tabel itu masih diperlukan. Kalau tidak, hapus. Selama ia
+  ada tetapi tidak ada di `schema.prisma`, `prisma migrate dev` akan menawarkan
+  untuk menghapusnya — dan itu berarti perintah rutin bisa membuang tabel milik
+  pekerjaan lain tanpa disengaja.
