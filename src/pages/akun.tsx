@@ -54,8 +54,6 @@ const Akun: NextPage = () => {
   }, [])
 
   useEffect(() => {
-    // Dibungkus supaya panggilannya jelas asinkron: hasilnya menyusul, bukan
-    // setState yang berjalan langsung di badan effect.
     const load = async () => {
       await loadStatus()
     }
@@ -63,9 +61,6 @@ const Akun: NextPage = () => {
     load()
   }, [loadStatus])
 
-  // Pesan dari tautan konfirmasi diturunkan saat render, tidak disimpan sebagai
-  // state. Menyalin nilai yang sudah ada di URL ke dalam state hanya menambah
-  // satu render dan satu sumber kebenaran kedua yang bisa menyimpang.
   const confirmNotice = router.isReady
     ? CONFIRM_MESSAGE[String(router.query.pemulihan ?? '')] ?? ''
     : ''

@@ -4,14 +4,6 @@ interface Props {
   tag: string
   title: string
   description?: string
-  /**
-   * `display` untuk kalimat tetap yang memang ditulis besar dan sudah
-   * dipatahkan sendiri per baris, mis. "Build it.\nRank it".
-   *
-   * `content` untuk judul yang datang dari pengguna. Panjangnya tidak bisa
-   * ditebak, dan pada ukuran display satu judul form bisa memakan seluruh
-   * layar sebelum isinya sempat terlihat.
-   */
   size?: 'display' | 'content'
   className?: string
 }

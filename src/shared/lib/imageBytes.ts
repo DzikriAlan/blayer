@@ -1,11 +1,3 @@
-/**
- * Menentukan tipe gambar dari isi berkasnya.
- *
- * `contentType` dan nama berkas dikirim oleh klien, jadi keduanya hanya klaim:
- * apa pun bisa diberi label `image/png`. Yang menentukan bagaimana sebuah berkas
- * diperlakukan nanti adalah byte di dalamnya, jadi byte itulah yang diperiksa.
- */
-
 const startsWith = (buffer: Buffer, bytes: number[], offset = 0) =>
   bytes.every((byte, index) => buffer[offset + index] === byte)
 
@@ -51,8 +43,4 @@ const EXTENSIONS: Record<string, string> = {
   'image/avif': 'avif',
 }
 
-/**
- * Ekstensi diturunkan dari tipe yang terbaca, bukan dari nama berkas kiriman,
- * supaya nama di penyimpanan tidak pernah bertentangan dengan isinya.
- */
 export const getImageExtension = (type: string) => EXTENSIONS[type] ?? ''

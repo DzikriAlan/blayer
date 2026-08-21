@@ -31,13 +31,6 @@ interface Props {
   children: React.ReactNode
 }
 
-/**
- * Rangka halaman publik.
- *
- * Berbeda dari PageShell yang memakai rail samping dan kolom sempit untuk
- * bekerja di dalam aplikasi, rangka ini mengikuti bentuk landing page biasa —
- * navbar, isi selebar layar, lalu footer.
- */
 export default function LandingShell({ className, children }: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-background">

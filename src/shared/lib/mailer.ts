@@ -47,8 +47,6 @@ export const sendMail = async ({ to, subject, html, text }: MailPayload) => {
   })
 
   if (error) {
-    // Alamat tujuan tidak ikut dicatat: log ini bisa berakhir di agregator
-    // pihak ketiga, dan alamat surat menunjuk orang.
     logger.error('pengiriman surat gagal', {
       subject,
       errorMessage: error.message,

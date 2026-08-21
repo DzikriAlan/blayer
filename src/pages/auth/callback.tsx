@@ -7,12 +7,6 @@ import { LoadData } from '@/shared/components/load-data'
 import { useAuthStates } from '@/features/auth/states/authStates'
 import { useAuthControllers } from '@/features/auth/controllers/authControllers'
 
-/**
- * Halaman pendaratan setelah Google.
- *
- * Client Supabase membaca sendiri kode yang menempel di URL, jadi halaman ini
- * hanya menunggu sesi terbaca lalu meneruskan ke tujuan yang tadi dititipkan.
- */
 const AuthCallback: NextPage = () => {
   const router = useRouter()
   const { authSession } = useAuthStates()
@@ -25,7 +19,6 @@ const AuthCallback: NextPage = () => {
       return next
     }
 
-    // Google ikut menempelkan `error` di URL bila pengguna membatalkan izin.
     const isRejected = typeof router.query.error === 'string'
 
     return {
@@ -44,8 +37,6 @@ const AuthCallback: NextPage = () => {
     if (!router.isReady) return
     if (data.isChecking || data.isFailed) return
 
-    // Halaman callback tidak boleh tersimpan di riwayat — tombol back mesti
-    // mengembalikan pengguna ke halaman sebelum login, bukan ke sini.
     router.replace(data.isSignedIn ? data.next : '/login')
   }, [router, data.isChecking, data.isFailed, data.isSignedIn, data.next])
 

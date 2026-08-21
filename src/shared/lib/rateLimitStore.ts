@@ -2,9 +2,7 @@ import { prisma } from './prisma'
 import { logger } from './logger'
 
 export interface RateLimitHit {
-  /** Berapa permintaan yang sudah tercatat di jendela ini, termasuk yang barusan. */
   total: number
-  /** Waktu permintaan tertua yang masih hidup, dipakai menghitung Retry-After. */
   oldest: number
 }
 
@@ -17,14 +15,6 @@ export interface RateLimitStore {
 
 const MAX_KEY = 10_000
 
-/**
- * Penyimpanan dalam memori proses.
- *
- * Hanya benar kalau aplikasinya berjalan sebagai satu proses. Di platform
- * serverless setiap instance punya salinan sendiri dan isinya hilang saat cold
- * start, sehingga batasnya bisa dilewati dengan memaksa instance baru — itu
- * sebabnya penyimpanan bersama dipakai begitu kredensialnya tersedia.
- */
 export const createMemoryStore = (): RateLimitStore => {
   const hits = new Map<string, number[]>()
 
@@ -71,16 +61,6 @@ interface UpstashConfig {
   token: string
 }
 
-/**
- * Penyimpanan bersama lewat Upstash Redis REST.
- *
- * REST dipilih supaya tidak ada koneksi TCP yang harus dijaga hidup di
- * lingkungan serverless, dan supaya tidak ada dependensi baru: cukup fetch.
- *
- * Jendelanya sliding log memakai sorted set, bukan penghitung jendela tetap,
- * supaya batasnya tidak bisa dilipatduakan dengan menembak tepat di pergantian
- * jendela.
- */
 export const createUpstashStore = ({
   url,
   token,
@@ -129,30 +109,16 @@ export const createUpstashStore = ({
     },
 
     async clear() {
-      // Sengaja tidak menghapus apa pun: kunci di penyimpanan bersama dipakai
-      // instance lain, dan ini hanya dipanggil oleh tes.
     },
   }
 }
 
-/**
- * Penyimpanan bersama di Postgres yang sudah dipakai aplikasi.
- *
- * Dipilih ketika tidak ada Redis: di platform serverless memori proses hilang
- * setiap cold start dan tidak dibagi antar-instance, sehingga batas yang
- * disangka aktif sebenarnya bisa dilewati dengan memaksa instance baru.
- *
- * Biayanya satu transaksi kecil per permintaan yang melewati rate limit, dan
- * itu memang harga yang dibayar untuk tidak menambah layanan baru.
- */
 export const createPrismaStore = (): RateLimitStore => ({
   name: 'postgres',
 
   async add(key, now, windowMs) {
     const cutoff = new Date(now - windowMs)
 
-    // Satu transaksi, supaya hitungannya sudah memuat jejak yang barusan
-    // ditulis dan tidak terpengaruh permintaan lain yang berjalan bersamaan.
     const [, , total, oldest] = await prisma.$transaction([
       prisma.rateLimitHit.deleteMany({ where: { key, stamp: { lt: cutoff } } }),
       prisma.rateLimitHit.create({ data: { key, stamp: new Date(now) } }),
@@ -163,9 +129,6 @@ export const createPrismaStore = (): RateLimitStore => ({
       }),
     ])
 
-    // Kunci yang tidak pernah dikunjungi lagi tidak akan terhapus oleh jalur di
-    // atas, jadi sesekali seluruh jejak lama dibersihkan. Dijalankan acak
-    // supaya tidak ada satu permintaan pun yang selalu menanggung biayanya.
     if (Math.random() < 0.01) {
       const stale = new Date(now - 24 * 60 * 60_000)
       await prisma.rateLimitHit
@@ -210,16 +173,6 @@ const readConfig = (): UpstashConfig | null => {
 
 let store: RateLimitStore | null = null
 
-/**
- * Memilih penyimpanan.
- *
- * Urutannya disengaja. Redis dipakai kalau ada. Kalau tidak, Postgres — bukan
- * memori — karena di produksi target aplikasinya serverless, dan memori proses
- * di sana bukan sekadar kurang optimal melainkan tidak berlaku sama sekali.
- *
- * Memori hanya dipakai di luar produksi, tempat aplikasinya satu proses dan
- * tesnya tidak boleh menyentuh basis data.
- */
 export const getRateLimitStore = () => {
   if (store) return store
 
@@ -233,8 +186,6 @@ export const getRateLimitStore = () => {
   else store = createMemoryStore()
 
   if (store.name === 'memory' && process.env.NODE_ENV === 'production') {
-    // Hanya tercapai lewat RATE_LIMIT_STORE=memory yang disetel sengaja, dan
-    // di produksi itu berarti batasnya tidak berlaku lintas instance.
     logger.warn('rate limit memakai memori proses', {
       dampak: 'batas tidak berlaku lintas instance',
     })
