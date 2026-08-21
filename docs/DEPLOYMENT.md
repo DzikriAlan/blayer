@@ -34,6 +34,22 @@ sehingga satu pengunjung bisa menghabiskan kuota pengunjung lain. Diisi terlalu
 besar juga berbahaya: header itu ditulis klien, dan menghitung terlalu jauh ke
 kiri membuat alamat karangan ikut dipercaya.
 
+## Pengiriman surat — wajib untuk pemulihan akun
+
+```
+RESEND_API_KEY=re_xxx
+MAIL_FROM=noreply@domainmu.com
+```
+
+`MAIL_FROM` baru bisa diisi setelah domainnya diverifikasi di dashboard Resend.
+Sebelum itu, pengirimnya jatuh ke `onboarding@resend.dev`, dan alamat percobaan
+Resend hanya boleh mengirim ke alamat pemilik akun Resend itu sendiri —
+**belum ada domain terverifikasi di akun ini** (dicek lewat `GET /domains`).
+
+Artinya sampai domain diverifikasi, tautan pemulihan hanya sampai ke alamatmu
+sendiri, bukan ke pengguna lain. Itu cukup untuk menguji alurnya, tidak cukup
+untuk dibuka ke publik.
+
 ## Alert kegagalan — opsional
 
 ```
