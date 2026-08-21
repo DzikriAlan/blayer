@@ -59,11 +59,9 @@ export default function AuthAccount({ tone = 'light' }: Props) {
       <Link
         href="/akun"
         aria-label={`Akun ${data.name}`}
-        className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-current font-mono text-sm font-bold transition-colors hover:bg-current"
+        className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-current font-mono text-sm font-bold transition-colors hover:border-primary hover:text-primary"
       >
-        <span aria-hidden className="mix-blend-difference">
-          {data.initial}
-        </span>
+        <span aria-hidden>{data.initial}</span>
       </Link>
       <Button
         type="button"
