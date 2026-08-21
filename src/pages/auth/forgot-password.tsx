@@ -7,25 +7,37 @@ import { LoaderCircle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { postAuthForgotPassword } from '@/features/auth/services/authServices'
 
 const ForgotPassword: NextPage = () => {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [isPending, setIsPending] = useState(false)
   const [isSent, setIsSent] = useState(false)
+  const [sentMessage, setSentMessage] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!username.trim()) return
 
     setIsPending(true)
     setErrorMsg('')
     try {
-      await postAuthForgotPassword(email.trim())
+      const res = await fetch('/api/v1/auth/forgot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim() }),
+      })
+      const json = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setErrorMsg(json?.message ?? 'Gagal memproses permintaan.')
+        return
+      }
+
+      setSentMessage(json?.message ?? '')
       setIsSent(true)
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Gagal mengirim email pemulihan.')
+    } catch {
+      setErrorMsg('Gagal menghubungi server.')
     } finally {
       setIsPending(false)
     }
@@ -49,10 +61,10 @@ const ForgotPassword: NextPage = () => {
             <div className="mt-6 flex flex-col items-center gap-3 text-center">
               <CheckCircle2 className="size-12 text-primary" />
               <p className="font-mono text-sm leading-relaxed text-foreground">
-                Tautan pemulihan kata sandi telah dikirimkan ke <strong>{email}</strong>.
+                {sentMessage}
               </p>
               <p className="font-mono text-xs text-muted-foreground">
-                Silakan periksa kotak masuk atau spam email Anda.
+                Periksa kotak masuk maupun folder spam.
               </p>
               <Link href="/login" className="mt-4">
                 <Button variant="outline">Kembali ke Halaman Masuk</Button>
@@ -61,18 +73,21 @@ const ForgotPassword: NextPage = () => {
           ) : (
             <>
               <p className="mt-3 font-mono text-sm leading-relaxed text-muted-foreground sm:mt-4">
-                Masukkan alamat email terdaftar untuk menerima tautan pemulihan kata sandi.
+                Masukkan username akunmu. Tautan pemulihan dikirim ke alamat
+                email yang sudah kamu daftarkan sebagai alamat pemulihan.
               </p>
               <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="email">Email Terdaftar</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input
-                    id="email"
-                    type="email"
+                    id="username"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     required
-                    placeholder="nama@domain.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="adminblayer"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
                 </div>
 

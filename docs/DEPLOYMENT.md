@@ -57,6 +57,16 @@ Artinya sampai domain diverifikasi, tautan pemulihan hanya sampai ke alamatmu
 sendiri, bukan ke pengguna lain. Itu cukup untuk menguji alurnya, tidak cukup
 untuk dibuka ke publik.
 
+## Alamat situs — dianjurkan
+
+```
+NEXT_PUBLIC_SITE_URL=https://blayer.app
+```
+
+Dipakai membangun tautan di dalam surat pemulihan. Tanpa ini, alamatnya
+diturunkan dari header `Host` permintaan, yang bisa dipalsukan — tautan
+pemulihan lalu menunjuk ke domain penyerang.
+
 ## Alert kegagalan — opsional
 
 ```
