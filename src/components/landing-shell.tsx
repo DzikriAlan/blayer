@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
-import mark from '@/shared/images/emotblayer.png'
+import logo from '@/shared/images/logoblayer.png'
 import wordmark from '@/shared/images/blayer.png'
 import { cn } from '@/shared/lib/utils'
 import AuthAccount from '@/features/auth/components/authAccount'
@@ -42,19 +42,14 @@ export default function LandingShell({ className, children }: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b-2 border-foreground bg-paper">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-3.5 sm:px-8">
-          <Link href="/" className="flex items-center gap-3">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-2 sm:px-8">
+          <Link href="/" className="flex items-center">
             <Image
-              src={mark}
-              alt=""
-              width={40}
-              height={40}
+              src={logo}
+              alt="Blayer"
               priority
-              className="h-10 w-10 shrink-0 border-2 border-foreground"
+              className="h-14 w-auto shrink-0"
             />
-            <span className="font-display text-xl font-black uppercase leading-none tracking-tight">
-              Blayer
-            </span>
           </Link>
 
           <div className="ml-auto flex items-center gap-3">
