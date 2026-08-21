@@ -6,6 +6,7 @@ import { getSupabaseSetupMessage, isSupabaseReady, supabase } from '@/shared/lib
 import { getEmailFromUsername, getUsernameProblem } from '@/shared/lib/authIdentity'
 import { isMailerReady, sendMail } from '@/shared/lib/mailer'
 import { logger } from '@/shared/lib/logger'
+import { getSiteUrl } from '@/shared/lib/siteUrl'
 import type { RecoveryMetadata } from '@/shared/lib/recoveryEmail'
 
 /**
@@ -18,14 +19,6 @@ import type { RecoveryMetadata } from '@/shared/lib/recoveryEmail'
 const SAME_ANSWER = {
   message:
     'Kalau username itu terdaftar dan punya alamat pemulihan yang sudah dikonfirmasi, tautan pemulihan sudah dikirim ke alamat tersebut.',
-}
-
-const getBaseUrl = (req: NextApiRequest) => {
-  const configured = (process.env.NEXT_PUBLIC_SITE_URL ?? '').trim()
-  if (configured) return configured.replace(/\/+$/, '')
-
-  const proto = (req.headers['x-forwarded-proto'] as string) ?? 'http'
-  return `${proto}://${req.headers.host}`
 }
 
 const getRecoveryHtml = (link: string) => `
@@ -84,6 +77,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(200).json(SAME_ANSWER)
   }
 
+  const siteUrl = getSiteUrl(req)
+
+  if (!siteUrl) {
+    // Tanpa alamat tepercaya, tautannya hanya bisa dibangun dari header Host
+    // yang dikirim pemanggil — dan tautan pemulihan menuju domain penyerang
+    // lebih berbahaya daripada tidak ada surat sama sekali.
+    logger.error('pemulihan dibatalkan', {
+      alasan: 'NEXT_PUBLIC_SITE_URL belum diisi di produksi',
+    })
+    return res.status(200).json(SAME_ANSWER)
+  }
+
   // Tautan dibuat, bukan dikirim, oleh Supabase. Alamat login akun ini sintetis
   // sehingga surat dari Supabase tidak akan pernah sampai; yang mengirim ke
   // alamat pemulihan adalah aplikasi ini sendiri.
@@ -91,7 +96,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: loginEmail,
-      options: { redirectTo: `${getBaseUrl(req)}/auth/reset-password` },
+      options: { redirectTo: `${siteUrl}/auth/reset-password` },
     })
 
   if (linkError || !linkData.properties?.action_link) {

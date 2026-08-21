@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
 import { withApi } from '@/shared/lib/apiHandler'
+import { getSiteUrl } from '@/shared/lib/siteUrl'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import { getAuthGuard } from '@/shared/lib/authServer'
 import { getSupabaseSetupMessage, isSupabaseReady, supabase } from '@/shared/lib/supabase'
@@ -13,14 +14,6 @@ import {
   getRecoveryEmailProblem,
   type RecoveryMetadata,
 } from '@/shared/lib/recoveryEmail'
-
-const getBaseUrl = (req: NextApiRequest) => {
-  const configured = (process.env.NEXT_PUBLIC_SITE_URL ?? '').trim()
-  if (configured) return configured.replace(/\/+$/, '')
-
-  const proto = (req.headers['x-forwarded-proto'] as string) ?? 'http'
-  return `${proto}://${req.headers.host}`
-}
 
 const getConfirmationHtml = (link: string) => `
   <p>Alamat ini didaftarkan sebagai alamat pemulihan akun Blayer.</p>
@@ -105,6 +98,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(503).json({ message: getMailerSetupMessage() })
   }
 
+  const siteUrl = getSiteUrl(req)
+
+  if (!siteUrl) {
+    return res.status(503).json({
+      message:
+        'Tautan konfirmasi belum bisa dibuat — NEXT_PUBLIC_SITE_URL belum diisi di server.',
+    })
+  }
+
   const { token, hash } = createRecoveryToken()
 
   const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
@@ -123,9 +125,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(500).json({ message: updateError.message })
   }
 
-  const link = `${getBaseUrl(req)}/api/v1/auth/recovery-email/confirm?uid=${
-    user.id
-  }&token=${token}`
+  const link = `${siteUrl}/api/v1/auth/recovery-email/confirm?uid=${user.id}&token=${token}`
 
   const sent = await sendMail({
     to: (email ?? '').trim().toLowerCase(),
