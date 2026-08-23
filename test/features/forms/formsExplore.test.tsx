@@ -18,7 +18,6 @@ const setHistoryLength = (length: number) => {
   })
 }
 
-// Komponen hanya membaca katalog dari store; query-nya tidak perlu ikut jalan.
 vi.mock('@/features/forms/controllers/formsControllers', () => ({
   useFormsControllers: () => ({ fetchFormsPublic: { refetch: vi.fn() } }),
 }))
@@ -28,10 +27,10 @@ const getForm = (overrides: Record<string, unknown> = {}) => ({
   title: 'Form Satu',
   description: 'Penjelasan singkat',
   templateId: 'exam',
-  bannerUrl: '',
-  priceAmount: 0,
-  totalField: 6,
-  totalResponse: 3,
+  image: '',
+  price: 0,
+  totalFields: 6,
+  totalResponses: 3,
   createdAt: '2026-08-01T00:00:00.000Z',
   ...overrides,
 })
@@ -57,7 +56,6 @@ describe('halaman kategori', () => {
 
     render(<FormsExplore templateId="exam" />)
 
-    // Judulnya menyebut yang bisa dilakukan pengunjung, bukan nama template.
     expect(
       screen.getByRole('heading', { name: /Ujian Yang Sedang Dibuka/i, level: 1 })
     ).toBeInTheDocument()
@@ -65,7 +63,6 @@ describe('halaman kategori', () => {
     expect(screen.getByText(/06 SOAL/)).toBeInTheDocument()
     expect(screen.getByText(/03 PESERTA/)).toBeInTheDocument()
     expect(screen.getAllByText('Kerjakan Ujian').length).toBeGreaterThan(0)
-    // Daftar, bukan poster: tidak ada gambar sampul.
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
@@ -74,14 +71,12 @@ describe('halaman kategori', () => {
       getForm({
         templateId: 'event',
         title: 'Webinar Produk',
-        bannerUrl: 'https://contoh.test/banner.png',
+        image: 'https://contoh.test/banner.png',
       }),
     ])
 
     render(<FormsExplore templateId="event" />)
 
-    // Poster harus dimuat utuh — object-cover memotong tanggal dan tempat yang
-    // biasanya tercetak di tepi banner.
     expect(screen.getByRole('img')).toHaveClass('object-contain')
     expect(screen.getByText(/03 TERDAFTAR/)).toBeInTheDocument()
     expect(screen.getByText(/01 ACARA TERBUKA/)).toBeInTheDocument()
@@ -93,8 +88,8 @@ describe('halaman kategori', () => {
       getForm({
         templateId: 'course',
         title: 'Kelas Desain',
-        bannerUrl: 'https://contoh.test/kelas.png',
-        priceAmount: 150000,
+        image: 'https://contoh.test/kelas.png',
+        price: 150000,
       }),
     ])
 
@@ -106,7 +101,7 @@ describe('halaman kategori', () => {
 
   it('TC-36d menu restoran memakai satuan pilihan dan pesanan', () => {
     setCatalogue([
-      getForm({ templateId: 'restaurant', title: 'Meja 04', totalField: 5 }),
+      getForm({ templateId: 'restaurant', title: 'Meja 04', totalFields: 5 }),
     ])
 
     render(<FormsExplore templateId="restaurant" />)
@@ -121,7 +116,7 @@ describe('halaman kategori', () => {
       getForm({
         templateId: 'psychometric',
         title: 'Frontend Engineer — PT Nusantara Digital',
-        bannerUrl: 'https://contoh.test/logo.png',
+        image: 'https://contoh.test/logo.png',
         createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
       }),
     ])
@@ -136,21 +131,16 @@ describe('halaman kategori', () => {
     ).toBeInTheDocument()
     expect(screen.getByText(/01 LOWONGAN DIBUKA/)).toBeInTheDocument()
     expect(screen.getByText(/03 PELAMAR/)).toBeInTheDocument()
-    // Umur lowongan dan logo perusahaan adalah yang dipindai pelamar lebih
-    // dulu, jadi keduanya harus ada di kartunya.
     expect(screen.getByText('3 HARI LALU')).toBeInTheDocument()
     expect(screen.getByRole('img')).toHaveAttribute(
       'alt',
       'Logo Frontend Engineer — PT Nusantara Digital'
     )
     expect(screen.getAllByText('Lamar & Kerjakan').length).toBeGreaterThan(0)
-    // Judulnya dipangkas dua baris, jadi judul utuhnya tetap terbaca lewat
-    // tooltip — judulnya saja, bukan sekalian keterangannya.
     expect(screen.getByRole('heading', { level: 2 })).toHaveAttribute(
       'title',
       'Frontend Engineer — PT Nusantara Digital'
     )
-    // Lowongan tidak berharga, jadi tidak ada label "Gratis" seperti di menu.
     expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
   })
 
@@ -177,7 +167,6 @@ describe('halaman kategori', () => {
       expect(screen.getByText(tag)).toBeInTheDocument()
     })
 
-    // Kalimat setelah ruas chip tetap jadi paragraf, tidak ikut jadi chip.
     expect(screen.getByText('Psikotes menakar ketelitian.')).toBeInTheDocument()
   })
 
@@ -204,8 +193,8 @@ describe('halaman kategori', () => {
         title: 'Redesain Landing Page',
         description:
           'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Aset desain sudah tersedia.',
-        priceAmount: 4500000,
-        totalField: 7,
+        price: 4500000,
+        totalFields: 7,
       }),
     ])
 
@@ -230,7 +219,7 @@ describe('halaman kategori', () => {
       getForm({
         templateId: 'freelance',
         title: 'Penulisan Artikel SEO',
-        priceAmount: 0,
+        price: 0,
       }),
     ])
 
@@ -242,12 +231,11 @@ describe('halaman kategori', () => {
 
   it('TC-39 jumlah yang sudah ikut dipajang sebagai tumpukan wajah', () => {
     setCatalogue([
-      getForm({ templateId: 'event', title: 'Webinar Produk', totalResponse: 7 }),
+      getForm({ templateId: 'event', title: 'Webinar Produk', totalResponses: 7 }),
     ])
 
     const { container } = render(<FormsExplore templateId="event" />)
 
-    // Empat wajah ditumpuk, sisanya dihitung jadi satu gelembung angka.
     expect(container.querySelectorAll('[data-facepile-face]').length).toBe(4)
     expect(screen.getByText('+3')).toBeInTheDocument()
     expect(screen.getByText(/07 TERDAFTAR/)).toBeInTheDocument()
@@ -255,7 +243,7 @@ describe('halaman kategori', () => {
 
   it('TC-39 form yang belum diisi tidak menampilkan wajah sama sekali', () => {
     setCatalogue([
-      getForm({ templateId: 'event', title: 'Webinar Baru', totalResponse: 0 }),
+      getForm({ templateId: 'event', title: 'Webinar Baru', totalResponses: 0 }),
     ])
 
     const { container } = render(<FormsExplore templateId="event" />)
@@ -283,7 +271,6 @@ describe('halaman kategori', () => {
 
     render(<FormsExplore templateId="event" />)
 
-    // Permukaan ini untuk yang datang ikut, bukan yang datang membangun.
     expect(screen.queryByText('Use Template')).not.toBeInTheDocument()
     expect(screen.queryByText(/Buat/i)).not.toBeInTheDocument()
   })
@@ -297,20 +284,13 @@ describe('halaman kategori', () => {
   })
 })
 
-/**
- * Lebar kartu tidak bisa diperiksa di jsdom — tidak ada mesin tata letak di
- * sana. Yang dipatok di sini kelasnya: `min-w-0` adalah satu-satunya alasan
- * kartu boleh menyempit di bawah lebar barisan chipnya, dan tanpa itu satu
- * kartu menggeser seluruh halaman ke samping di layar ponsel. Pemeriksaan
- * lebar sungguhan tetap lewat TC-32a.
- */
 describe('kartu berchip tidak melebarkan halaman', () => {
   it('TC-32e kartu proyek boleh menyempit di bawah lebar chipnya', () => {
     setCatalogue([
       getForm({
         templateId: 'freelance',
         title: 'Penulisan 20 Artikel SEO Bidang Properti',
-        priceAmount: 12000000,
+        price: 12000000,
       }),
     ])
 

@@ -97,7 +97,6 @@ describe('field menu bergambar', () => {
       />
     )
 
-    // 28.000 × 2 + 8.000 = 64.000
     expect(screen.getByText('Rp64.000')).toBeInTheDocument()
   })
 })
@@ -157,7 +156,7 @@ describe('field metode pembayaran', () => {
         value="QRIS"
         error=""
         amount={64000}
-        qrisUrl="/qris-demo.svg"
+        qrisImage="/qris-demo.svg"
         onEditAnswer={vi.fn()}
       />
     )
@@ -176,7 +175,7 @@ describe('field metode pembayaran', () => {
         value="QRIS"
         error=""
         amount={64000}
-        qrisUrl=""
+        qrisImage=""
         onEditAnswer={vi.fn()}
       />
     )

@@ -2,13 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { getAuthGuard } from '@/shared/lib/authServer'
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
-  }
+  if (req.method !== 'GET') return sendMethodNotAllowed(res, req.method, ['GET'])
 
   const user = await getAuthGuard(req, res)
   if (!user) return
@@ -28,7 +26,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const limitQuery = Number(req.query.limit)
   const cursor = req.query.cursor ? String(req.query.cursor) : undefined
 
-  // Batasnya tidak pernah opsional; lihat catatan yang sama di forms/public.
   const limit = Number.isFinite(limitQuery)
     ? Math.min(Math.max(Math.trunc(limitQuery), 1), 100)
     : 50
@@ -40,13 +37,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   })
 
-  if (!form) return res.status(404).json({ message: 'Form tidak ditemukan.' })
+  if (!form) {
+    return sendFailure(res, {
+      status: 404,
+      message: 'Form tidak ditemukan.',
+      errors: [{ code: 'FORM_NOT_FOUND', field: 'formId', message: 'Form tidak ditemukan.' }],
+    })
+  }
 
-  // Jawaban peserta hanya boleh dibaca pemilik formnya.
   if (form.userId !== user.id) {
-    return res
-      .status(403)
-      .json({ message: 'Form ini bukan milik akun yang sedang masuk.' })
+    return sendFailure(res, {
+      status: 403,
+      message: 'Form ini bukan milik akun yang sedang masuk.',
+      errors: [{ code: 'FORBIDDEN', field: '', message: 'Form ini milik akun lain.' }],
+    })
   }
 
   const rawResponses = await prisma.formResponse.findMany({
@@ -62,29 +66,31 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const mappedResponses = responses.map((response) => ({
     id: response.id,
-    respondentName: response.respondentName ?? '',
-    respondentEmail: response.respondentEmail ?? '',
+    name: response.respondentName ?? '',
+    email: response.respondentEmail ?? '',
     answers: (response.answers as Record<string, unknown>) ?? {},
-    durationSeconds: response.durationSeconds ?? 0,
+    duration: response.durationSeconds ?? 0,
     createdAt: response.createdAt.toISOString(),
   }))
 
-  return res.status(200).json({
-    formId: form.id,
-    formTitle: form.title,
-    purpose: form.purpose ?? '',
-    isAiEnabled: !!form.purpose,
-    templateId: form.templateId ?? '',
-    fields: form.fields.map((field) => ({
-      id: field.id,
-      label: field.label,
-      type: field.type,
-      options: (field.options as string[] | null) ?? [],
-      isRequired: field.isRequired,
-    })),
-    responses: mappedResponses,
-    nextCursor,
-    hasMore,
+  return sendSuccess(res, {
+    message: 'Jawaban form berhasil dimuat',
+    data: {
+      id: form.id,
+      title: form.title,
+      purpose: form.purpose ?? '',
+      isAiEnabled: !!form.purpose,
+      templateId: form.templateId ?? '',
+      fields: form.fields.map((field) => ({
+        id: field.id,
+        label: field.label,
+        type: field.type,
+        options: (field.options as string[] | null) ?? [],
+        isRequired: field.isRequired,
+      })),
+      responses: mappedResponses,
+    },
+    pagination: { limit, next_cursor: nextCursor, has_more: hasMore },
   })
 }
 

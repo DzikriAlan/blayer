@@ -1,21 +1,41 @@
 import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 
-export default defineConfig({
+const shared = {
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // JSX diproses langsung oleh esbuild bawaan Vitest — test tidak butuh
-  // Fast Refresh, jadi plugin React tidak diperlukan.
   esbuild: {
-    jsx: 'automatic',
+    jsx: 'automatic' as const,
   },
+}
+
+export default defineConfig({
+  ...shared,
   test: {
-    environment: 'jsdom',
     globals: true,
-    setupFiles: ['./test/setup.tsx'],
-    include: ['test/**/*.test.{ts,tsx}'],
+    projects: [
+      {
+        ...shared,
+        test: {
+          name: 'server',
+          environment: 'node',
+          globals: true,
+          include: ['test/**/*.test.ts'],
+        },
+      },
+      {
+        ...shared,
+        test: {
+          name: 'dom',
+          environment: 'jsdom',
+          globals: true,
+          setupFiles: ['./test/setup.tsx'],
+          include: ['test/**/*.test.tsx'],
+        },
+      },
+    ],
   },
 })

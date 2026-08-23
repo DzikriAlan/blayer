@@ -8,7 +8,7 @@ export interface PayloadPostAnalysis {
 
 export interface DataAnalysisRanking {
   responseId: string
-  respondentName: string
+  name: string
   rank: number
   score: number
   verdict: string

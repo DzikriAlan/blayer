@@ -18,8 +18,8 @@ export interface ResponsesOrderItem {
 interface Props {
   formId: string
   title: string
-  bannerUrl: string
-  respondentName: string
+  image: string
+  name: string
   items: ResponsesOrderItem[]
   amount: number
   paymentMethod: string
@@ -28,8 +28,8 @@ interface Props {
 export default function ResponsesOrder({
   formId,
   title,
-  bannerUrl,
-  respondentName,
+  image,
+  name,
   items,
   amount,
   paymentMethod,
@@ -56,20 +56,20 @@ export default function ResponsesOrder({
       emptyImage: '/no-data.svg',
       pagination: { currentPage: 1, perPage: mappedList.length },
       title,
-      bannerUrl,
+      image,
       amountText: getCurrencyText(amount),
       paymentMethod: paymentMethod || 'Belum dipilih',
-      orderName: respondentName.trim() || 'Pemesan',
+      orderName: name.trim() || 'Pemesan',
       totalItem: items.reduce((total, item) => total + item.qty, 0),
     }
-  }, [title, bannerUrl, respondentName, items, amount, paymentMethod])
+  }, [title, image, name, items, amount, paymentMethod])
 
   return (
     <div className="border-2 border-foreground">
-      {data.bannerUrl ? (
+      {data.image ? (
         <div className="border-b-2 border-foreground bg-muted">
           <Image
-            src={data.bannerUrl}
+            src={data.image}
             alt={`Banner ${data.title}`}
             width={0}
             height={0}

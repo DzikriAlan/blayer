@@ -1,14 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
-
-/**
- * Verifikasi sesi di sisi server.
- *
- * Guard di browser hanya menyembunyikan tampilan — siapa pun masih bisa
- * memanggil API langsung lewat curl. File ini yang membuat penolakannya nyata:
- * token dari header Authorization diadu ke Supabase, dan handler baru berjalan
- * kalau tokennya sah.
- */
+import { sendFailure } from './apiResponse'
 
 const supabaseUrl = (
   process.env.SUPABASE_URL ||
@@ -25,8 +17,6 @@ const supabaseKey = (
 
 const isReady = !!supabaseUrl && !!supabaseKey
 
-// Client ini hanya dipakai untuk membaca token, tidak pernah menyimpan sesi —
-// tiap request API berdiri sendiri.
 const verifier = isReady
   ? createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
   : null
@@ -55,10 +45,6 @@ export const clearSessionCache = () => {
   sessionCache.clear()
 }
 
-/**
- * Membaca pengguna dari token, atau null kalau tidak ada/kadaluwarsa.
- * Dipakai endpoint yang boleh diakses publik tapi ingin tahu siapa pemanggilnya.
- */
 export const getAuthUser = async (req: NextApiRequest) => {
   if (!verifier) return null
 
@@ -88,20 +74,16 @@ export const getAuthUser = async (req: NextApiRequest) => {
   return user
 }
 
-/**
- * Versi tegas: membalas 401 dan mengembalikan null bila tidak ada sesi sah.
- *
- * Handler cukup menulis `const user = await getAuthGuard(req, res); if (!user) return`
- * sehingga tidak ada jalur yang lupa memeriksa.
- */
 export const getAuthGuard = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
   if (!verifier) {
-    res.status(500).json({
+    sendFailure(res, {
+      status: 500,
       message:
         'Verifikasi sesi belum bisa dijalankan — SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY belum terbaca di server.',
+      errors: [{ code: 'AUTH_UNAVAILABLE', field: '', message: 'Konfigurasi server belum lengkap.' }],
     })
     return null
   }
@@ -109,7 +91,11 @@ export const getAuthGuard = async (
   const user = await getAuthUser(req)
 
   if (!user) {
-    res.status(401).json({ message: 'Perlu masuk lebih dulu.' })
+    sendFailure(res, {
+      status: 401,
+      message: 'Perlu masuk lebih dulu.',
+      errors: [{ code: 'UNAUTHENTICATED', field: '', message: 'Sesi tidak ditemukan atau sudah kedaluwarsa.' }],
+    })
     return null
   }
 

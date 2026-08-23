@@ -1,41 +1,23 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  // Di serverless, DATABASE_URL harus menunjuk ke pooler (pgbouncer) supaya
-  // koneksi tidak habis. Migrasi dijalankan terpisah memakai koneksi langsung:
-  // lihat DIRECT_URL di .env.example.
   url      = env("DATABASE_URL")
 }
 
 model Form {
   id          String   @id @default(cuid())
-  /// Pemilik form — id pengguna Supabase Auth. Daftar form dan dashboard hasil
-  /// disaring dengan kolom ini, jadi satu akun tidak bisa membuka milik akun lain.
   userId      String
   title       String
   description String?  @db.Text
-  /// Tujuan form untuk AI. Null/kosong berarti analisis AI dimatikan.
   purpose     String?  @db.Text
-  /// Id template asal (exam/psychometric/dst). Menentukan bentuk dashboard hasil.
   templateId  String?
-  /// URL banner acara di Supabase Storage. Hanya dipakai template pendaftaran.
   bannerUrl   String?
-  /// Link Google Meet acara, dibagikan setelah peserta berhasil mendaftar.
   meetingUrl  String?
-  /// Link video kelas, dibuka setelah peserta membayar dan mengisi form.
   videoUrl    String?
-  /// URL gambar QRIS milik pembuat form, dipindai pembayar saat memilih QRIS.
   qrisUrl     String?
-  /// Harga tetap form berbayar yang tidak memakai field menu, mis. kursus.
   priceAmount Int?
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -73,7 +55,6 @@ model FormResponse {
   respondentName  String?
   respondentEmail String?
   answers         Json
-  /// Lama pengerjaan dalam detik, dihitung dari form dibuka sampai dikirim.
   durationSeconds Int?
   createdAt       DateTime @default(now())
 
@@ -113,8 +94,16 @@ enum FieldType {
   CHECKBOX
   RATING
   SCALE
-  /// Daftar menu bergambar. Tiap opsi: "Nama|Harga|URL Gambar".
   MENU
-  /// Pilihan metode pembayaran. Tiap opsi: "Metode|Petunjuk".
   PAYMENT
+}
+
+model RateLimitHit {
+  id    String   @id @default(cuid())
+  key   String
+  stamp DateTime
+
+  @@index([key, stamp])
+  @@index([stamp])
+  @@map("rate_limit_hits")
 }

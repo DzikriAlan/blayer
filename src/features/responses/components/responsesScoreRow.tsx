@@ -13,8 +13,8 @@ export interface ResponsesScoreAnswer {
 interface Props {
   id: string
   rank: number
-  respondentName: string
-  respondentEmail: string
+  name: string
+  email: string
   createdAt: string
   durationText: string
   score: number
@@ -28,8 +28,8 @@ interface Props {
 export default function ResponsesScoreRow({
   id,
   rank,
-  respondentName,
-  respondentEmail,
+  name,
+  email,
   createdAt,
   durationText,
   score,
@@ -70,11 +70,11 @@ export default function ResponsesScoreRow({
 
         <div className="min-w-0 flex-1">
           <h3 className="flex items-center gap-2 break-words font-display text-xl font-black uppercase leading-none tracking-tight">
-            {respondentName}
+            {name}
             {isHighlighted ? <Trophy className="h-4 w-4 shrink-0" /> : null}
           </h3>
           <p className="brutal-eyebrow mt-2 break-words opacity-70">
-            {respondentEmail ? `${respondentEmail} · ` : ''}
+            {email ? `${email} · ` : ''}
             {createdAt}
           </p>
           <p className="brutal-eyebrow mt-1.5 flex items-center gap-1.5 break-words">

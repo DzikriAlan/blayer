@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, BarChart3, Loader2 } from 'lucide-react'
@@ -27,13 +27,8 @@ import ResponsesEvent from './responsesEvent'
 import ResponsesOrder from './responsesOrder'
 import ResponsesCourse from './responsesCourse'
 
-/**
- * Pesanan di meja selesai di tempat, jadi emailnya tidak pernah dipakai.
- * View lain masih menanyakannya karena ada yang dikirim ke sana.
- */
 const NO_EMAIL_VIEWS = ['order']
 
-/** Jumlah porsi ditulis di belakang nama, mis. "Nasi Goreng x2". */
 const MENU_QTY_PATTERN = / x(\d+)$/
 
 interface Props {
@@ -47,8 +42,8 @@ export default function ResponsesSubmit({ formId }: Props) {
   const { storeResponses } = useResponsesControllers()
 
   const [filters, setFilters] = useState({
-    respondentName: '',
-    respondentEmail: '',
+    name: '',
+    email: '',
     answers: {} as Record<string, string | string[]>,
     errors: {} as Record<string, string>,
     startedAt: 0,
@@ -59,7 +54,6 @@ export default function ResponsesSubmit({ formId }: Props) {
   const data = useMemo(() => {
     const getAnswer = (fieldId: string) => filters.answers[fieldId] ?? ''
 
-    // Bentuk halaman ditentukan template asal form, bukan oleh pengisi.
     const getView = () => {
       const template = FORMS_TEMPLATES.find(
         (item) => item.id === formsDetail.data?.templateId
@@ -67,8 +61,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       return template?.view ?? FORMS_TEMPLATE_DEFAULT_VIEW
     }
 
-    // Tanggal dan sesi acara diambil dari jawaban peserta sendiri, karena
-    // itulah satu-satunya sumber yang ada tanpa menambah field baru di form.
     const getFirstAnswerByType = (type: string) => {
       const field = (formsDetail.data?.fields ?? []).find(
         (item) => item.type === type
@@ -97,8 +89,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
     }
 
-    // Pesanan dibaca dari field menu; nama, jumlah, dan harganya disatukan di
-    // sini supaya tagihan, struk, dan jawaban tersimpan memakai angka yang sama.
     const getOrderItems = () =>
       (formsDetail.data?.fields ?? [])
         .filter((field) => field.type === 'MENU')
@@ -118,12 +108,10 @@ export default function ResponsesSubmit({ formId }: Props) {
           })
         })
 
-    // Form tanpa menu — kursus, misalnya — memakai harga tetap yang ditetapkan
-    // pembuat form, jadi pengisi tidak perlu memilih apa pun untuk ditagih.
     const orderItems = getOrderItems()
     const orderAmount = orderItems.length
       ? orderItems.reduce((total, item) => total + item.subtotal, 0)
-      : formsDetail.data?.priceAmount ?? 0
+      : formsDetail.data?.price ?? 0
 
     const getPaymentMethod = () => {
       const field = (formsDetail.data?.fields ?? []).find(
@@ -134,7 +122,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       return Array.isArray(answer) ? answer[0] ?? '' : String(answer ?? '')
     }
 
-    // Nomor pertanyaan menyambung dari kolom identitas yang benar-benar tampil.
     const hasEmailInput = !NO_EMAIL_VIEWS.includes(getView())
     const identityOffset = hasEmailInput ? 2 : 1
 
@@ -143,7 +130,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       field,
       value: getAnswer(field.id),
       error: filters.errors[field.id] ?? '',
-      // Hanya field pembayaran yang memakainya; sisanya mengabaikan nilai ini.
       amount: orderAmount,
     }))
 
@@ -158,8 +144,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       errorTitle: 'Form Not Found',
       errorSubtitle:
         'Form yang kamu cari tidak tersedia atau sudah dihapus oleh pembuatnya.',
-      // Keadaan halaman dan keadaan daftar pertanyaan dipisah: form yang belum
-      // punya pertanyaan tetap menampilkan kolom identitas dan tombol kirim.
       pageState: {
         isLoading: formsDetail.status === 'loading',
         isError: formsDetail.status === 'error',
@@ -181,30 +165,24 @@ export default function ResponsesSubmit({ formId }: Props) {
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
       isAiEnabled: formsDetail.data?.isAiEnabled ?? false,
       hasEmailInput,
-      // Ujian sekolah dan psikotes kerja sama-sama dinilai, jadi keduanya
-      // dikerjakan dalam layar terkunci.
       isProctored: ['exam', 'psychometric'].includes(getView()),
       hasEventDetail: getView() === 'event',
       isEventDone: getView() === 'event',
       isOrderDone: getView() === 'order',
       isCourseDone: getView() === 'course',
-      // Banner dipakai sebagai poster acara, kelas, restoran, maupun logo
-      // perusahaan yang membuka lowongan.
       hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
         getView()
       ),
-      bannerUrl: formsDetail.data?.bannerUrl ?? '',
-      // Sesudah terkirim, keduanya datang dari balasan pengiriman. Sebelum itu
-      // detail form memang mengirimnya kosong untuk pengisi.
-      meetingUrl: responses.data?.meetingUrl || formsDetail.data?.meetingUrl || '',
-      videoUrl: responses.data?.videoUrl || formsDetail.data?.videoUrl || '',
-      qrisUrl: formsDetail.data?.qrisUrl ?? '',
+      image: formsDetail.data?.image ?? '',
+      meeting: responses.data?.meeting || formsDetail.data?.meeting || '',
+      video: responses.data?.video || formsDetail.data?.video || '',
+      qrisImage: formsDetail.data?.qrisImage ?? '',
       orderItems,
       orderAmount,
       paymentMethod: getPaymentMethod(),
       eventDateText: getEventDateText(),
       eventSessionText: getFirstAnswerByType('SELECT'),
-      totalAttendee: responses.data?.totalResponse ?? 0,
+      totalAttendee: responses.data?.totalResponses ?? 0,
       durationText: getDurationText(filters.elapsedSeconds),
       violationCount: filters.violationCount,
       isSubmitting: storeResponses.isPending || responses.status === 'loading',
@@ -232,8 +210,8 @@ export default function ResponsesSubmit({ formId }: Props) {
   const clearResponses = () => {
     setFilters((prev) => ({
       ...prev,
-      respondentName: '',
-      respondentEmail: '',
+      name: '',
+      email: '',
       answers: {},
       errors: {},
     }))
@@ -263,12 +241,10 @@ export default function ResponsesSubmit({ formId }: Props) {
     }
 
     const getDurationSeconds = () =>
-      filters.startedAt
-        ? Math.max(Math.round((Date.now() - filters.startedAt) / 1000), 0)
+      startedAtRef.current
+        ? Math.max(Math.round((Date.now() - startedAtRef.current) / 1000), 0)
         : 0
 
-    // Jawaban pembayaran disimpan bersama nominalnya, supaya daftar pesanan
-    // tetap terbaca tanpa menghitung ulang harga menu di halaman hasil.
     const getPaidAnswers = () => {
       const answers = { ...filters.answers }
       ;(formsDetail.data?.fields ?? [])
@@ -284,10 +260,10 @@ export default function ResponsesSubmit({ formId }: Props) {
 
     const payload: PayloadPostResponses = {
       formId,
-      respondentName: filters.respondentName,
-      respondentEmail: filters.respondentEmail,
+      name: filters.name,
+      email: filters.email,
       answers: getPaidAnswers(),
-      durationSeconds: getDurationSeconds(),
+      duration: getDurationSeconds(),
     }
 
     storeResponses.mutate(payload)
@@ -297,21 +273,22 @@ export default function ResponsesSubmit({ formId }: Props) {
     if (formId) setGetFormsDetail({ id: formId })
   }, [formId, setGetFormsDetail])
 
-  // Stopwatch mulai begitu pertanyaan tampil, berhenti saat jawaban terkirim.
+  const startedAtRef = useRef(0)
+
   useEffect(() => {
     if (formsDetail.status !== 'success') return
     if (responses.status === 'success') return
 
-    setFilters((prev) =>
-      prev.startedAt ? prev : { ...prev, startedAt: Date.now() }
-    )
+    if (!startedAtRef.current) startedAtRef.current = Date.now()
 
     const timer = window.setInterval(() => {
       setFilters((prev) => ({
         ...prev,
-        elapsedSeconds: prev.startedAt
-          ? Math.max(Math.round((Date.now() - prev.startedAt) / 1000), 0)
-          : 0,
+        startedAt: startedAtRef.current,
+        elapsedSeconds: Math.max(
+          Math.round((Date.now() - startedAtRef.current) / 1000),
+          0
+        ),
       }))
     }, 1000)
 
@@ -323,8 +300,8 @@ export default function ResponsesSubmit({ formId }: Props) {
       <ResponsesOrder
         formId={formId}
         title={data.title}
-        bannerUrl={data.bannerUrl}
-        respondentName={filters.respondentName}
+        image={data.image}
+        name={filters.name}
         items={data.orderItems}
         amount={data.orderAmount}
         paymentMethod={data.paymentMethod}
@@ -338,9 +315,9 @@ export default function ResponsesSubmit({ formId }: Props) {
         formId={formId}
         title={data.title}
         description={formsDetail.data?.description ?? ''}
-        bannerUrl={data.bannerUrl}
-        videoUrl={data.videoUrl}
-        respondentName={filters.respondentName}
+        image={data.image}
+        video={data.video}
+        name={filters.name}
         items={data.orderItems}
         amount={data.orderAmount}
         paymentMethod={data.paymentMethod}
@@ -354,9 +331,9 @@ export default function ResponsesSubmit({ formId }: Props) {
         formId={formId}
         title={data.title}
         description={formsDetail.data?.description ?? ''}
-        bannerUrl={data.bannerUrl}
-        meetingUrl={data.meetingUrl}
-        respondentName={filters.respondentName}
+        image={data.image}
+        meeting={data.meeting}
+        name={filters.name}
         dateText={data.eventDateText}
         sessionText={data.eventSessionText}
         totalAttendee={data.totalAttendee}
@@ -425,12 +402,10 @@ export default function ResponsesSubmit({ formId }: Props) {
         onEditViolation={editViolation}
       />
 
-      {data.hasBanner && data.bannerUrl ? (
+      {data.hasBanner && data.image ? (
         <div className="border-b-2 border-foreground bg-muted">
-          {/* width/height 0 + sizes: rasio diambil dari berkasnya sendiri,
-              jadi poster tinggi maupun banner lebar sama-sama tampil utuh. */}
           <Image
-            src={data.bannerUrl}
+            src={data.image}
             alt={`Banner ${data.title}`}
             width={0}
             height={0}
@@ -459,10 +434,10 @@ export default function ResponsesSubmit({ formId }: Props) {
           <div className="mt-4">
             <Input
               id="respondent-name"
-              value={filters.respondentName}
+              value={filters.name}
               placeholder="Type your answer"
               onChange={(event) =>
-                editRespondent('respondentName', event.target.value)
+                editRespondent('name', event.target.value)
               }
             />
           </div>
@@ -480,10 +455,10 @@ export default function ResponsesSubmit({ formId }: Props) {
               <Input
                 id="respondent-email"
                 type="email"
-                value={filters.respondentEmail}
+                value={filters.email}
                 placeholder="Type your answer"
                 onChange={(event) =>
-                  editRespondent('respondentEmail', event.target.value)
+                  editRespondent('email', event.target.value)
                 }
               />
             </div>
@@ -503,7 +478,7 @@ export default function ResponsesSubmit({ formId }: Props) {
             value={item.value}
             error={item.error}
             amount={item.amount}
-            qrisUrl={data.qrisUrl}
+            qrisImage={data.qrisImage}
             onEditAnswer={editAnswer}
           />
         ))}
@@ -517,9 +492,6 @@ export default function ResponsesSubmit({ formId }: Props) {
 
       {data.isAiEnabled ? (
         <p className="border-b-2 border-foreground bg-muted px-5 py-4 font-mono text-xs leading-relaxed text-muted-foreground sm:px-7">
-          {/* Jawaban di form ber-AI dikirim ke layanan pihak ketiga untuk
-              dinilai. Responden berhak tahu itu sebelum mengirim, bukan
-              sesudahnya. */}
           Jawabanmu di form ini akan dianalisis dengan bantuan AI pihak ketiga
           (Anthropic) untuk membuat ringkasan dan peringkat bagi pembuat form.{' '}
           <Link

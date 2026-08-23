@@ -27,6 +27,26 @@ describe('penyimpanan rate limit', () => {
     expect(getRateLimitStore().name).toBe('upstash')
   })
 
+  it('TC-43c tanpa Redis, produksi jatuh ke Postgres — bukan ke memori', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+
+    setRateLimitStore(null)
+    expect(getRateLimitStore().name).toBe('postgres')
+
+    vi.unstubAllEnvs()
+  })
+
+  it('TC-43c Redis tetap menang kalau memang dikonfigurasi', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    process.env.UPSTASH_REDIS_REST_URL = 'https://contoh.upstash.io'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'token-rahasia'
+
+    setRateLimitStore(null)
+    expect(getRateLimitStore().name).toBe('upstash')
+
+    vi.unstubAllEnvs()
+  })
+
   it('TC-43a hitungan dalam memori membuang jejak di luar jendela', async () => {
     const store = createMemoryStore()
     const now = 1_000_000
@@ -38,7 +58,6 @@ describe('penyimpanan rate limit', () => {
     expect(inside.total).toBe(3)
     expect(inside.oldest).toBe(now)
 
-    // Jauh setelah jendela lewat, dua jejak pertama tidak boleh ikut dihitung.
     const outside = await store.add('kunci', now + 120_000, 60_000)
     expect(outside.total).toBe(1)
   })
@@ -73,8 +92,6 @@ describe('penyimpanan bersama lewat Upstash', () => {
     const hit = await store.add('kunci', 1_000_500, 60_000)
 
     const commands = sent.map((item) => String((item as string[])[0]))
-    // Jejak lama dibuang berdasarkan skor waktunya. Penghitung jendela tetap
-    // bisa dilipatduakan dengan menembak tepat di pergantian jendela.
     expect(commands).toContain('ZREMRANGEBYSCORE')
     expect(commands).toContain('ZADD')
     expect(commands).toContain('ZCARD')

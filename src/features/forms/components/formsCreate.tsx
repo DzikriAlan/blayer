@@ -43,11 +43,9 @@ const OPTION_TYPES: FormsFieldType[] = [
   'PAYMENT',
 ]
 
-/** Template yang halaman isinya memuat pembayaran. */
 const PAID_VIEWS = ['order', 'course']
 
 const fieldSchema = z.object({
-  /** Kosong untuk field baru; terisi untuk field yang sedang disunting. */
   id: z.string().optional(),
   label: z.string().min(1, 'Pertanyaan wajib diisi'),
   description: z.string(),
@@ -63,15 +61,14 @@ const schema = z
     description: z.string(),
     isAiEnabled: z.boolean(),
     purpose: z.string(),
-    bannerUrl: z.string(),
-    meetingUrl: z.string(),
-    videoUrl: z.string(),
-    qrisUrl: z.string(),
-    priceAmount: z.string(),
+    image: z.string(),
+    meeting: z.string(),
+    video: z.string(),
+    qrisImage: z.string(),
+    price: z.string(),
     isPublished: z.boolean(),
     fields: z.array(fieldSchema).min(1, 'Tambahkan minimal satu field'),
   })
-  // Tujuan hanya wajib kalau analisis AI dinyalakan.
   .superRefine((values, ctx) => {
     if (values.isAiEnabled && values.purpose.trim().length < 20) {
       ctx.addIssue({
@@ -82,33 +79,29 @@ const schema = z
       })
     }
 
-    // Link acara boleh kosong, tapi kalau diisi harus URL yang benar.
-    if (values.meetingUrl.trim() && !/^https?:\/\/\S+$/.test(values.meetingUrl.trim())) {
+    if (values.meeting.trim() && !/^https?:\/\/\S+$/.test(values.meeting.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['meetingUrl'],
+        path: ['meeting'],
         message: 'Link acara harus diawali http:// atau https://',
       })
     }
 
-    // Harga boleh kosong (form gratis atau bertagihan menu), tapi kalau diisi
-    // harus angka positif — jika tidak, tagihannya tidak bisa dihitung.
     if (
-      values.priceAmount.trim() &&
-      !(Number(values.priceAmount.trim()) > 0)
+      values.price.trim() &&
+      !(Number(values.price.trim()) > 0)
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['priceAmount'],
+        path: ['price'],
         message: 'Harga harus berupa angka lebih dari 0, mis. 350000',
       })
     }
 
-    // Aturan yang sama berlaku untuk video kelas.
-    if (values.videoUrl.trim() && !/^https?:\/\/\S+$/.test(values.videoUrl.trim())) {
+    if (values.video.trim() && !/^https?:\/\/\S+$/.test(values.video.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['videoUrl'],
+        path: ['video'],
         message: 'Link video harus diawali http:// atau https://',
       })
     }
@@ -127,7 +120,6 @@ const emptyField = {
 }
 
 interface Props {
-  /** Terisi berarti builder sedang menyunting form yang sudah ada. */
   formId?: string
   onEditFormsTitle?: (title: string) => void
 }
@@ -142,7 +134,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   const [filters, setFilters] = useState({
     optionError: '',
     activeTemplateId: '',
-    /** Id form yang isiannya sudah dimuat ke builder. */
     loadedId: '',
   })
 
@@ -153,11 +144,11 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       description: '',
       isAiEnabled: IS_AI_VISIBLE,
       purpose: '',
-      bannerUrl: '',
-      meetingUrl: '',
-      videoUrl: '',
-      qrisUrl: '',
-      priceAmount: '',
+      image: '',
+      meeting: '',
+      video: '',
+      qrisImage: '',
+      price: '',
       isPublished: true,
       fields: [{ ...emptyField }],
     },
@@ -172,8 +163,8 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   const watchedFields = form.watch('fields')
   const watchedPublished = form.watch('isPublished')
   const watchedAiEnabled = form.watch('isAiEnabled')
-  const watchedBannerUrl = form.watch('bannerUrl')
-  const watchedQrisUrl = form.watch('qrisUrl')
+  const watchedBannerUrl = form.watch('image')
+  const watchedQrisUrl = form.watch('qrisImage')
   const watchedFieldTypes = (form.watch('fields') ?? []).map((field) => field.type)
 
   const data = useMemo(() => {
@@ -186,7 +177,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const getFieldError = (index: number) =>
       form.formState.errors.fields?.[index]?.label?.message ?? ''
 
-    // Bentuk builder mengikuti satu nilai view milik template.
     const getView = () => {
       const template = FORMS_TEMPLATES.find(
         (item) => item.id === filters.activeTemplateId
@@ -230,25 +220,18 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       hasEventDetail: getView() === 'event',
       hasCourseDetail: getView() === 'course',
       hasPaymentDetail: PAID_VIEWS.includes(getView()),
-      // Banner dipakai sebagai poster acara, kelas, restoran, maupun logo
-      // perusahaan yang membuka lowongan.
       hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
         getView()
       ),
-      bannerUrl: watchedBannerUrl,
-      qrisUrl: watchedQrisUrl,
-      // Harga tetap hanya relevan untuk form berbayar yang tidak punya menu:
-      // kalau ada menu, tagihannya datang dari item yang dipilih pengisi.
+      image: watchedBannerUrl,
+      qrisImage: watchedQrisUrl,
       hasFixedPrice:
         PAID_VIEWS.includes(getView()) && !watchedFieldTypes.includes('MENU'),
-      // Anggaran proyek bukan tagihan: yang membayar pemilik proyek, bukan
-      // freelancer yang mengisi. Jadi kolomnya berdiri sendiri, tanpa QRIS
-      // dan tanpa field pembayaran.
       hasBudget: getView() === 'freelance',
-      priceAmountError: form.formState.errors.priceAmount?.message ?? '',
-      meetingUrlError: form.formState.errors.meetingUrl?.message ?? '',
-      videoUrlError: form.formState.errors.videoUrl?.message ?? '',
-      totalField: mappedList.length,
+      priceAmountError: form.formState.errors.price?.message ?? '',
+      meetingUrlError: form.formState.errors.meeting?.message ?? '',
+      videoUrlError: form.formState.errors.video?.message ?? '',
+      totalFields: mappedList.length,
     }
   }, [
     watchedTitle,
@@ -283,7 +266,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const template = getTemplate(templateId)
     if (!template) return
 
-    // Template menimpa seluruh isian — konfirmasi dulu kalau sudah ada yang ditulis.
     const isOverwriting = form.formState.isDirty
     if (
       isOverwriting &&
@@ -294,8 +276,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       return
     }
 
-    // Saat UI AI disembunyikan, tujuan AI tidak boleh ikut aktif dari template
-    // — kalau tidak, validasinya wajib tapi kolomnya tidak terlihat.
     form.reset({
       ...template.values,
       isAiEnabled: IS_AI_VISIBLE && template.values.isAiEnabled,
@@ -306,9 +286,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       activeTemplateId: templateId,
     }))
 
-    // URL ikut menyebut template yang sedang dipakai. Tanpa ini, efek pembaca
-    // ?template= melihat nilai lama dan langsung menarik isian kembali ke
-    // template sebelumnya — jadi template lain tidak pernah bisa dipilih.
     if (router.query.template !== templateId) {
       router.replace(
         { pathname: router.pathname, query: { template: templateId } },
@@ -329,11 +306,11 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   }
 
   const editBannerUrl = (url: string) => {
-    form.setValue('bannerUrl', url, { shouldDirty: true })
+    form.setValue('image', url, { shouldDirty: true })
   }
 
   const editQrisUrl = (url: string) => {
-    form.setValue('qrisUrl', url, { shouldDirty: true })
+    form.setValue('qrisImage', url, { shouldDirty: true })
   }
 
   const submitFormsField = () => {
@@ -361,7 +338,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       return
     }
 
-    // Menu tanpa harga membuat tagihan tidak bisa dihitung, jadi ditolak di sini.
     const invalidMenuIndex = values.fields.findIndex(
       (field) =>
         field.type === 'MENU' &&
@@ -383,22 +359,18 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const payload: PayloadPostForms = {
       title: values.title,
       description: values.description,
-      // Kirim kosong saat AI dimatikan supaya server menyimpannya sebagai null.
       purpose: values.isAiEnabled ? values.purpose.trim() : '',
       templateId: filters.activeTemplateId,
-      // Detail tambahan hanya ikut terkirim kalau templatenya memang memakainya.
-      bannerUrl: data.hasBanner ? values.bannerUrl : '',
-      meetingUrl: data.hasEventDetail ? values.meetingUrl.trim() : '',
-      videoUrl: data.hasCourseDetail ? values.videoUrl.trim() : '',
-      qrisUrl: data.hasPaymentDetail ? values.qrisUrl : '',
-      priceAmount:
+      image: data.hasBanner ? values.image : '',
+      meeting: data.hasEventDetail ? values.meeting.trim() : '',
+      video: data.hasCourseDetail ? values.video.trim() : '',
+      qrisImage: data.hasPaymentDetail ? values.qrisImage : '',
+      price:
         data.hasFixedPrice || data.hasBudget
-          ? Number(values.priceAmount.trim()) || 0
+          ? Number(values.price.trim()) || 0
           : 0,
       isPublished: values.isPublished,
       fields: values.fields.map((field) => ({
-        // id ikut hanya saat menyunting; tanpa itu server menganggapnya field
-        // baru dan jawaban lama kehilangan pertanyaannya.
         id: field.id || undefined,
         label: field.label,
         description: field.description,
@@ -418,8 +390,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     onEditFormsTitle?.(watchedTitle)
   }, [watchedTitle, onEditFormsTitle])
 
-  // Template yang dipilih dari beranda datang lewat ?template=<id>. Saat
-  // menyunting, isian datang dari form yang tersimpan — bukan dari template.
   useEffect(() => {
     if (isEditing) return
     if (!router.isReady) return
@@ -431,8 +401,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const template = FORMS_TEMPLATES.find((item) => item.id === templateId)
     if (!template) return
 
-    // Saat UI AI disembunyikan, tujuan AI tidak boleh ikut aktif dari template
-    // — kalau tidak, validasinya wajib tapi kolomnya tidak terlihat.
     form.reset({
       ...template.values,
       isAiEnabled: IS_AI_VISIBLE && template.values.isAiEnabled,
@@ -450,7 +418,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     }
   }, [formsCreated.status, formsCreated.data, router])
 
-  // Saat menyunting, isian ditarik dari form yang tersimpan.
   useEffect(() => {
     if (!isEditing) return
     setGetFormsDetail({ id: formId })
@@ -461,8 +428,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     const detail = formsDetail.data
     if (!detail || detail.id !== formId) return
-    // Reset hanya sekali per form: pemuatan ulang di tengah pengetikan akan
-    // membuang suntingan yang belum tersimpan.
     if (filters.loadedId === formId) return
 
     form.reset({
@@ -470,11 +435,11 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       description: detail.description,
       isAiEnabled: IS_AI_VISIBLE && !!detail.purpose,
       purpose: detail.purpose,
-      bannerUrl: detail.bannerUrl,
-      meetingUrl: detail.meetingUrl,
-      videoUrl: detail.videoUrl,
-      qrisUrl: detail.qrisUrl,
-      priceAmount: detail.priceAmount ? String(detail.priceAmount) : '',
+      image: detail.image,
+      meeting: detail.meeting,
+      video: detail.video,
+      qrisImage: detail.qrisImage,
+      price: detail.price ? String(detail.price) : '',
       isPublished: detail.isPublished,
       fields: detail.fields.map((field) => ({
         id: field.id,
@@ -483,8 +448,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
         placeholder: field.placeholder,
         type: field.type,
         isRequired: field.isRequired,
-        // Builder menyunting pilihan sebagai teks per baris; database
-        // menyimpannya sebagai array.
         optionText: field.options.join('\n'),
       })),
     })
@@ -568,7 +531,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
               <div className="flex flex-col gap-3">
                 <Label>Banner</Label>
                 <UploadsBanner
-                  value={data.bannerUrl}
+                  value={data.image}
                   alt="Pratinjau banner form"
                   emptyLabel="UNGGAH BANNER"
                   onEditBanner={editBannerUrl}
@@ -582,7 +545,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
                 <Input
                   id="form-meeting-url"
                   placeholder="https://meet.google.com/abc-defg-hij"
-                  {...form.register('meetingUrl')}
+                  {...form.register('meeting')}
                 />
                 <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                   Link baru ditampilkan ke peserta setelah mereka berhasil
@@ -602,7 +565,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
                 <Input
                   id="form-video-url"
                   placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx"
-                  {...form.register('videoUrl')}
+                  {...form.register('video')}
                 />
                 <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                   Video baru terbuka setelah peserta memilih paket, membayar,
@@ -624,7 +587,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
                   id="form-budget-amount"
                   inputMode="numeric"
                   placeholder="4500000"
-                  {...form.register('priceAmount')}
+                  {...form.register('price')}
                 />
                 <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                   Tulis angka polos tanpa titik. Angka ini tampil sebagai budget
@@ -646,7 +609,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
                   id="form-price-amount"
                   inputMode="numeric"
                   placeholder="350000"
-                  {...form.register('priceAmount')}
+                  {...form.register('price')}
                 />
                 <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                   Tulis angka polos tanpa titik. Inilah tagihan yang dilihat
@@ -664,7 +627,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
               <div className="flex flex-col gap-3">
                 <Label>Gambar QRIS</Label>
                 <UploadsBanner
-                  value={data.qrisUrl}
+                  value={data.qrisImage}
                   alt="Pratinjau kode QRIS"
                   emptyLabel="UNGGAH QRIS"
                   onEditBanner={editQrisUrl}
@@ -758,7 +721,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-foreground bg-muted px-5 py-4 sm:px-7">
         <p className="brutal-eyebrow">
-          QUESTIONS — {String(data.totalField).padStart(2, '0')}
+          QUESTIONS — {String(data.totalFields).padStart(2, '0')}
         </p>
         <Button
           type="button"
@@ -774,7 +737,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
         <FormsFieldEditor
           key={fields[item.index]?.id ?? item.index}
           index={item.index}
-          total={data.totalField}
+          total={data.totalFields}
           label={item.label}
           description={item.description}
           placeholder={item.placeholder}

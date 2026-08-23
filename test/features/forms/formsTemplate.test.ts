@@ -121,7 +121,7 @@ describe('template proyek freelance', () => {
   })
 
   it('TC-38 anggaran proyek ditetapkan pemilik proyek sebagai angka positif', () => {
-    expect(Number(freelance?.values.priceAmount)).toBeGreaterThan(0)
+    expect(Number(freelance?.values.price)).toBeGreaterThan(0)
   })
 
   it('TC-38 penawar diminta portofolio, tawaran biaya, dan rencana kerja', () => {
@@ -228,7 +228,7 @@ describe('template kursus kelas', () => {
   })
 
   it('TC-20 harga kelas ditetapkan pembuat form sebagai angka positif', () => {
-    expect(Number(course?.values.priceAmount)).toBeGreaterThan(0)
+    expect(Number(course?.values.price)).toBeGreaterThan(0)
   })
 
   it('TC-15 kursus tetap menawarkan metode pembayaran', () => {

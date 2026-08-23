@@ -13,9 +13,9 @@ interface Props {
   formId: string
   title: string
   description: string
-  bannerUrl: string
-  videoUrl: string
-  respondentName: string
+  image: string
+  video: string
+  name: string
   items: ResponsesOrderItem[]
   amount: number
   paymentMethod: string
@@ -25,9 +25,9 @@ export default function ResponsesCourse({
   formId,
   title,
   description,
-  bannerUrl,
-  videoUrl,
-  respondentName,
+  image,
+  video,
+  name,
   items,
   amount,
   paymentMethod,
@@ -36,10 +36,8 @@ export default function ResponsesCourse({
     const getCurrencyText = (value: number) =>
       `Rp${value.toLocaleString('id-ID')}`
 
-    // Tautan YouTube diputar di halaman; penyedia lain cukup dibuka di tab baru
-    // karena tidak semuanya mengizinkan disematkan lewat iframe.
     const getEmbedUrl = () => {
-      const raw = videoUrl.trim()
+      const raw = video.trim()
       if (!raw) return ''
 
       const getYoutubeId = () => {
@@ -74,20 +72,20 @@ export default function ResponsesCourse({
       pagination: { currentPage: 1, perPage: mappedList.length },
       title,
       description,
-      bannerUrl,
-      videoUrl: videoUrl.trim(),
+      image,
+      video: video.trim(),
       embedUrl: getEmbedUrl(),
-      hasVideo: !!videoUrl.trim(),
+      hasVideo: !!video.trim(),
       amountText: getCurrencyText(amount),
       paymentMethod: paymentMethod || 'Belum dipilih',
-      studentName: respondentName.trim() || 'Peserta',
+      studentName: name.trim() || 'Peserta',
     }
   }, [
     title,
     description,
-    bannerUrl,
-    videoUrl,
-    respondentName,
+    image,
+    video,
+    name,
     items,
     amount,
     paymentMethod,
@@ -95,10 +93,10 @@ export default function ResponsesCourse({
 
   return (
     <div className="border-2 border-foreground">
-      {data.bannerUrl ? (
+      {data.image ? (
         <div className="border-b-2 border-foreground bg-muted">
           <Image
-            src={data.bannerUrl}
+            src={data.image}
             alt={`Banner ${data.title}`}
             width={0}
             height={0}
@@ -150,13 +148,13 @@ export default function ResponsesCourse({
         <div className="border-b-2 border-foreground bg-foreground px-5 py-6 text-background sm:px-7">
           <p className="brutal-eyebrow opacity-70">VIDEO MATERI</p>
           <a
-            href={data.videoUrl}
+            href={data.video}
             target="_blank"
             rel="noreferrer"
             className="mt-3 flex items-center gap-2.5 break-all font-mono text-sm underline underline-offset-4"
           >
             <PlayCircle className="h-4 w-4 shrink-0" />
-            {data.videoUrl}
+            {data.video}
           </a>
         </div>
       ) : null}

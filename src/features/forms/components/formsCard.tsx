@@ -12,8 +12,8 @@ interface Props {
   purpose: string
   isAiEnabled: boolean
   status: string
-  totalField: number
-  totalResponse: number
+  totalFields: number
+  totalResponses: number
   createdAt: string
   isDeleting?: boolean
   onClearForms?: (id: string) => void
@@ -26,15 +26,14 @@ export default function FormsCard({
   purpose,
   isAiEnabled,
   status,
-  totalField,
-  totalResponse,
+  totalFields,
+  totalResponses,
   createdAt,
   isDeleting = false,
   onClearForms,
 }: Props) {
   return (
     <article className="group border-b-2 border-foreground bg-paper px-4 py-5 transition-colors hover:bg-muted sm:px-7 sm:py-6">
-      {/* Baris 1: nomor urut + judul + status. */}
       <div className="flex items-start gap-3 sm:gap-6">
         <span className="brutal-index h-8 w-8 text-xs group-hover:bg-primary sm:h-9 sm:w-9 sm:text-sm">
           {String(index + 1).padStart(2, '0')}
@@ -57,8 +56,6 @@ export default function FormsCard({
         </div>
       </div>
 
-      {/* Baris 2: di mobile memakai lebar penuh supaya tombol tidak menumpuk;
-          di layar sedang ke atas disejajarkan dengan judul. */}
       <div className="mt-4 sm:pl-[3.75rem]">
         {IS_AI_VISIBLE && isAiEnabled ? (
           <p className="line-clamp-2 max-w-xl font-mono text-xs leading-relaxed text-muted-foreground">
@@ -68,17 +65,15 @@ export default function FormsCard({
         ) : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:gap-x-5 sm:gap-y-2">
-          <span className="brutal-eyebrow">{totalField} FIELDS</span>
+          <span className="brutal-eyebrow">{totalFields} FIELDS</span>
           <span aria-hidden className="hidden h-3 w-px bg-foreground/30 sm:block" />
-          <span className="brutal-eyebrow">{totalResponse} RESPONSES</span>
+          <span className="brutal-eyebrow">{totalResponses} RESPONSES</span>
           <span aria-hidden className="hidden h-3 w-px bg-foreground/30 sm:block" />
           <span className="brutal-eyebrow text-muted-foreground">
             {createdAt}
           </span>
         </div>
 
-        {/* Empat aksi per form: buka formnya, buka dashboard hasilnya,
-            sunting pertanyaannya, dan hapus. */}
         <div className="mt-5 flex flex-wrap gap-2 sm:gap-3">
           <Button asChild size="sm" variant="outline" className="w-9 px-0 sm:w-auto sm:px-4">
             <Link href={`/forms/${id}`} aria-label={`Buka form ${title}`}>

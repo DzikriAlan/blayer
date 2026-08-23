@@ -34,16 +34,12 @@ describe('pengenalan gambar dari isinya', () => {
   })
 
   it('TC-44a berkas yang bukan gambar tidak lolos meski diberi label gambar', () => {
-    // Skrip yang diunggah dengan contentType "image/png" adalah bentuk paling
-    // sederhana dari serangan ini.
     expect(getImageType(Buffer.from('<script>alert(1)</script>'))).toBe('')
     expect(getImageType(Buffer.from('%PDF-1.7'))).toBe('')
     expect(getImageType(Buffer.alloc(0))).toBe('')
   })
 
   it('TC-44a SVG ditolak walau berupa gambar', () => {
-    // SVG bisa membawa skrip, jadi sengaja tidak dikenali sebagai format yang
-    // boleh disimpan.
     expect(getImageType(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg">'))).toBe('')
   })
 

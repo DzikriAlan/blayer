@@ -8,14 +8,13 @@ export interface FormsProjectItem {
   id: string
   title: string
   tooltip: string
-  /** Anggaran yang ditetapkan pemilik proyek. */
   priceText: string
   isPaid: boolean
   postedText: string
   tags: string[]
   summary: string
-  totalField: number
-  totalResponse: number
+  totalFields: number
+  totalResponses: number
 }
 
 interface Props {
@@ -25,15 +24,6 @@ interface Props {
   fieldLabel: string
 }
 
-/**
- * Papan proyek freelance.
- *
- * Yang dicari orang di papan seperti ini selalu sama dan selalu duluan:
- * berapa anggarannya, lalu berapa banyak yang sudah menawar. Keduanya
- * diletakkan di kepala kartu — anggaran sebagai pita hitam yang tidak bisa
- * dilewatkan mata, jumlah penawaran tepat di bawahnya — baru judul dan sisa
- * keterangannya.
- */
 export default function FormsProject({
   data,
   actionLabel,
@@ -46,11 +36,6 @@ export default function FormsProject({
         <Link
           key={project.id}
           href={`/forms/${project.id}`}
-          // min-w-0 wajib: kartu ini item grid, dan item grid menolak
-          // menyempit di bawah lebar min-content isinya. Baris chip yang
-          // whitespace-nowrap membuat min-content itu selebar seluruh chip,
-          // sehingga satu kartu memaksa seluruh halaman menggeser ke samping
-          // di layar ponsel — bukan menggulir di dalam barisan chipnya.
           className="group flex min-w-0 flex-col border-2 border-foreground bg-paper transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
         >
           <div className="flex items-center justify-between gap-3 border-b-2 border-foreground bg-foreground px-5 py-3 text-background">
@@ -73,8 +58,6 @@ export default function FormsProject({
               {project.postedText}
             </p>
 
-            {/* Chip dibiarkan satu baris dan digeser ke samping, sama seperti
-                di papan lowongan, supaya tinggi tiap kartu tetap sama. */}
             <div className="brutal-scroll-thin flex gap-2 overflow-x-auto pb-1">
               {project.tags.map((tag) => (
                 <Badge
@@ -95,12 +78,12 @@ export default function FormsProject({
 
             <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
               <FormsFacepile
-                total={project.totalResponse}
+                total={project.totalResponses}
                 seed={project.id}
                 label={countLabel}
               />
               <span className="brutal-eyebrow text-muted-foreground">
-                · {String(project.totalField).padStart(2, '0')} {fieldLabel}
+                · {String(project.totalFields).padStart(2, '0')} {fieldLabel}
               </span>
             </div>
 

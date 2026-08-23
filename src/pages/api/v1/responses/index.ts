@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
-/** Batas panjang isian teks. Tanpa ini satu request bisa menitipkan megabyte
- *  teks ke kolom Json dan ikut terbawa ke prompt analisis AI. */
 const MAX_ANSWER_LENGTH = 5_000
 const MAX_NAME_LENGTH = 200
 
@@ -12,28 +11,24 @@ const getTrimmed = (value: unknown, max: number) =>
   typeof value === 'string' ? value.trim().slice(0, max) : ''
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
-  }
+  if (req.method !== 'POST') return sendMethodNotAllowed(res, req.method, ['POST'])
 
-  const { formId, respondentName, respondentEmail, answers, durationSeconds } =
-    req.body as {
-      formId?: string
-      respondentName?: string
-      respondentEmail?: string
-      answers?: Record<string, unknown>
-      durationSeconds?: number
-    }
+  const { formId, name, email, answers, duration } = req.body as {
+    formId?: string
+    name?: string
+    email?: string
+    answers?: Record<string, unknown>
+    duration?: number
+  }
 
   if (!formId || !answers) {
-    return res.status(400).json({ message: 'formId dan answers wajib diisi.' })
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'PAYLOAD_INCOMPLETE', field: 'formId', message: 'formId dan answers wajib diisi.' }],
+    })
   }
 
-  // Endpoint ini terbuka tanpa sesi karena peserta memang tidak perlu punya
-  // akun. Batas per IP per form adalah satu-satunya yang menahan satu skrip
-  // membanjiri sebuah form dengan jawaban palsu — jawaban yang nantinya jadi
-  // bahan analisis AI berbayar milik pemilik form.
   if (
     !(await enforceRateLimit(req, res, {
       name: 'responses-create',
@@ -50,13 +45,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     include: { fields: true },
   })
 
-  if (!form) return res.status(404).json({ message: 'Form tidak ditemukan.' })
+  if (!form) {
+    return sendFailure(res, {
+      status: 404,
+      message: 'Form tidak ditemukan.',
+      errors: [{ code: 'FORM_NOT_FOUND', field: 'formId', message: 'Form tidak ditemukan.' }],
+    })
+  }
 
-  // Draf belum dibuka untuk umum, jadi jawabannya juga belum boleh masuk.
   if (!form.isPublished) {
-    return res
-      .status(403)
-      .json({ message: 'Form ini belum dibuka untuk menerima jawaban.' })
+    return sendFailure(res, {
+      status: 403,
+      message: 'Form ini belum dibuka untuk menerima jawaban.',
+      errors: [{ code: 'FORM_NOT_PUBLISHED', field: 'formId', message: 'Form belum dipublikasikan.' }],
+    })
   }
 
   const missingField = form.fields.find((field) => {
@@ -67,13 +69,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   })
 
   if (missingField) {
-    return res
-      .status(400)
-      .json({ message: `Field "${missingField.label}" wajib diisi.` })
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'FIELD_REQUIRED', field: missingField.id, message: `Field "${missingField.label}" wajib diisi.` }],
+    })
   }
 
-  // Hanya jawaban untuk field milik form ini yang disimpan: kunci asing dari
-  // body akan menumpang ke prompt AI tanpa pernah punya pertanyaan.
   const knownIds = new Set(form.fields.map((field) => field.id))
 
   const getAnswerValue = (value: unknown) => {
@@ -93,31 +95,31 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const response = await prisma.formResponse.create({
     data: {
       formId,
-      respondentName: getTrimmed(respondentName, MAX_NAME_LENGTH) || null,
-      respondentEmail: getTrimmed(respondentEmail, MAX_NAME_LENGTH) || null,
+      respondentName: getTrimmed(name, MAX_NAME_LENGTH) || null,
+      respondentEmail: getTrimmed(email, MAX_NAME_LENGTH) || null,
       answers: cleanAnswers as never,
-      // Durasi negatif atau bukan angka diabaikan supaya data tetap bersih.
       durationSeconds:
-        typeof durationSeconds === 'number' &&
-        Number.isFinite(durationSeconds) &&
-        durationSeconds >= 0
-          ? Math.round(durationSeconds)
+        typeof duration === 'number' &&
+        Number.isFinite(duration) &&
+        duration >= 0
+          ? Math.round(duration)
           : null,
     },
     select: { id: true, createdAt: true },
   })
 
-  // Dipakai layar konfirmasi acara untuk menampilkan jumlah yang sudah daftar.
   const totalResponse = await prisma.formResponse.count({ where: { formId } })
 
-  return res.status(201).json({
-    id: response.id,
-    totalResponse,
-    createdAt: response.createdAt.toISOString(),
-    // Link acara dan video kelas menyusul di sini, bukan di detail form:
-    // keduanya baru boleh terlihat oleh orang yang benar-benar mendaftar.
-    meetingUrl: form.meetingUrl ?? '',
-    videoUrl: form.videoUrl ?? '',
+  return sendSuccess(res, {
+    status: 201,
+    message: 'Jawaban berhasil dikirim',
+    data: {
+      id: response.id,
+      totalResponses: totalResponse,
+      createdAt: response.createdAt.toISOString(),
+      meeting: form.meetingUrl ?? '',
+      video: form.videoUrl ?? '',
+    },
   })
 }
 

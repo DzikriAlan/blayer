@@ -7,6 +7,7 @@ import {
 } from '@/shared/lib/supabase'
 import { getAuthGuard } from '@/shared/lib/authServer'
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import { getImageExtension, getImageType } from '@/shared/lib/imageBytes'
 
@@ -20,25 +21,20 @@ const ALLOWED_TYPES = [
 
 const MAX_BYTE = 4 * 1024 * 1024
 
-// Banner dikirim sebagai base64 di body JSON supaya tidak perlu parser multipart.
 export const config = {
   api: { bodyParser: { sizeLimit: '6mb' } },
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
+    return sendMethodNotAllowed(res, req.method, ['POST'])
   }
 
-  // Unggahan hanya dipakai builder, jadi tidak ada alasan menerimanya tanpa sesi.
   const user = await getAuthGuard(req, res)
   if (!user) {
     return
   }
 
-  // Tiap unggahan menempati storage permanen, jadi lajunya dibatasi walau
-  // pemanggilnya sudah punya sesi yang sah.
   if (
     !(await enforceRateLimit(req, res, {
       name: 'uploads-banner',
@@ -51,7 +47,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (!isSupabaseReady || !supabase) {
-    return res.status(503).json({ message: getSupabaseSetupMessage() })
+    return sendFailure(res, {
+      status: 503,
+      message: getSupabaseSetupMessage(),
+      errors: [{ code: 'SERVICE_UNAVAILABLE', field: '', message: getSupabaseSetupMessage() }],
+    })
   }
 
   const { fileName, contentType, fileBase64 } = req.body as {
@@ -61,42 +61,55 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (!fileName || !contentType || !fileBase64) {
-    return res
-      .status(400)
-      .json({ message: 'fileName, contentType, dan fileBase64 wajib diisi.' })
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'PAYLOAD_INCOMPLETE', field: 'fileBase64', message: 'fileName, contentType, dan fileBase64 wajib diisi.' }],
+    })
+
   }
 
   if (!ALLOWED_TYPES.includes(contentType)) {
-    return res
-      .status(400)
-      .json({ message: 'Format gambar harus JPG, PNG, WEBP, GIF, atau AVIF.' })
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'IMAGE_TYPE_UNSUPPORTED', field: 'contentType', message: 'Format gambar harus JPG, PNG, WEBP, GIF, atau AVIF.' }],
+    })
   }
 
-  // Prefix "data:image/png;base64," ikut terkirim dari FileReader, dibuang dulu.
   const buffer = Buffer.from(fileBase64.split(',').pop() ?? '', 'base64')
 
   if (!buffer.length) {
-    return res.status(400).json({ message: 'Berkas gambar tidak terbaca.' })
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'IMAGE_UNREADABLE', field: 'fileBase64', message: 'Berkas gambar tidak terbaca.' }],
+    })
   }
 
   if (buffer.length > MAX_BYTE) {
-    return res.status(400).json({ message: 'Ukuran banner maksimal 4 MB.' })
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'IMAGE_TOO_LARGE', field: 'fileBase64', message: 'Ukuran banner maksimal 4 MB.' }],
+    })
   }
 
-  // Sampai titik ini tipe berkas masih sebatas klaim klien. Yang disimpan dan
-  // disajikan nanti adalah isinya, jadi isinya yang menentukan.
   const detectedType = getImageType(buffer)
 
   if (!detectedType || !ALLOWED_TYPES.includes(detectedType)) {
-    return res.status(400).json({
-      message:
-        'Isi berkas bukan gambar JPG, PNG, WEBP, GIF, atau AVIF yang bisa dibaca.',
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'IMAGE_CONTENT_INVALID', field: 'fileBase64', message: 'Isi berkas bukan gambar JPG, PNG, WEBP, GIF, atau AVIF yang bisa dibaca.' }],
     })
   }
 
   if (detectedType !== contentType) {
-    return res.status(400).json({
-      message: `Isi berkas terbaca sebagai ${detectedType}, tidak cocok dengan ${contentType} yang disebutkan.`,
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'IMAGE_TYPE_MISMATCH', field: 'contentType', message: `Isi berkas terbaca sebagai ${detectedType}, tidak cocok dengan ${contentType} yang disebutkan.` }],
     })
   }
 
@@ -110,8 +123,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     .upload(objectPath, buffer, { contentType: detectedType, upsert: false })
 
   if (uploaded.error) {
-    // Supabase menolak key dengan pesan mentah yang menyesatkan ("Invalid
-    // Compact JWS"), padahal artinya key-nya tidak dikenali gateway.
     const getUploadErrorMessage = () => {
       const raw = uploaded.error?.message ?? ''
       const isKeyRejected =
@@ -130,14 +141,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return raw
     }
 
-    return res.status(502).json({ message: getUploadErrorMessage() })
+    return sendFailure(res, {
+      status: 502,
+      message: getUploadErrorMessage(),
+      errors: [{ code: 'UPLOAD_FAILED', field: '', message: getUploadErrorMessage() }],
+    })
   }
 
   const { data } = supabase.storage
     .from(SUPABASE_BANNER_BUCKET)
     .getPublicUrl(objectPath)
 
-  return res.status(201).json({ url: data.publicUrl, path: objectPath })
+  return sendSuccess(res, {
+    status: 201,
+    message: 'Gambar berhasil diunggah',
+    data: { image: data.publicUrl, path: objectPath },
+  })
 }
 
 export default withApi('uploads-banner', handler)

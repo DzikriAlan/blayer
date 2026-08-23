@@ -16,8 +16,6 @@ jobs:
           node-version: 20
           cache: npm
 
-      # `npm ci` menjalankan postinstall (prisma generate), jadi tipe hasil
-      # generate sudah ada sebelum typecheck berjalan.
       - run: npm ci
 
       - run: npm run lint
@@ -26,8 +24,6 @@ jobs:
 
       - run: npm test
 
-      # Build ikut diuji supaya kesalahan yang hanya muncul saat kompilasi
-      # produksi ketahuan di PR, bukan saat deploy.
       - run: npm run build
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db

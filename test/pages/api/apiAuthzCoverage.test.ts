@@ -1,11 +1,3 @@
-/**
- * @vitest-environment node
- *
- * Rute API adalah kode server. Menjalankannya di jsdom membuat SDK Anthropic
- * mengira dirinya ada di peramban dan menolak dibuat, dan jalan pintas untuk
- * itu adalah menyalakan `dangerouslyAllowBrowser` di kode produksi — mematikan
- * penjaga yang justru mencegah kunci API terbawa ke bundel klien.
- */
 import { describe, expect, it, vi } from 'vitest'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -34,7 +26,13 @@ const getResponse = () => {
   const res = {
     statusCode: 0,
     body: null as unknown,
-    setHeader: vi.fn(),
+    headers: {} as Record<string, string>,
+    setHeader(key: string, value: string) {
+      res.headers[key] = String(value)
+    },
+    getHeader(key: string) {
+      return res.headers[key]
+    },
     status(code: number) {
       res.statusCode = code
       return res

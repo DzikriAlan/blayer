@@ -1,9 +1,8 @@
+import { prisma } from './prisma'
 import { logger } from './logger'
 
 export interface RateLimitHit {
-  /** Berapa permintaan yang sudah tercatat di jendela ini, termasuk yang barusan. */
   total: number
-  /** Waktu permintaan tertua yang masih hidup, dipakai menghitung Retry-After. */
   oldest: number
 }
 
@@ -16,14 +15,6 @@ export interface RateLimitStore {
 
 const MAX_KEY = 10_000
 
-/**
- * Penyimpanan dalam memori proses.
- *
- * Hanya benar kalau aplikasinya berjalan sebagai satu proses. Di platform
- * serverless setiap instance punya salinan sendiri dan isinya hilang saat cold
- * start, sehingga batasnya bisa dilewati dengan memaksa instance baru — itu
- * sebabnya penyimpanan bersama dipakai begitu kredensialnya tersedia.
- */
 export const createMemoryStore = (): RateLimitStore => {
   const hits = new Map<string, number[]>()
 
@@ -70,16 +61,6 @@ interface UpstashConfig {
   token: string
 }
 
-/**
- * Penyimpanan bersama lewat Upstash Redis REST.
- *
- * REST dipilih supaya tidak ada koneksi TCP yang harus dijaga hidup di
- * lingkungan serverless, dan supaya tidak ada dependensi baru: cukup fetch.
- *
- * Jendelanya sliding log memakai sorted set, bukan penghitung jendela tetap,
- * supaya batasnya tidak bisa dilipatduakan dengan menembak tepat di pergantian
- * jendela.
- */
 export const createUpstashStore = ({
   url,
   token,
@@ -128,11 +109,49 @@ export const createUpstashStore = ({
     },
 
     async clear() {
-      // Sengaja tidak menghapus apa pun: kunci di penyimpanan bersama dipakai
-      // instance lain, dan ini hanya dipanggil oleh tes.
     },
   }
 }
+
+export const createPrismaStore = (): RateLimitStore => ({
+  name: 'postgres',
+
+  async add(key, now, windowMs) {
+    const cutoff = new Date(now - windowMs)
+
+    const [, , total, oldest] = await prisma.$transaction([
+      prisma.rateLimitHit.deleteMany({ where: { key, stamp: { lt: cutoff } } }),
+      prisma.rateLimitHit.create({ data: { key, stamp: new Date(now) } }),
+      prisma.rateLimitHit.count({ where: { key } }),
+      prisma.rateLimitHit.aggregate({
+        where: { key },
+        _min: { stamp: true },
+      }),
+    ])
+
+    if (Math.random() < 0.01) {
+      const stale = new Date(now - 24 * 60 * 60_000)
+      await prisma.rateLimitHit
+        .deleteMany({ where: { stamp: { lt: stale } } })
+        .catch(() => undefined)
+    }
+
+    return {
+      total,
+      oldest: oldest._min.stamp ? oldest._min.stamp.getTime() : now,
+    }
+  },
+
+  async remove(key, stamp) {
+    await prisma.rateLimitHit.deleteMany({
+      where: { key, stamp: new Date(stamp) },
+    })
+  },
+
+  async clear() {
+    await prisma.rateLimitHit.deleteMany({})
+  },
+})
 
 const readConfig = (): UpstashConfig | null => {
   const url = (
@@ -157,22 +176,19 @@ let store: RateLimitStore | null = null
 export const getRateLimitStore = () => {
   if (store) return store
 
+  const mode = (process.env.RATE_LIMIT_STORE ?? '').trim().toLowerCase()
   const config = readConfig()
 
-  if (config) {
-    store = createUpstashStore(config)
-  } else {
-    store = createMemoryStore()
+  if (mode === 'memory') store = createMemoryStore()
+  else if (mode === 'postgres') store = createPrismaStore()
+  else if (config) store = createUpstashStore(config)
+  else if (process.env.NODE_ENV === 'production') store = createPrismaStore()
+  else store = createMemoryStore()
 
-    if (process.env.NODE_ENV === 'production') {
-      // Di produksi ini hampir selalu salah konfigurasi, bukan pilihan sadar,
-      // dan diamnya berarti batas yang disangka aktif sebenarnya tidak berlaku.
-      logger.warn('rate limit memakai memori proses', {
-        alasan:
-          'UPSTASH_REDIS_REST_URL dan UPSTASH_REDIS_REST_TOKEN belum terbaca',
-        dampak: 'batas tidak berlaku lintas instance',
-      })
-    }
+  if (store.name === 'memory' && process.env.NODE_ENV === 'production') {
+    logger.warn('rate limit memakai memori proses', {
+      dampak: 'batas tidak berlaku lintas instance',
+    })
   }
 
   return store

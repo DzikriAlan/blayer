@@ -36,8 +36,6 @@ export default function AuthAccount({ tone = 'light' }: Props) {
 
   const clearAuthSession = () => {
     removeAuthSession.mutate(undefined, {
-      // Setelah logout, halaman terkunci yang sedang dibuka harus ditinggalkan
-      // sendiri — jangan menunggu guard menendang dari halaman kosong.
       onSuccess: () => router.replace('/'),
     })
   }
@@ -56,13 +54,13 @@ export default function AuthAccount({ tone = 'light' }: Props) {
 
   return (
     <div className="flex items-center gap-2.5">
-      <span
-        aria-hidden
-        className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-current font-mono text-sm font-bold"
+      <Link
+        href="/akun"
+        aria-label={`Akun ${data.name}`}
+        className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-current font-mono text-sm font-bold transition-colors hover:border-primary hover:text-primary"
       >
-        {data.initial}
-      </span>
-      <span className="sr-only">{data.name}</span>
+        <span aria-hidden>{data.initial}</span>
+      </Link>
       <Button
         type="button"
         variant={data.buttonVariant}

@@ -27,14 +27,27 @@ const getForm = (patch: Record<string, unknown> = {}) => ({
 const getResponse = () => {
   const res = {
     statusCode: 0,
-    body: null as never,
-    setHeader: vi.fn(),
+    body: null as unknown as {
+      success: boolean
+      status: number
+      message: string
+      data: never
+      meta: { request_id: string; timestamp: string; version: string }
+      errors: { code: string; field: string; message: string }[] | null
+    },
+    headers: {} as Record<string, string>,
+    setHeader(key: string, value: string) {
+      res.headers[key] = String(value)
+    },
+    getHeader(key: string) {
+      return res.headers[key]
+    },
     status(code: number) {
       res.statusCode = code
       return res
     },
     json(body: unknown) {
-      res.body = body as never
+      res.body = body as typeof res.body
       return res
     },
   }
@@ -58,13 +71,11 @@ const call = async (body: Record<string, unknown>, ip = '10.0.0.1') => {
 
 const validBody = {
   formId: 'form-1',
-  respondentName: 'Sinta',
+  name: 'Sinta',
   answers: { 'field-1': 'Sinta' },
 }
 
 beforeEach(async () => {
-  // Rute ini dianggap berada di belakang satu proxy, keadaan yang sama dengan
-  // saat dipasang di platform hosting; tanpa itu X-Forwarded-For diabaikan.
   process.env.TRUST_PROXY_HOPS = '1'
   await resetRateLimit()
   prismaMock.form.findUnique = vi.fn().mockResolvedValue(getForm())
@@ -79,9 +90,9 @@ describe('pengiriman jawaban', () => {
     const res = await call(validBody)
 
     expect(res.statusCode).toBe(201)
-    expect(res.body).toMatchObject({
-      meetingUrl: 'https://meet.google.com/rahasia',
-      totalResponse: 3,
+    expect(res.body.data).toMatchObject({
+      meeting: 'https://meet.google.com/rahasia',
+      totalResponses: 3,
     })
   })
 
@@ -142,9 +153,6 @@ describe('pengiriman jawaban', () => {
   })
 
   it('TC-41h tanpa proxy tepercaya, alamat karangan tidak menambah kuota', async () => {
-    // X-Forwarded-For ditulis oleh klien. Kalau dipercaya tanpa syarat, satu
-    // pengirim cukup mengganti isinya tiap permintaan untuk mendapat kuota tak
-    // terbatas.
     delete process.env.TRUST_PROXY_HOPS
 
     for (let index = 0; index < 5; index += 1) {

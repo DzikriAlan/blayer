@@ -11,9 +11,9 @@ interface Props {
   formId: string
   title: string
   description: string
-  bannerUrl: string
-  meetingUrl: string
-  respondentName: string
+  image: string
+  meeting: string
+  name: string
   dateText: string
   sessionText: string
   totalAttendee: number
@@ -23,16 +23,14 @@ export default function ResponsesEvent({
   formId,
   title,
   description,
-  bannerUrl,
-  meetingUrl,
-  respondentName,
+  image,
+  meeting,
+  name,
   dateText,
   sessionText,
   totalAttendee,
 }: Props) {
   const data = useMemo(() => {
-    // Baris detail baru dirender kalau datanya memang ada, jadi form acara
-    // tanpa field tanggal atau sesi tidak menyisakan kolom kosong.
     const getDetailList = () => [
       { key: 'tanggal', icon: CalendarDays, label: 'TANGGAL', value: dateText },
       { key: 'sesi', icon: Clock, label: 'SESI', value: sessionText },
@@ -40,7 +38,7 @@ export default function ResponsesEvent({
         key: 'lokasi',
         icon: MapPin,
         label: 'LOKASI',
-        value: meetingUrl ? 'Google Meet — online' : '',
+        value: meeting ? 'Google Meet — online' : '',
       },
     ]
 
@@ -55,17 +53,17 @@ export default function ResponsesEvent({
       pagination: { currentPage: 1, perPage: 0 },
       title,
       description,
-      bannerUrl,
-      meetingUrl,
+      image,
+      meeting,
       attendeeText: `${String(totalAttendee).padStart(2, '0')} TERDAFTAR`,
-      ticketName: respondentName.trim() || 'Peserta',
+      ticketName: name.trim() || 'Peserta',
     }
   }, [
     title,
     description,
-    bannerUrl,
-    meetingUrl,
-    respondentName,
+    image,
+    meeting,
+    name,
     dateText,
     sessionText,
     totalAttendee,
@@ -73,10 +71,10 @@ export default function ResponsesEvent({
 
   return (
     <div className="border-2 border-foreground">
-      {data.bannerUrl ? (
+      {data.image ? (
         <div className="border-b-2 border-foreground bg-muted">
           <Image
-            src={data.bannerUrl}
+            src={data.image}
             alt={`Banner ${data.title}`}
             width={0}
             height={0}
@@ -130,17 +128,17 @@ export default function ResponsesEvent({
         </dl>
       ) : null}
 
-      {data.meetingUrl ? (
+      {data.meeting ? (
         <div className="border-b-2 border-foreground bg-foreground px-5 py-6 text-background sm:px-7">
           <p className="brutal-eyebrow opacity-70">LINK ACARA</p>
           <a
-            href={data.meetingUrl}
+            href={data.meeting}
             target="_blank"
             rel="noreferrer"
             className="mt-3 flex items-center gap-2.5 break-all font-mono text-sm underline underline-offset-4"
           >
             <Video className="h-4 w-4 shrink-0" />
-            {data.meetingUrl}
+            {data.meeting}
           </a>
           <p className="mt-3 font-mono text-xs leading-relaxed opacity-70">
             Simpan link ini. Kamu bisa langsung bergabung saat acara dimulai.
@@ -158,9 +156,9 @@ export default function ResponsesEvent({
       ) : null}
 
       <div className="flex flex-wrap items-center gap-5 bg-paper px-5 py-7 sm:px-7">
-        {data.meetingUrl ? (
+        {data.meeting ? (
           <Button asChild size="lg">
-            <a href={data.meetingUrl} target="_blank" rel="noreferrer">
+            <a href={data.meeting} target="_blank" rel="noreferrer">
               <Video /> Gabung Sekarang
             </a>
           </Button>

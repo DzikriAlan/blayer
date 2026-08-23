@@ -16,11 +16,6 @@ export type FormsFieldType =
   | 'PAYMENT'
 
 export interface FormsFieldInput {
-  /**
-   * Hanya terisi saat menyunting form yang sudah ada. Jawaban yang masuk
-   * memakai id field sebagai kunci, jadi id lama harus ikut terkirim agar
-   * riwayat jawaban tidak kehilangan pertanyaannya.
-   */
   id?: string
   label: string
   description: string
@@ -33,20 +28,13 @@ export interface FormsFieldInput {
 export interface PayloadPostForms {
   title: string
   description: string
-  /** Kosong berarti analisis AI dimatikan untuk form ini. */
   purpose: string
-  /** Id template asal; menentukan bentuk dashboard hasil. */
   templateId: string
-  /** Banner acara hasil unggahan; kosong berarti tidak dipakai. */
-  bannerUrl: string
-  /** Link Google Meet acara; kosong berarti tidak dipakai. */
-  meetingUrl: string
-  /** Link video kelas; baru dibuka setelah peserta membayar dan mengisi form. */
-  videoUrl: string
-  /** Gambar QRIS pembuat form; dipindai pembayar saat memilih metode QRIS. */
-  qrisUrl: string
-  /** Harga tetap form berbayar tanpa field menu; 0 berarti tidak dipakai. */
-  priceAmount: number
+  image: string
+  meeting: string
+  video: string
+  qrisImage: string
+  price: number
   isPublished: boolean
   fields: FormsFieldInput[]
 }
@@ -69,11 +57,10 @@ export interface DataForms {
   description: string
   purpose: string
   isAiEnabled: boolean
-  /** Id template asal; dipakai memfilter riwayat form per template. */
   templateId: string
   isPublished: boolean
-  totalField: number
-  totalResponse: number
+  totalFields: number
+  totalResponses: number
   createdAt: string
 }
 
@@ -84,24 +71,15 @@ export interface Forms {
   data: DataForms[]
 }
 
-/**
- * Bentuk form di katalog publik.
- *
- * Lebih ramping daripada `DataForms` karena halaman depan tidak boleh menerima
- * `purpose` — isinya perintah AI milik pembuat form. `isPublished` juga tidak
- * ada: semua yang masuk daftar ini sudah pasti terpublikasi.
- */
 export interface DataFormsPublic {
   id: string
   title: string
   description: string
   templateId: string
-  /** Banner acara atau kelas; kosong berarti kartu memakai bentuk tanpa gambar. */
-  bannerUrl: string
-  /** Harga tetap kelas; 0 berarti form ini tidak berbayar di muka. */
-  priceAmount: number
-  totalField: number
-  totalResponse: number
+  image: string
+  price: number
+  totalFields: number
+  totalResponses: number
   createdAt: string
 }
 
@@ -129,13 +107,12 @@ export interface DataFormsDetail {
   description: string
   purpose: string
   isAiEnabled: boolean
-  /** Id template asal; menentukan mode pengerjaan dan bentuk dashboard hasil. */
   templateId: string
-  bannerUrl: string
-  meetingUrl: string
-  videoUrl: string
-  qrisUrl: string
-  priceAmount: number
+  image: string
+  meeting: string
+  video: string
+  qrisImage: string
+  price: number
   isPublished: boolean
   createdAt: string
   fields: DataFormsDetailField[]

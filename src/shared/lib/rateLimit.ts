@@ -1,29 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { logger } from './logger'
 import { getRateLimitStore, setRateLimitStore } from './rateLimitStore'
-
-/**
- * Pembatas laju bersama untuk seluruh instance.
- *
- * Endpoint pengiriman jawaban terbuka tanpa sesi — itu memang disengaja,
- * peserta tidak perlu punya akun. Konsekuensinya satu skrip bisa mengirim
- * ribuan jawaban palsu ke form mana pun, dan jawaban itulah yang nanti jadi
- * bahan analisis AI berbayar. Batas ini menutup jalur termurah untuk itu.
- *
- * Hitungannya ditaruh di penyimpanan bersama lewat `rateLimitStore`, bukan di
- * memori proses: di platform serverless tiap instance punya memori sendiri dan
- * kehilangannya saat cold start, sehingga batas yang disangka aktif sebenarnya
- * bisa dilewati dengan memaksa instance baru.
- */
+import { sendFailure } from './apiResponse'
 
 interface RateLimitOptions {
-  /** Nama aturan, ikut jadi bagian kunci supaya antar-endpoint tidak saling makan jatah. */
   name: string
-  /** Jumlah request yang boleh lewat dalam satu jendela waktu. */
   limit: number
-  /** Panjang jendela waktu dalam milidetik. */
   windowMs: number
-  /** Pembeda tambahan, mis. id form, supaya batas berlaku per form per IP. */
   scope?: string
 }
 
@@ -37,19 +20,6 @@ const getForwardedChain = (req: NextApiRequest) => {
     .filter(Boolean)
 }
 
-/**
- * Alamat pemanggil, dihitung dari jumlah proxy yang benar-benar ada di depan
- * aplikasi.
- *
- * `X-Forwarded-For` ditulis oleh klien dan hanya ditimpa oleh proxy, jadi
- * bagian paling kiri justru bagian yang paling mudah dipalsukan: siapa pun bisa
- * mengirim header berisi alamat karangan dan memakai kuota milik orang lain,
- * atau mendapat kuota tak terbatas dengan mengganti alamat tiap permintaan.
- *
- * Yang bisa dipercaya hanya alamat yang ditambahkan oleh proxy tepercaya,
- * yaitu entri ke-n dari kanan. Tanpa TRUST_PROXY_HOPS header ini diabaikan
- * seluruhnya dan alamat soket yang dipakai.
- */
 export const getClientIp = (req: NextApiRequest) => {
   const hops = Number(process.env.TRUST_PROXY_HOPS ?? 0)
   const socketIp = req.socket?.remoteAddress ?? 'unknown'
@@ -63,10 +33,6 @@ export const getClientIp = (req: NextApiRequest) => {
   return chain[index] ?? chain[0]
 }
 
-/**
- * Mengembalikan true kalau request boleh diteruskan. Kalau kuotanya habis,
- * fungsi ini sendiri yang membalas 429 sehingga pemanggil cukup `return`.
- */
 export const enforceRateLimit = async (
   req: NextApiRequest,
   res: NextApiResponse,
@@ -81,9 +47,6 @@ export const enforceRateLimit = async (
   try {
     hit = await store.add(key, now, windowMs)
   } catch (error) {
-    // Penyimpanan bersama yang sedang tidak bisa dihubungi tidak boleh
-    // menjatuhkan seluruh rute. Permintaan diteruskan, tetapi dicatat keras
-    // supaya periode tanpa perlindungan ini terlihat.
     logger.error('rate limit gagal membaca penyimpanan', {
       rule: name,
       store: store.name,
@@ -103,8 +66,16 @@ export const enforceRateLimit = async (
     logger.warn('rate limit tercapai', { rule: name, scope, ip, limit })
 
     res.setHeader('Retry-After', String(retryAfter))
-    res.status(429).json({
+    sendFailure(res, {
+      status: 429,
       message: `Terlalu banyak permintaan. Coba lagi dalam ${retryAfter} detik.`,
+      errors: [
+        {
+          code: 'RATE_LIMITED',
+          field: '',
+          message: `Coba lagi dalam ${retryAfter} detik.`,
+        },
+      ],
     })
     return false
   }
@@ -112,7 +83,6 @@ export const enforceRateLimit = async (
   return true
 }
 
-/** Hanya dipakai test supaya hitungan satu kasus tidak bocor ke kasus lain. */
 export const resetRateLimit = async () => {
   await getRateLimitStore().clear()
   setRateLimitStore(null)

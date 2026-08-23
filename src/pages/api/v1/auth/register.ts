@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import {
   getSupabaseSetupMessage,
@@ -13,23 +14,11 @@ import {
   getUsernameProblem,
 } from '@/shared/lib/authIdentity'
 
-/**
- * Pendaftaran dijalankan di server memakai secret key, bukan `signUp()` dari
- * browser.
- *
- * Alasannya alamat email di sini sintetis (`username@blayer.id`) sehingga tautan
- * konfirmasi tidak akan pernah sampai. Lewat Admin API akun bisa langsung
- * ditandai terkonfirmasi, jadi pengguna bisa masuk begitu selesai mendaftar
- * tanpa perlu mematikan konfirmasi email untuk seluruh project.
- */
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST'])
-    return res.status(405).json({ message: `Method ${req.method} not allowed` })
+    return sendMethodNotAllowed(res, req.method, ['POST'])
   }
 
-  // Pendaftaran terbuka untuk siapa saja, jadi tanpa batas ini satu skrip
-  // bisa membuat ribuan akun dan menghabiskan kuota Supabase.
   if (
     !(await enforceRateLimit(req, res, {
       name: 'auth-register',
@@ -41,7 +30,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (!isSupabaseReady || !supabase) {
-    return res.status(503).json({ message: getSupabaseSetupMessage() })
+    return sendFailure(res, {
+      status: 503,
+      message: getSupabaseSetupMessage(),
+      errors: [{ code: 'SERVICE_UNAVAILABLE', field: '', message: getSupabaseSetupMessage() }],
+    })
   }
 
   const { username, password } = req.body as {
@@ -52,7 +45,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const problem =
     getUsernameProblem(username ?? '') || getPasswordProblem(password ?? '')
 
-  if (problem) return res.status(400).json({ message: problem })
+  if (problem) {
+    return sendFailure(res, {
+      status: 400,
+      message: 'Validasi gagal',
+      errors: [{ code: 'INVALID_CREDENTIALS_FORMAT', field: 'username', message: problem }],
+    })
+  }
 
   const name = getNormalizedUsername(username ?? '')
 
@@ -64,20 +63,32 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   })
 
   if (error) {
-    // Supabase menyebut bentrok akun dengan beberapa kalimat berbeda; semuanya
-    // diterjemahkan jadi satu pesan yang bisa ditindaklanjuti pendaftar.
     const isTaken =
       error.status === 422 ||
       /already|exist|registered/i.test(error.message ?? '')
 
-    return res.status(isTaken ? 409 : 500).json({
-      message: isTaken
-        ? 'Username itu sudah dipakai. Coba username lain.'
-        : error.message || 'Pendaftaran gagal. Coba lagi sebentar lagi.',
+    const message = isTaken
+      ? 'Username itu sudah dipakai. Coba username lain.'
+      : error.message || 'Pendaftaran gagal. Coba lagi sebentar lagi.'
+
+    return sendFailure(res, {
+      status: isTaken ? 409 : 500,
+      message,
+      errors: [
+        {
+          code: isTaken ? 'USERNAME_TAKEN' : 'REGISTER_FAILED',
+          field: isTaken ? 'username' : '',
+          message,
+        },
+      ],
     })
   }
 
-  return res.status(201).json({ id: data.user?.id ?? '', username: name })
+  return sendSuccess(res, {
+    status: 201,
+    message: 'Akun berhasil dibuat',
+    data: { id: data.user?.id ?? '', username: name },
+  })
 }
 
 export default withApi('auth-register', handler)

@@ -11,9 +11,9 @@ const renderCourse = (
       formId="form-1"
       title="Kelas Online — Dasar Membangun Web"
       description="Rekaman bisa diulang kapan saja."
-      bannerUrl=""
-      videoUrl="https://www.youtube.com/watch?v=aircAruvnKk"
-      respondentName="Nabila Az-Zahra"
+      image=""
+      video="https://www.youtube.com/watch?v=aircAruvnKk"
+      name="Nabila Az-Zahra"
       items={[]}
       amount={350000}
       paymentMethod="QRIS"
@@ -36,7 +36,7 @@ describe('halaman akses kelas', () => {
   })
 
   it('TC-22 tautan youtu.be pendek ikut dikenali', () => {
-    renderCourse({ videoUrl: 'https://youtu.be/Oe421EPjeBE' })
+    renderCourse({ video: 'https://youtu.be/Oe421EPjeBE' })
 
     expect(
       screen.getByTitle('Video materi Kelas Online — Dasar Membangun Web')
@@ -44,7 +44,7 @@ describe('halaman akses kelas', () => {
   })
 
   it('TC-22 penyedia lain disajikan sebagai tautan, bukan iframe', () => {
-    renderCourse({ videoUrl: 'https://vimeo.com/123456789' })
+    renderCourse({ video: 'https://vimeo.com/123456789' })
 
     expect(
       screen.queryByTitle('Video materi Kelas Online — Dasar Membangun Web')
@@ -55,7 +55,7 @@ describe('halaman akses kelas', () => {
   })
 
   it('TC-22 tanpa tautan video, peserta diberi tahu pembayarannya tetap tercatat', () => {
-    renderCourse({ videoUrl: '' })
+    renderCourse({ video: '' })
 
     expect(screen.getByText(/belum mencantumkan tautan/i)).toBeInTheDocument()
   })

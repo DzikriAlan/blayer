@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/shared/lib/prisma'
 import { getAuthGuard } from '@/shared/lib/authServer'
 import { withApi } from '@/shared/lib/apiHandler'
+import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
 import { enforceRateLimit } from '@/shared/lib/rateLimit'
 import { getFormsInput } from '@/shared/lib/formsInput'
 
@@ -11,8 +12,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!user) return
 
     const forms = await prisma.form.findMany({
-      // Penyaringan pemilik dilakukan di query, bukan setelah data diambil —
-      // form milik akun lain tidak pernah ikut terbaca dari database.
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -20,8 +19,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     })
 
-    return res.status(200).json(
-      forms.map((form) => ({
+    return sendSuccess(res, {
+      message: 'Riwayat form berhasil dimuat',
+      data: forms.map((form) => ({
         id: form.id,
         title: form.title,
         description: form.description ?? '',
@@ -29,19 +29,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         isAiEnabled: !!form.purpose,
         templateId: form.templateId ?? '',
         isPublished: form.isPublished,
-        totalField: form._count.fields,
-        totalResponse: form._count.responses,
+        totalFields: form._count.fields,
+        totalResponses: form._count.responses,
         createdAt: form.createdAt.toISOString(),
-      }))
-    )
+      })),
+    })
   }
 
   if (req.method === 'POST') {
     const user = await getAuthGuard(req, res)
     if (!user) return
 
-    // Satu akun tidak punya alasan membuat lebih dari 20 form per menit.
-    // Batas ini menahan skrip yang memenuhi database lewat akun sungguhan.
     if (
       !(await enforceRateLimit(req, res, {
         name: 'forms-create',
@@ -54,28 +52,33 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const { data, error } = getFormsInput(req.body ?? {})
-    if (error) return res.status(400).json({ message: error.message })
+    if (error) {
+      return sendFailure(res, {
+        status: 400,
+        message: 'Validasi gagal',
+        errors: [{ code: error.code, field: error.field, message: error.message }],
+      })
+    }
 
     const form = await prisma.form.create({
       data: {
-        // Pemilik diambil dari token, bukan dari body — pengirim request tidak
-        // bisa mengaku sebagai akun lain.
         userId: user.id,
         ...data,
         fields: {
-          // id dari body diabaikan saat membuat: field baru selalu dapat id
-          // sendiri dari database.
           create: data.fields.map((field) => ({ ...field, id: undefined })),
         },
       },
       select: { id: true, title: true },
     })
 
-    return res.status(201).json({ id: form.id, title: form.title })
+    return sendSuccess(res, {
+      status: 201,
+      message: 'Form berhasil dibuat',
+      data: { id: form.id, title: form.title },
+    })
   }
 
-  res.setHeader('Allow', ['GET', 'POST'])
-  return res.status(405).json({ message: `Method ${req.method} not allowed` })
+  return sendMethodNotAllowed(res, req.method, ['GET', 'POST'])
 }
 
 export default withApi('forms', handler)

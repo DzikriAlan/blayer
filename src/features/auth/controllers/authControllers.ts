@@ -22,9 +22,6 @@ export const useAuthControllers = () => {
   const fetchAuthSession = useQuery({
     queryKey: ['authSession'],
     queryFn: () => getAuthSession(),
-    // Sesi sudah dijaga sinkron oleh listener di bawah, jadi tidak perlu
-    // ditarik ulang berkala. Gagal baca sesi juga tidak layak diulang —
-    // penyebabnya konfigurasi, bukan jaringan yang sesaat.
     staleTime: Infinity,
     retry: false,
   })
@@ -48,8 +45,6 @@ export const useAuthControllers = () => {
   const storeAuthPassword = useMutation({
     mutationFn: (payload: PayloadPostAuthPassword) => postAuthPassword(payload),
     onSuccess: () => {
-      // Sesi baru harus dibaca ulang dari Supabase, bukan disusun dari payload —
-      // yang menentukan pengguna masuk atau tidak adalah token, bukan form.
       queryClient.invalidateQueries({ queryKey: ['authSession'] })
     },
   })

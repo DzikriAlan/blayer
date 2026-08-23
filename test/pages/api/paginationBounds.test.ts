@@ -1,6 +1,3 @@
-/**
- * @vitest-environment node
- */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import publicHandler from '@/pages/api/v1/forms/public'
@@ -24,7 +21,13 @@ const getResponse = () => {
   const res = {
     statusCode: 0,
     body: null as never,
-    setHeader: vi.fn(),
+    headers: {} as Record<string, string>,
+    setHeader(key: string, value: string) {
+      res.headers[key] = String(value)
+    },
+    getHeader(key: string) {
+      return res.headers[key]
+    },
     status(code: number) {
       res.statusCode = code
       return res
@@ -42,8 +45,8 @@ const getForm = (index: number) => ({
   title: `Form ${index}`,
   description: '',
   templateId: 'event',
-  bannerUrl: '',
-  priceAmount: 0,
+  image: '',
+  price: 0,
   createdAt: new Date('2026-08-01'),
   _count: { fields: 1, responses: 0 },
 })
@@ -71,9 +74,6 @@ describe('batas pembacaan katalog publik', () => {
   it('TC-46a permintaan tanpa parameter tetap dibatasi', async () => {
     await call(publicHandler, {})
 
-    // Inti perbaikannya: kalau paginasi hanya menyala saat diminta, jalur
-    // default membaca seluruh tabel — dan jalur itulah yang dipakai halaman
-    // depan.
     const args = prismaMock.form.findMany.mock.calls[0][0]
     expect(args.take).toBe(51)
   })
@@ -97,13 +97,14 @@ describe('batas pembacaan katalog publik', () => {
       .mockResolvedValue(Array.from({ length: 3 }, (_, i) => getForm(i)))
 
     const res = await call(publicHandler, { limit: '2' })
-    const body = res.body as { items: unknown[]; nextCursor: string | null; hasMore: boolean }
+    const body = res.body as {
+      data: unknown[]
+      meta: { pagination: { next_cursor: string | null; has_more: boolean } }
+    }
 
-    // Satu baris lebih banyak diambil semata untuk mendeteksi sisa halaman,
-    // dan tidak boleh ikut terkirim.
-    expect(body.items).toHaveLength(2)
-    expect(body.hasMore).toBe(true)
-    expect(body.nextCursor).toBe('form-1')
+    expect(body.data).toHaveLength(2)
+    expect(body.meta.pagination.has_more).toBe(true)
+    expect(body.meta.pagination.next_cursor).toBe('form-1')
   })
 
   it('TC-46b halaman terakhir tidak menawarkan cursor', async () => {
@@ -112,10 +113,12 @@ describe('batas pembacaan katalog publik', () => {
       .mockResolvedValue([getForm(0), getForm(1)])
 
     const res = await call(publicHandler, { limit: '5' })
-    const body = res.body as { hasMore: boolean; nextCursor: string | null }
+    const body = res.body as {
+      meta: { pagination: { has_more: boolean; next_cursor: string | null } }
+    }
 
-    expect(body.hasMore).toBe(false)
-    expect(body.nextCursor).toBeNull()
+    expect(body.meta.pagination.has_more).toBe(false)
+    expect(body.meta.pagination.next_cursor).toBeNull()
   })
 })
 

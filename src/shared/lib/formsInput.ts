@@ -1,14 +1,4 @@
-/**
- * Pembersih payload form yang dipakai bersama oleh pembuatan dan penyuntingan.
- *
- * Dulu aturannya hanya ada di handler POST. Begitu PUT ikut menulis kolom yang
- * sama, aturan yang disalin akan langsung menyimpang — mis. harga negatif
- * ditolak saat membuat tapi lolos saat menyunting. Semua normalisasi karena itu
- * tinggal di satu tempat ini.
- */
-
 export interface FormFieldInput {
-  /** Ada saat menyunting field lama; kosong berarti field baru. */
   id?: string
   label?: string
   description?: string
@@ -23,17 +13,15 @@ export interface FormBodyInput {
   description?: string
   purpose?: string
   templateId?: string
-  bannerUrl?: string
-  meetingUrl?: string
-  videoUrl?: string
-  qrisUrl?: string
-  priceAmount?: number
+  image?: string
+  meeting?: string
+  video?: string
+  qrisImage?: string
+  price?: number
   isPublished?: boolean
   fields?: FormFieldInput[]
 }
 
-/** Jenis field yang dikenal database. Nilai di luar daftar ini akan membuat
- *  Prisma melempar error mentah, jadi disaring lebih dulu di sini. */
 export const FIELD_TYPES = [
   'SHORT_TEXT',
   'LONG_TEXT',
@@ -58,11 +46,11 @@ const MAX_TITLE = 200
 const getTrimmed = (value: unknown) =>
   typeof value === 'string' ? value.trim() : ''
 
-/** Kosong disimpan sebagai null, bukan string kosong, supaya pengecekan
- *  `!form.purpose` di seluruh aplikasi punya satu arti saja. */
 const getNullable = (value: unknown) => getTrimmed(value) || null
 
 export interface FormInputError {
+  code: string
+  field: string
   message: string
 }
 
@@ -70,23 +58,47 @@ export const getFormsInput = (body: FormBodyInput) => {
   const title = getTrimmed(body.title)
   const fields = body.fields ?? []
 
-  if (!title) return { error: { message: 'Judul form wajib diisi.' } }
+  if (!title) {
+    return {
+      error: { code: 'TITLE_REQUIRED', field: 'title', message: 'Judul form wajib diisi.' },
+    }
+  }
 
   if (title.length > MAX_TITLE) {
-    return { error: { message: `Judul form maksimal ${MAX_TITLE} karakter.` } }
+    return {
+      error: {
+        code: 'TITLE_TOO_LONG',
+        field: 'title',
+        message: `Judul form maksimal ${MAX_TITLE} karakter.`,
+      },
+    }
   }
 
   if (!fields.length) {
-    return { error: { message: 'Form butuh minimal satu field.' } }
+    return {
+      error: { code: 'FIELDS_REQUIRED', field: 'fields', message: 'Form butuh minimal satu field.' },
+    }
   }
 
   if (fields.length > MAX_FIELD) {
-    return { error: { message: `Form maksimal ${MAX_FIELD} field.` } }
+    return {
+      error: {
+        code: 'FIELDS_TOO_MANY',
+        field: 'fields',
+        message: `Form maksimal ${MAX_FIELD} field.`,
+      },
+    }
   }
 
   const invalid = fields.find((field) => !getTrimmed(field.label))
   if (invalid) {
-    return { error: { message: 'Setiap field wajib punya label pertanyaan.' } }
+    return {
+      error: {
+        code: 'FIELD_LABEL_REQUIRED',
+        field: 'fields',
+        message: 'Setiap field wajib punya label pertanyaan.',
+      },
+    }
   }
 
   const unknownType = fields.find(
@@ -96,7 +108,11 @@ export const getFormsInput = (body: FormBodyInput) => {
 
   if (unknownType) {
     return {
-      error: { message: `Jenis field "${unknownType.type}" tidak dikenal.` },
+      error: {
+        code: 'FIELD_TYPE_UNKNOWN',
+        field: 'fields',
+        message: `Jenis field "${unknownType.type}" tidak dikenal.`,
+      },
     }
   }
 
@@ -106,16 +122,15 @@ export const getFormsInput = (body: FormBodyInput) => {
       description: getNullable(body.description),
       purpose: getNullable(body.purpose),
       templateId: getNullable(body.templateId),
-      bannerUrl: getNullable(body.bannerUrl),
-      meetingUrl: getNullable(body.meetingUrl),
-      videoUrl: getNullable(body.videoUrl),
-      qrisUrl: getNullable(body.qrisUrl),
-      // Harga negatif atau bukan angka diabaikan supaya tagihan tetap masuk akal.
+      bannerUrl: getNullable(body.image),
+      meetingUrl: getNullable(body.meeting),
+      videoUrl: getNullable(body.video),
+      qrisUrl: getNullable(body.qrisImage),
       priceAmount:
-        typeof body.priceAmount === 'number' &&
-        Number.isFinite(body.priceAmount) &&
-        body.priceAmount > 0
-          ? Math.round(body.priceAmount)
+        typeof body.price === 'number' &&
+        Number.isFinite(body.price) &&
+        body.price > 0
+          ? Math.round(body.price)
           : null,
       isPublished: body.isPublished ?? true,
       fields: fields.map((field, index) => ({

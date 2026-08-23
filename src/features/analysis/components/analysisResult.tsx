@@ -34,7 +34,7 @@ export default function AnalysisResult({ formId }: Props) {
     const getMappedRanking = (item: DataAnalysisRanking, index: number) => ({
       responseId: item.responseId,
       rank: item.rank || index + 1,
-      respondentName: item.respondentName || 'Anonim',
+      name: item.name || 'Anonim',
       score: item.score,
       verdict: item.verdict,
       strengths: item.strengths ?? [],
@@ -66,12 +66,12 @@ export default function AnalysisResult({ formId }: Props) {
       errorSubtitle: responsesList.statusSubtitle,
       errorImage: '/no-data.svg',
       pagination: { currentPage: 1, perPage: rawResponses.length },
-      formTitle: responsesList.data?.formTitle ?? 'Results',
+      title: responsesList.data?.title ?? 'Results',
       purpose: responsesList.data?.purpose ?? '',
       templateId: responsesList.data?.templateId ?? '',
       rawFields: responsesList.data?.fields ?? [],
       rawResponses,
-      totalResponse: rawResponses.length,
+      totalResponses: rawResponses.length,
       isAnalyzing: storeAnalysis.isPending || analysis.status === 'loading',
       isAnalyzed: analysis.status === 'success' && !!analysis.data,
       analysisError: analysis.status === 'error' ? analysis.statusSubtitle : '',
@@ -98,7 +98,7 @@ export default function AnalysisResult({ formId }: Props) {
         <SectionHead
           tag="RESULTS"
         size="content"
-          title={data.formTitle}
+          title={data.title}
           className="px-5 pt-6 sm:px-7"
         />
 
@@ -112,12 +112,10 @@ export default function AnalysisResult({ formId }: Props) {
         ) : null}
       </section>
 
-      {/* Memuat, gagal, dan kosong ditangani satu komponen; dashboard hanya
-          dirender kalau jawabannya memang sudah ada. */}
       <LoadData response={data} minHeight="30vh">
-        {data.totalResponse > 0 ? (
+        {data.totalResponses > 0 ? (
           <ResponsesDashboard
-            formTitle={data.formTitle}
+            title={data.title}
             templateId={data.templateId}
             fields={data.rawFields}
             responses={data.rawResponses}
@@ -125,8 +123,6 @@ export default function AnalysisResult({ formId }: Props) {
         ) : null}
       </LoadData>
 
-      {/* Placeholder LoadData tidak punya slot aksi, jadi jalan keluarnya
-          diletakkan tepat di bawahnya. */}
       {data.isError ? (
         <div className="flex justify-center">
           <Button onClick={() => fetchResponsesList.refetch()}>Retry</Button>
@@ -143,7 +139,7 @@ export default function AnalysisResult({ formId }: Props) {
         </div>
       ) : null}
 
-      {data.isAiEnabled && data.totalResponse > 0 ? (
+      {data.isAiEnabled && data.totalResponses > 0 ? (
         <section className="border-2 border-foreground">
           <div className="border-b-2 border-foreground bg-primary px-5 py-8 text-primary-foreground sm:px-7">
             <div className="flex items-stretch gap-3">
@@ -215,7 +211,7 @@ export default function AnalysisResult({ formId }: Props) {
                 <AnalysisRankingCard
                   key={item.responseId}
                   rank={item.rank}
-                  respondentName={item.respondentName}
+                  name={item.name}
                   score={item.score}
                   verdict={item.verdict}
                   strengths={item.strengths}

@@ -30,14 +30,14 @@ const setForm = (isAiEnabled: boolean) => {
         description: '',
         isAiEnabled,
         templateId: 'exam',
-        bannerUrl: '',
-        qrisUrl: '',
-        priceAmount: 0,
+        image: '',
+        qrisImage: '',
+        price: 0,
         isPublished: true,
         createdAt: '2026-08-01T00:00:00.000Z',
         purpose: '',
-        meetingUrl: '',
-        videoUrl: '',
+        meeting: '',
+        video: '',
         fields: [
           {
             id: 'field-1',
@@ -68,7 +68,6 @@ describe('pengungkapan pemrosesan AI', () => {
     expect(notice).toBeInTheDocument()
     expect(notice).toHaveTextContent(/Anthropic/)
 
-    // Pengungkapan tanpa jalan ke kebijakannya hanya setengah pemberitahuan.
     expect(screen.getByRole('link', { name: /Kebijakan privasi/i })).toHaveAttribute(
       'href',
       '/privacy'
