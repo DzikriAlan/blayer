@@ -4,19 +4,6 @@ interface LogFields {
   [key: string]: unknown
 }
 
-const write = (level: LogLevel, message: string, fields: LogFields = {}) => {
-  const entry = JSON.stringify({
-    level,
-    message,
-    time: new Date().toISOString(),
-    ...fields,
-  })
-
-  if (level === 'error') return console.error(entry)
-  if (level === 'warn') return console.warn(entry)
-  return console.log(entry)
-}
-
 const REDACTED = new Set([
   'ip',
   'email',
@@ -34,6 +21,19 @@ const getSafeFields = (fields: LogFields) =>
       REDACTED.has(key) ? [key, '[disaring]'] : [key, value]
     )
   )
+
+const write = (level: LogLevel, message: string, fields: LogFields = {}) => {
+  const entry = JSON.stringify({
+    level,
+    message,
+    time: new Date().toISOString(),
+    ...getSafeFields(fields),
+  })
+
+  if (level === 'error') return console.error(entry)
+  if (level === 'warn') return console.warn(entry)
+  return console.log(entry)
+}
 
 const ALERT_SILENCE_MS = 5 * 60_000
 const lastAlert = new Map<string, number>()

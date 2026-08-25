@@ -49,6 +49,24 @@ describe('alert kegagalan', () => {
     expect(sent[0].body).toContain('timeout')
   })
 
+  it('TC-45d data yang menunjuk orang juga tidak ikut ke log konsol', () => {
+    logger.warn('rate limit tercapai', {
+      rule: 'responses-create',
+      scope: 'form-1',
+      ip: '203.0.113.9',
+      limit: 100,
+    })
+
+    const entry = JSON.parse(
+      (console.warn as unknown as { mock: { calls: string[][] } }).mock
+        .calls[0][0]
+    )
+
+    expect(entry.ip).toBe('[disaring]')
+    expect(entry.scope).toBe('form-1')
+    expect(entry.rule).toBe('responses-create')
+  })
+
   it('TC-45b insiden yang sama tidak membanjiri kanal alert', () => {
     for (let index = 0; index < 50; index += 1) {
       logger.error('basis data tidak terjangkau', { attempt: index })
