@@ -78,13 +78,13 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
 
         return (
           <section key={item.id}>
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-              <div className="flex min-w-0 items-center gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <Icon className="h-5 w-5 shrink-0" />
-                <h3 className="min-w-0 break-words font-display text-2xl font-black uppercase leading-none tracking-tight">
+                <h3 className="truncate font-display text-xl font-black uppercase leading-none tracking-tight sm:text-2xl">
                   {item.name}
                 </h3>
-                <span className="brutal-eyebrow text-muted-foreground">
+                <span className="brutal-eyebrow hidden shrink-0 whitespace-nowrap text-muted-foreground sm:inline">
                   {item.availabilityText}
                 </span>
               </div>
@@ -92,11 +92,17 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
               <Button
                 size="sm"
                 variant="outline"
+                className="shrink-0"
                 onClick={() => onLoadFormsExplore(item.id)}
               >
-                Lihat Semua <ArrowUpRight />
+                <span className="hidden sm:inline">Lihat Semua</span>
+                <ArrowUpRight />
               </Button>
             </div>
+
+            <p className="brutal-eyebrow mt-2 text-muted-foreground sm:hidden">
+              {item.availabilityText}
+            </p>
 
             <p className="mt-4 max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground">
               {item.description}
@@ -123,7 +129,7 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
             ) : null}
 
             {item.visibleForms.length ? (
-              <div className="brutal-scroll-hidden -mx-1 mt-7 flex snap-x snap-mandatory gap-6 overflow-x-auto px-1 pb-1">
+              <div className="brutal-scroll-hidden -mx-1 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-1 sm:mt-7 sm:gap-6">
                 {item.visibleForms.map((form) => (
                   <FormsPoster
                     key={form.id}
@@ -134,7 +140,7 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
                     hasBanner
                     isFixedBanner
                     hasPriceBadge={item.hasPriceBadge}
-                    className="w-[300px] shrink-0 snap-start sm:w-[360px]"
+                    className="w-[78vw] max-w-[320px] shrink-0 snap-start sm:w-[360px] sm:max-w-none"
                   />
                 ))}
               </div>

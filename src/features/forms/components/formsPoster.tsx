@@ -52,7 +52,7 @@ export default function FormsPoster({
         <div
           className={cn(
             'relative w-full overflow-hidden border-b-2 border-foreground bg-muted',
-            isFixedBanner ? 'h-44' : 'min-h-32'
+            isFixedBanner ? 'h-32 sm:h-44' : 'min-h-32'
           )}
         >
           <span aria-hidden className="brutal-hatch absolute inset-0 opacity-20" />
@@ -77,10 +77,10 @@ export default function FormsPoster({
         </div>
       ) : null}
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
         <h2
           title={form.tooltip}
-          className="line-clamp-2 min-h-[2.5em] break-words font-display text-xl font-black uppercase leading-tight tracking-tight"
+          className="line-clamp-2 min-h-[2.5em] break-words font-display text-lg font-black uppercase leading-tight tracking-tight sm:text-xl"
         >
           {form.title}
         </h2>
