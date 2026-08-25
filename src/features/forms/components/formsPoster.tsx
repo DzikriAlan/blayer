@@ -26,6 +26,7 @@ interface Props {
   fieldLabel: string
   hasBanner?: boolean
   hasPriceBadge?: boolean
+  isFixedBanner?: boolean
   className?: string
 }
 
@@ -36,6 +37,7 @@ export default function FormsPoster({
   fieldLabel,
   hasBanner = true,
   hasPriceBadge = false,
+  isFixedBanner = false,
   className,
 }: Props) {
   return (
@@ -47,7 +49,12 @@ export default function FormsPoster({
       )}
     >
       {hasBanner ? (
-        <div className="relative min-h-32 w-full overflow-hidden border-b-2 border-foreground bg-muted">
+        <div
+          className={cn(
+            'relative w-full overflow-hidden border-b-2 border-foreground bg-muted',
+            isFixedBanner ? 'h-44' : 'min-h-32'
+          )}
+        >
           <span aria-hidden className="brutal-hatch absolute inset-0 opacity-20" />
           {form.image ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -55,7 +62,11 @@ export default function FormsPoster({
               src={form.image}
               alt={`Banner ${form.title}`}
               loading="lazy"
-              className="relative block h-auto max-h-[22rem] w-full object-contain"
+              className={cn(
+                isFixedBanner
+                  ? 'absolute inset-0 h-full w-full object-cover'
+                  : 'relative block h-auto max-h-[22rem] w-full object-contain'
+              )}
             />
           ) : null}
           {form.isPaid ? (

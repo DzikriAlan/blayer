@@ -35,7 +35,7 @@ export default function LandingShell({ className, children }: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b-2 border-foreground bg-paper">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-2 sm:px-8">
+        <div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-3 py-2 sm:px-5">
           <Link href="/" className="flex items-center">
             <Image
               src={logo}
@@ -54,7 +54,7 @@ export default function LandingShell({ className, children }: Props) {
       <main className={cn('flex-1', className)}>{children}</main>
 
       <footer className="border-t-2 border-foreground bg-foreground text-background">
-        <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3 sm:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-3 py-12 sm:grid-cols-3 sm:px-5">
           <div>
             <Image
               src={wordmark}
@@ -91,8 +91,8 @@ export default function LandingShell({ className, children }: Props) {
           ))}
         </div>
 
-        <div className="border-t-2 border-background/20 px-5 py-5 sm:px-8">
-          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2">
+        <div className="border-t-2 border-background/20 px-3 py-5 sm:px-5">
+          <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-2">
             <p className="brutal-eyebrow opacity-60">
               © {new Date().getFullYear()} BLAYER® STUDIO
             </p>

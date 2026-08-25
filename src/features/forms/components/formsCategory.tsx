@@ -18,7 +18,6 @@ export interface FormsCategoryItem {
   countLabel: string
   fieldLabel: string
   emptyText: string
-  hasBanner: boolean
   hasPriceBadge: boolean
   forms: FormsPosterForm[]
 }
@@ -104,7 +103,7 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
             </p>
 
             {item.tags.length ? (
-              <div className="brutal-scroll-x mt-5 flex gap-2 overflow-x-auto pb-1">
+              <div className="brutal-scroll-hidden mt-5 flex gap-2 overflow-x-auto">
                 {item.tags.map((tag) => (
                   <button
                     key={tag}
@@ -124,7 +123,7 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
             ) : null}
 
             {item.visibleForms.length ? (
-              <div className="brutal-scroll-x -mx-1 mt-7 flex snap-x snap-mandatory gap-6 overflow-x-auto px-1 pb-3">
+              <div className="brutal-scroll-hidden -mx-1 mt-7 flex snap-x snap-mandatory gap-6 overflow-x-auto px-1 pb-1">
                 {item.visibleForms.map((form) => (
                   <FormsPoster
                     key={form.id}
@@ -132,7 +131,8 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
                     actionLabel={item.actionLabel}
                     countLabel={item.countLabel}
                     fieldLabel={item.fieldLabel}
-                    hasBanner={item.hasBanner}
+                    hasBanner
+                    isFixedBanner
                     hasPriceBadge={item.hasPriceBadge}
                     className="w-[300px] shrink-0 snap-start sm:w-[360px]"
                   />

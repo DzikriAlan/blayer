@@ -35,7 +35,7 @@ export default function FormsHero({
 
   return (
     <section className="flex flex-col border-b-2 border-foreground bg-paper lg:min-h-[calc(100svh-4.4rem)]">
-      <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-5 pb-8 pt-10 sm:px-8 sm:pb-10 sm:pt-14 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
+      <div className="mx-auto grid w-full max-w-7xl flex-1 items-center gap-10 px-3 pb-8 pt-10 sm:px-5 sm:pb-10 sm:pt-14 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
         <div>
           <span className="brutal-eyebrow inline-block bg-primary px-3 py-2 text-primary-foreground">
             <span className="brutal-rotator">
@@ -117,7 +117,7 @@ export default function FormsHero({
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-6xl px-5 pb-8 sm:px-8 sm:pb-10">
+      <div className="mx-auto w-full max-w-7xl px-3 pb-8 sm:px-5 sm:pb-10">
         <dl className="grid border-2 border-foreground sm:grid-cols-3">
           {stats.map((stat, index) => (
             <div

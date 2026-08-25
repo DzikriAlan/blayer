@@ -189,6 +189,14 @@
     background: hsl(var(--foreground));
   }
 
+  .brutal-scroll-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .brutal-scroll-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
   .brutal-scroll-thin {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--foreground)) transparent;
