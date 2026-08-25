@@ -48,7 +48,6 @@ export default function ResponsesSubmit({ formId }: Props) {
     errors: {} as Record<string, string>,
     startedAt: 0,
     elapsedSeconds: 0,
-    violationCount: 0,
   })
 
   const data = useMemo(() => {
@@ -183,7 +182,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       eventSessionText: getFirstAnswerByType('SELECT'),
       totalAttendee: responses.data?.totalResponses ?? 0,
       durationText: getDurationText(filters.elapsedSeconds),
-      violationCount: filters.violationCount,
       isSubmitting: storeResponses.isPending || responses.status === 'loading',
       isSubmitted: responses.status === 'success',
       submitError: responses.status === 'error' ? responses.statusSubtitle : '',
@@ -200,10 +198,6 @@ export default function ResponsesSubmit({ formId }: Props) {
 
   const editRespondent = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
-  }
-
-  const editViolation = () => {
-    setFilters((prev) => ({ ...prev, violationCount: prev.violationCount + 1 }))
   }
 
   const clearResponses = () => {
@@ -406,9 +400,7 @@ export default function ResponsesSubmit({ formId }: Props) {
     >
       <ResponsesGuard
         isActive={data.isProctored}
-        violationCount={data.violationCount}
         durationText={data.durationText}
-        onEditViolation={editViolation}
       />
 
       {data.hasBanner && data.image ? (
