@@ -30,8 +30,8 @@ interface FormsStore {
 export const useFormsStates = create<FormsStore>((set) => ({
   payloadPostForms: {
     title: '',
+    slug: '',
     description: '',
-    purpose: '',
     templateId: '',
     image: '',
     meeting: '',

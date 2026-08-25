@@ -60,8 +60,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       })
     }
 
-    const getFreeSlug = async (title: string) => {
-      const candidates = getSlugCandidates(title, user.id)
+    const getFreeSlug = async () => {
+      const candidates = data.slug
+        ? [data.slug]
+        : getSlugCandidates(data.title, user.id)
 
       const taken = await prisma.form.findMany({
         where: { slug: { in: candidates } },
@@ -72,11 +74,27 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return candidates.find((candidate) => !usedSlugs.has(candidate)) ?? null
     }
 
+    const slug = await getFreeSlug()
+
+    if (data.slug && !slug) {
+      return sendFailure(res, {
+        status: 409,
+        message: `Tautan "${data.slug}" sudah dipakai form lain.`,
+        errors: [
+          {
+            code: 'SLUG_TAKEN',
+            field: 'slug',
+            message: 'Pilih tautan lain yang belum dipakai.',
+          },
+        ],
+      })
+    }
+
     const form = await prisma.form.create({
       data: {
         userId: user.id,
-        slug: await getFreeSlug(data.title),
         ...data,
+        slug,
         fields: {
           create: data.fields.map((field) => ({ ...field, id: undefined })),
         },

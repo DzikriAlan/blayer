@@ -43,6 +43,28 @@ describe('normalisasi payload form', () => {
     expect(data?.description).toBe(null)
   })
 
+  it('TC-42l merapikan tautan yang diketik pembuat form', () => {
+    const { data } = getFormsInput(getBody({ slug: '  Daftar Aja Gratis  ' }))
+
+    expect(data?.slug).toBe('daftar-aja-gratis')
+  })
+
+  it('TC-42m tautan kosong dibiarkan null supaya dibuatkan otomatis', () => {
+    expect(getFormsInput(getBody({ slug: '' })).data?.slug).toBe(null)
+    expect(getFormsInput(getBody({})).data?.slug).toBe(null)
+  })
+
+  it('TC-42n menolak tautan yang bentrok dengan rute sistem', () => {
+    const { error } = getFormsInput(getBody({ slug: 'login' }))
+
+    expect(error?.code).toBe('SLUG_INVALID')
+    expect(error?.field).toBe('slug')
+  })
+
+  it('TC-42o menolak tautan yang terlalu pendek', () => {
+    expect(getFormsInput(getBody({ slug: 'ab' })).error?.code).toBe('SLUG_INVALID')
+  })
+
   it('TC-42k memberi urutan field mengikuti urutan kirim', () => {
     const { data } = getFormsInput(
       getBody({

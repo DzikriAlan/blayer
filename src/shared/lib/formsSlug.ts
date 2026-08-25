@@ -17,7 +17,7 @@ export const RESERVED_SLUGS = [
 ]
 
 export const getSlugged = (value: string) =>
-  value
+  (value ?? '')
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
@@ -28,6 +28,7 @@ export const getSlugged = (value: string) =>
     .replace(/-+$/g, '')
 
 export const getSlugError = (slug: string) => {
+  if (!slug) return 'Tautan wajib diisi.'
   if (slug.length < SLUG_MIN_LENGTH) {
     return `Tautan minimal ${SLUG_MIN_LENGTH} karakter.`
   }

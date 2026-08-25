@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { getSlugError, getSlugged } from '@/shared/lib/formsSlug'
 import { z } from 'zod'
 import {
   ArrowLeft,
@@ -56,6 +57,7 @@ const fieldSchema = z.object({
 const schema = z
   .object({
     title: z.string().min(1, 'Judul form wajib diisi'),
+    slug: z.string(),
     description: z.string(),
     image: z.string(),
     meeting: z.string(),
@@ -66,6 +68,18 @@ const schema = z
     fields: z.array(fieldSchema).min(1, 'Tambahkan minimal satu field'),
   })
   .superRefine((values, ctx) => {
+    const slugError = (values.slug ?? '').trim()
+      ? getSlugError(getSlugged(values.slug))
+      : ''
+
+    if (slugError) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['slug'],
+        message: slugError,
+      })
+    }
+
     if (values.meeting.trim() && !/^https?:\/\/\S+$/.test(values.meeting.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -132,6 +146,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       image: '',
       meeting: '',
       video: '',
+      slug: '',
       qrisImage: '',
       price: '',
       isPublished: true,
@@ -145,6 +160,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   })
 
   const watchedTitle = form.watch('title')
+  const watchedSlug = form.watch('slug')
   const watchedFields = form.watch('fields')
   const watchedPublished = form.watch('isPublished')
   const watchedBannerUrl = form.watch('image')
@@ -195,6 +211,9 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       pagination: { currentPage: 1, perPage: mappedList.length },
       title: watchedTitle,
       titleError: form.formState.errors.title?.message ?? '',
+      slugError: form.formState.errors.slug?.message ?? '',
+      slugPreview: getSlugged(watchedSlug) || getSlugged(watchedTitle) || 'tautan-form',
+      isSlugAuto: !watchedSlug.trim(),
       fieldsError: form.formState.errors.fields?.message ?? '',
       optionError: filters.optionError,
       activeTemplateId: filters.activeTemplateId,
@@ -217,6 +236,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     }
   }, [
     watchedTitle,
+    watchedSlug,
     watchedFields,
     watchedPublished,
     watchedBannerUrl,
@@ -259,6 +279,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     form.reset({
       ...template.values,
+      slug: '',
     })
     setFilters((prev) => ({
       ...prev,
@@ -338,6 +359,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     const payload: PayloadPostForms = {
       title: values.title,
+      slug: getSlugged(values.slug),
       description: values.description,
       templateId: filters.activeTemplateId,
       image: data.hasBanner ? values.image : '',
@@ -382,6 +404,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     form.reset({
       ...template.values,
+      slug: '',
     })
     setFilters((prev) => ({
       ...prev,
@@ -410,6 +433,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     form.reset({
       title: detail.title,
+      slug: detail.slug,
       description: detail.description,
       image: detail.image,
       meeting: detail.meeting,
@@ -467,6 +491,29 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
             />
             {data.titleError ? (
               <p className="brutal-eyebrow text-primary">{data.titleError}</p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="form-slug">Tautan Form</Label>
+            <div className="flex items-center gap-0 border-2 border-foreground bg-background">
+              <span className="shrink-0 border-r-2 border-foreground bg-muted px-3 py-2 font-mono text-sm text-muted-foreground">
+                blayer.id/f/
+              </span>
+              <Input
+                id="form-slug"
+                className="min-w-0 flex-1 border-0"
+                placeholder={data.slugPreview}
+                {...form.register('slug')}
+              />
+            </div>
+            <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+              {data.isSlugAuto
+                ? `Dikosongkan berarti dibuatkan otomatis: blayer.id/f/${data.slugPreview}`
+                : `Tautan yang dibagikan: blayer.id/f/${data.slugPreview}`}
+            </p>
+            {data.slugError ? (
+              <p className="brutal-eyebrow text-primary">{data.slugError}</p>
             ) : null}
           </div>
 

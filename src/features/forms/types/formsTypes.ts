@@ -27,6 +27,7 @@ export interface FormsFieldInput {
 
 export interface PayloadPostForms {
   title: string
+  slug: string
   description: string
   templateId: string
   image: string

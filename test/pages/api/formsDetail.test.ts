@@ -270,4 +270,40 @@ describe('menyunting dan menghapus form', () => {
       where: { id: 'form-1' },
     })
   })
+  it('TC-39g menolak tautan yang sudah dipakai form lain', async () => {
+    authMock.user = { id: 'user-a', email: 'a@blayer.id' }
+    prismaMock.form.findUnique = vi.fn().mockResolvedValue({ userId: 'user-a' })
+    prismaMock.form.findFirst = vi.fn().mockResolvedValue({ id: 'form-lain' })
+
+    const res = await call({
+      method: 'PUT',
+      headers: {},
+      query: { id: 'form-1' },
+      body: { ...body, slug: 'daftar-aja-gratis' },
+    })
+
+    expect(res.statusCode).toBe(409)
+    expect(res.body.errors?.[0].code).toBe('SLUG_TAKEN')
+    expect(prismaMock.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('TC-39h menyimpan tautan baru ketika belum dipakai siapa pun', async () => {
+    authMock.user = { id: 'user-a', email: 'a@blayer.id' }
+    prismaMock.form.findUnique = vi.fn().mockResolvedValue({ userId: 'user-a' })
+    prismaMock.form.findFirst = vi.fn().mockResolvedValue(null)
+
+    const res = await call({
+      method: 'PUT',
+      headers: {},
+      query: { id: 'form-1' },
+      body: { ...body, slug: 'daftar-aja-gratis' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(prismaMock.form.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ slug: 'daftar-aja-gratis' }),
+      })
+    )
+  })
 })

@@ -152,10 +152,31 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     })
   }
 
-  const { fields, ...scalars } = data
+  const { fields, slug, ...scalars } = data
   const keptIds = fields
     .map((field) => field.id)
     .filter((fieldId): fieldId is string => !!fieldId)
+
+  if (slug) {
+    const clashing = await prisma.form.findFirst({
+      where: { slug, NOT: { id } },
+      select: { id: true },
+    })
+
+    if (clashing) {
+      return sendFailure(res, {
+        status: 409,
+        message: `Tautan "${slug}" sudah dipakai form lain.`,
+        errors: [
+          {
+            code: 'SLUG_TAKEN',
+            field: 'slug',
+            message: 'Pilih tautan lain yang belum dipakai.',
+          },
+        ],
+      })
+    }
+  }
 
   await prisma.$transaction([
     prisma.formField.deleteMany({
@@ -173,7 +194,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         data: { ...values, options: values.options ?? Prisma.DbNull },
       })
     }),
-    prisma.form.update({ where: { id }, data: scalars }),
+    prisma.form.update({
+      where: { id },
+      data: slug ? { ...scalars, slug } : scalars,
+    }),
   ])
 
   return sendSuccess(res, {

@@ -1,3 +1,5 @@
+import { getSlugError, getSlugged } from './formsSlug'
+
 export interface FormFieldInput {
   id?: string
   label?: string
@@ -10,6 +12,7 @@ export interface FormFieldInput {
 
 export interface FormBodyInput {
   title?: string
+  slug?: string
   description?: string
   templateId?: string
   image?: string
@@ -56,6 +59,17 @@ export interface FormInputError {
 export const getFormsInput = (body: FormBodyInput) => {
   const title = getTrimmed(body.title)
   const fields = body.fields ?? []
+  const slug = getSlugged(getTrimmed(body.slug))
+
+  if (getTrimmed(body.slug) && getSlugError(slug)) {
+    return {
+      error: {
+        code: 'SLUG_INVALID',
+        field: 'slug',
+        message: getSlugError(slug),
+      },
+    }
+  }
 
   if (!title) {
     return {
@@ -118,6 +132,7 @@ export const getFormsInput = (body: FormBodyInput) => {
   return {
     data: {
       title,
+      slug: slug || null,
       description: getNullable(body.description),
       templateId: getNullable(body.templateId),
       bannerUrl: getNullable(body.image),
