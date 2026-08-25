@@ -30,9 +30,6 @@ interface Props {
 
 const ALL_TAG = 'SEMUA'
 
-const STICK_BASE = 88
-const STICK_STEP = 76
-
 export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
   const [filters, setFilters] = useState({
     activeTags: {} as Record<string, string>,
@@ -76,19 +73,12 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
   }
 
   return (
-    <div className="relative">
-      {sections.map((item, index) => {
+    <div className="flex flex-col gap-16">
+      {sections.map((item) => {
         const Icon = item.icon
 
         return (
-          <section
-            key={item.id}
-            style={{
-              top: `${STICK_BASE + index * STICK_STEP}px`,
-              zIndex: index + 1,
-            }}
-            className="mb-8 border-2 border-foreground bg-paper px-5 pb-8 pt-6 shadow-[0_-10px_30px_-12px_hsl(var(--foreground)/0.35)] last:mb-0 sm:px-7 md:sticky"
-          >
+          <section key={item.id}>
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
               <div className="flex min-w-0 items-center gap-3">
                 <Icon className="h-5 w-5 shrink-0" />
