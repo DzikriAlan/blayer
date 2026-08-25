@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { withApi } from '@/shared/lib/apiHandler'
+import { SLOW_REQUEST_MS, withApi } from '@/shared/lib/apiHandler'
 
 const getResponse = () => {
   const res = {
@@ -75,6 +75,52 @@ describe('pembungkus handler API', () => {
     expect(res.statusCode).toBe(200)
     expect(res.body).toEqual({ message: 'sudah terkirim' })
     errorSpy.mockRestore()
+  })
+
+  it('TC-42e mencatat lama tiap permintaan yang berhasil', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const res = getResponse()
+    const handler = withApi('forms', async (_req, response) => {
+      response.status(200).json({ ok: true })
+    })
+
+    await handler({ method: 'GET', headers: {} } as never, res as never)
+
+    const entry = JSON.parse(logSpy.mock.calls[0][0] as string)
+    expect(entry).toMatchObject({
+      level: 'info',
+      route: 'forms',
+      method: 'GET',
+      status: 200,
+    })
+    expect(typeof entry.durationMs).toBe('number')
+    logSpy.mockRestore()
+  })
+
+  it('TC-42f menaikkan permintaan lambat jadi peringatan, bukan info', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const nowSpy = vi
+      .spyOn(Date, 'now')
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0)
+      .mockReturnValue(SLOW_REQUEST_MS + 1)
+
+    const res = getResponse()
+    const handler = withApi('responses', async (_req, response) => {
+      response.status(201).json({ ok: true })
+    })
+
+    await handler({ method: 'POST', headers: {} } as never, res as never)
+
+    expect(logSpy).not.toHaveBeenCalled()
+    const entry = JSON.parse(warnSpy.mock.calls[0][0] as string)
+    expect(entry).toMatchObject({ level: 'warn', route: 'responses' })
+    expect(entry.durationMs).toBeGreaterThanOrEqual(SLOW_REQUEST_MS)
+
+    nowSpy.mockRestore()
+    warnSpy.mockRestore()
+    logSpy.mockRestore()
   })
 
   it('TC-42d meneruskan balasan normal apa adanya', async () => {

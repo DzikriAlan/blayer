@@ -67,6 +67,27 @@ Dipakai membangun tautan di dalam surat pemulihan. Tanpa ini, alamatnya
 diturunkan dari header `Host` permintaan, yang bisa dipalsukan — tautan
 pemulihan lalu menunjuk ke domain penyerang.
 
+## Pemantauan — dianjurkan
+
+Endpoint `GET /api/health` menjawab `200` bila basis data membalas `SELECT 1`
+dalam 3 detik, dan `503` bila tidak. Balasannya memuat `databaseMs`,
+`rateLimitStore`, dan `uptimeSeconds`. Tidak butuh token — arahkan uptime
+monitor ke sini, dan pakai `503` sebagai pemicu alert.
+
+Setiap permintaan API dicatat satu baris JSON berisi `route`, `method`,
+`status`, dan `durationMs`. Permintaan yang melewati ambang batas naik dari
+`info` ke `warn` sehingga bisa dijadikan alert tersendiri:
+
+```
+SLOW_REQUEST_MS=1000
+```
+
+Ini yang membuat sistem yang lambat tetapi tetap membalas `200` bisa terlihat.
+Tanpa ambang ini nilainya 1000 ms.
+
+Catatan: field yang menunjuk orang — `ip`, `email`, `respondentName`, `token`,
+`stack` — disaring di semua jalur log, bukan hanya di webhook alert.
+
 ## Alert kegagalan — opsional
 
 ```
