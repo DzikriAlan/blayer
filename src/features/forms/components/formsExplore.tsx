@@ -130,7 +130,7 @@ export default function FormsExplore({ templateId }: Props) {
   }, [templateId, formsPublic])
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-5 py-14 sm:px-8 sm:py-16">
+    <section className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 sm:py-16">
       <div className="flex flex-wrap items-center gap-3">
         <BackLink
           href="/#kategori"

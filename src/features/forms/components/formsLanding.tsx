@@ -176,7 +176,7 @@ export default function FormsLanding() {
         id="kategori"
         className="scroll-mt-24 border-b-2 border-foreground bg-background"
       >
-        <div className="mx-auto w-full max-w-5xl px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
           <div className="flex items-stretch gap-3">
             <span className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
               YANG SEDANG TERBUKA
