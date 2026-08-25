@@ -21,7 +21,7 @@ RELIABLE
 ✓ Skema lewat migrasi, db:push diblokir
 ✓ CI blokir lint, typecheck, test, build merah
 ✗ Satu peserta satu jawaban
-✗ Ekspor jawaban untuk pembuat form
+◐ Ekspor CSV baru memuat ringkasan, belum jawaban lengkap
 
 ROBUST
 ✓ Kegagalan jadi JSON beramplop, bukan HTML

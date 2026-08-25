@@ -52,6 +52,7 @@ export interface PayloadDeleteForms {
 
 export interface DataForms {
   id: string
+  slug: string
   title: string
   description: string
   templateId: string
@@ -100,6 +101,7 @@ export interface DataFormsDetailField {
 
 export interface DataFormsDetail {
   id: string
+  slug: string
   title: string
   description: string
   templateId: string

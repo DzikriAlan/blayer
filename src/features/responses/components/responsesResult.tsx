@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import SectionHead from '@/components/section-head'
 import { LoadData } from '@/shared/components/load-data'
 import ResponsesDashboard from './responsesDashboard'
+import FormsShare from '@/features/forms/components/formsShare'
 
 interface Props {
   formId: string
@@ -48,6 +49,7 @@ export default function ResponsesResult({ formId }: Props) {
       errorImage: '/no-data.svg',
       pagination: { currentPage: 1, perPage: mappedList.length },
       title: responsesList.data?.title ?? 'Results',
+      slug: responsesList.data?.slug ?? '',
       templateId: responsesList.data?.templateId ?? '',
       rawFields: responsesList.data?.fields ?? [],
       rawResponses,
@@ -74,6 +76,8 @@ export default function ResponsesResult({ formId }: Props) {
           className="px-5 pt-6 sm:px-7"
         />
       </section>
+
+      <FormsShare slug={data.slug} id={formId} title={data.title} />
 
       <LoadData response={data} minHeight="30vh">
         {data.totalResponses > 0 ? (

@@ -34,6 +34,7 @@ vi.mock('@/features/forms/controllers/formsControllers', () => ({
 
 const getForm = (overrides: Partial<DataForms> = {}): DataForms => ({
   id: 'form-1',
+  slug: 'form-satu',
   title: 'Ujian Sejarah',
   description: '',
   templateId: 'exam',

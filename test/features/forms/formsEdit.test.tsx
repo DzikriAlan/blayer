@@ -21,6 +21,7 @@ vi.mock('next/router', () => ({ useRouter: () => router }))
 
 const getDetail = (): DataFormsDetail => ({
   id: 'form-1',
+  slug: 'form-satu',
   title: 'Ujian Sejarah',
   description: 'Kerjakan sendiri',
   templateId: 'exam',

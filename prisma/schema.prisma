@@ -10,6 +10,7 @@ datasource db {
 model Form {
   id          String   @id @default(cuid())
   userId      String
+  slug        String?  @unique
   title       String
   description String?  @db.Text
   purpose     String?  @db.Text

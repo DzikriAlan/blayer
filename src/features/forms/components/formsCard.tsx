@@ -1,12 +1,14 @@
 import Link from 'next/link'
 import { ArrowUpRight, BarChart3, Loader2, Pencil, Trash2 } from 'lucide-react'
 
+import FormsShare from './formsShare'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 interface Props {
   index: number
   id: string
+  slug: string
   title: string
   status: string
   totalFields: number
@@ -19,6 +21,7 @@ interface Props {
 export default function FormsCard({
   index,
   id,
+  slug,
   title,
   status,
   totalFields,
@@ -73,6 +76,7 @@ export default function FormsCard({
               <Pencil />
             </Link>
           </Button>
+          <FormsShare slug={slug} id={id} title={title} isCompact />
           {onClearForms ? (
             <Button
               size="sm"

@@ -16,6 +16,7 @@ const PUBLIC_PATHNAMES = [
   '/auth/reset-password',
   '/privacy',
   '/forms/[id]',
+  '/f/[slug]',
   '/kategori/[id]',
   '/404',
   '/500',

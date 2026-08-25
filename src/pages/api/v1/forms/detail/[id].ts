@@ -40,8 +40,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const user = await getAuthUser(req)
 
   if (req.method === 'GET') {
-    const form = await prisma.form.findUnique({
-      where: { id },
+    const form = await prisma.form.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
       include: { fields: { orderBy: { order: 'asc' } } },
     })
 
@@ -65,6 +65,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const shared = {
       id: form.id,
+      slug: form.slug ?? '',
       title: form.title,
       description: form.description ?? '',
       templateId: form.templateId ?? '',

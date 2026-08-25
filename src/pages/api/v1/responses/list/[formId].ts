@@ -77,6 +77,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     message: 'Jawaban form berhasil dimuat',
     data: {
       id: form.id,
+      slug: form.slug ?? '',
       title: form.title,
       templateId: form.templateId ?? '',
       fields: form.fields.map((field) => ({

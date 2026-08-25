@@ -6,6 +6,7 @@ const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: {
     form: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
     },
@@ -27,6 +28,7 @@ vi.mock('@/shared/lib/authServer', () => ({
 
 const getForm = (patch: Record<string, unknown> = {}) => ({
   id: 'form-1',
+  slug: 'pendaftaran-workshop',
   userId: 'user-a',
   title: 'Pendaftaran Workshop',
   description: 'Ikutan yuk',
@@ -93,6 +95,7 @@ const call = async (req: Record<string, unknown>) => {
 beforeEach(() => {
   authMock.user = null
   prismaMock.form.findUnique = vi.fn().mockResolvedValue(getForm())
+  prismaMock.form.findFirst = vi.fn().mockResolvedValue(getForm())
   prismaMock.form.update = vi.fn().mockResolvedValue({ id: 'form-1' })
   prismaMock.form.delete = vi.fn().mockResolvedValue({ id: 'form-1' })
   prismaMock.formField.deleteMany = vi.fn().mockReturnValue('deleteMany')
@@ -112,6 +115,23 @@ describe('detail form untuk pengisi', () => {
       qrisImage: 'https://cdn/qris.png',
     })
     expect(res.body.data).not.toHaveProperty('purpose')
+  })
+
+  it('TC-40f menerima tautan pendek, bukan hanya id', async () => {
+    const res = await call({
+      method: 'GET',
+      headers: {},
+      query: { id: 'pendaftaran-workshop' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.body.data).toMatchObject({ slug: 'pendaftaran-workshop' })
+
+    const where = prismaMock.form.findFirst.mock.calls[0][0].where
+    expect(where.OR).toEqual([
+      { id: 'pendaftaran-workshop' },
+      { slug: 'pendaftaran-workshop' },
+    ])
   })
 
   it('TC-40b menahan link dari akun lain yang sudah masuk', async () => {
@@ -136,7 +156,7 @@ describe('detail form untuk pengisi', () => {
   })
 
   it('TC-40d menyamarkan draf sebagai tidak ada untuk non-pemilik', async () => {
-    prismaMock.form.findUnique = vi
+    prismaMock.form.findFirst = vi
       .fn()
       .mockResolvedValue(getForm({ isPublished: false }))
 
@@ -147,7 +167,7 @@ describe('detail form untuk pengisi', () => {
 
   it('TC-40e pemilik tetap bisa membuka drafnya sendiri', async () => {
     authMock.user = { id: 'user-a', email: 'a@blayer.id' }
-    prismaMock.form.findUnique = vi
+    prismaMock.form.findFirst = vi
       .fn()
       .mockResolvedValue(getForm({ isPublished: false }))
 

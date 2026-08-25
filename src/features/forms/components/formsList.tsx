@@ -46,6 +46,7 @@ export default function FormsList() {
 
     const getMappedItem = (item: DataForms) => ({
       id: item.id,
+      slug: item.slug,
       title: item.title,
       status: item.isPublished ? 'LIVE' : 'DRAFT',
       totalFields: item.totalFields,
@@ -270,6 +271,7 @@ export default function FormsList() {
               key={item.id}
               index={data.startIndex + index}
               id={item.id}
+              slug={item.slug}
               title={item.title}
               status={item.status}
               totalFields={item.totalFields}

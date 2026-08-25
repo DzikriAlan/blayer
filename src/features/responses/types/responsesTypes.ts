@@ -45,6 +45,7 @@ export interface DataResponsesListItem {
 
 export interface DataResponsesList {
   formId: string
+  slug: string
   title: string
   templateId: string
   fields: DataResponsesListField[]

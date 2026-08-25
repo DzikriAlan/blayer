@@ -67,6 +67,7 @@ const getDetail = (
   overrides: Partial<DataFormsDetail> = {}
 ): DataFormsDetail => ({
   id: 'form-1',
+  slug: 'form-satu',
   title: 'Pesan Menu — Warung Blayer',
   description: 'Pilih makanan dan minumanmu.',
   templateId: 'restaurant',
