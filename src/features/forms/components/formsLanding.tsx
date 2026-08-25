@@ -63,18 +63,21 @@ export default function FormsLanding() {
     const getPriceText = (amount: number) =>
       amount > 0 ? `Rp${new Intl.NumberFormat('id-ID').format(amount)}` : 'Gratis'
 
-    const getCategoryForms = (templateId: string, countLabel: string) =>
+    const getCategoryForms = (templateId: string) =>
       formsPublic.data
         .filter((raw) => raw.templateId === templateId)
         .map((raw) => ({
           id: raw.id,
           slug: raw.slug,
           title: raw.title,
+          description: raw.description,
           image: raw.image,
           priceText: getPriceText(raw.price),
           isPaid: raw.price > 0,
+          totalResponses: raw.totalResponses,
+          totalFields: raw.totalFields,
+          tooltip: raw.title,
           tags: getTags(raw.description),
-          countText: `${raw.totalResponses} ${countLabel}`,
         }))
 
     const getTotalForm = (templateId: string) =>
@@ -97,11 +100,12 @@ export default function FormsLanding() {
       icon: template.icon,
       availabilityText: getAvailabilityText(template),
       actionLabel: FORMS_VIEW_COPY[template.view].action,
+      countLabel: FORMS_VIEW_COPY[template.view].countLabel,
+      fieldLabel: FORMS_VIEW_COPY[template.view].fieldLabel,
       emptyText: FORMS_VIEW_COPY[template.view].emptySubtitle,
-      forms: getCategoryForms(
-        template.id,
-        FORMS_VIEW_COPY[template.view].countLabel
-      ),
+      hasBanner: ['event', 'course', 'order'].includes(template.view),
+      hasPriceBadge: template.view === 'order',
+      forms: getCategoryForms(template.id),
     }))
 
     const totalResponses = formsPublic.data.reduce(

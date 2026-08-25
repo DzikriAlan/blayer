@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
 import FormsFacepile from './formsFacepile'
 import FormsProject from './formsProject'
+import FormsPoster from './formsPoster'
 import type { DataFormsPublic } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
 import { useFormsControllers } from '../controllers/formsControllers'
@@ -82,6 +83,7 @@ export default function FormsExplore({ templateId }: Props) {
 
       return {
         id: item.id,
+        slug: item.slug,
         title: item.title,
         description: item.description,
         image: item.image,
@@ -177,7 +179,7 @@ export default function FormsExplore({ templateId }: Props) {
               {data.data.map((form) => (
                 <Link
                   key={form.id}
-                  href={`/forms/${form.id}`}
+                  href={form.slug ? `/f/${form.slug}` : `/forms/${form.id}`}
                   className="group flex min-w-0 flex-col gap-4 border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
                 >
                   <div className="flex items-start gap-4">
@@ -257,7 +259,7 @@ export default function FormsExplore({ templateId }: Props) {
               {data.data.map((form, index) => (
                 <Link
                   key={form.id}
-                  href={`/forms/${form.id}`}
+                  href={form.slug ? `/f/${form.slug}` : `/forms/${form.id}`}
                   className="group flex items-start gap-4 border-b-2 border-foreground bg-paper px-5 py-6 transition-colors hover:bg-muted sm:gap-6 sm:px-7"
                 >
                   <span className="brutal-index group-hover:bg-primary">
@@ -302,72 +304,15 @@ export default function FormsExplore({ templateId }: Props) {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.data.map((form) => (
-                <Link
+                <FormsPoster
                   key={form.id}
-                  href={`/forms/${form.id}`}
-                  className="group flex flex-col border-2 border-foreground bg-paper transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
-                >
-                  {data.layout === 'poster' ? (
-                    <div className="relative min-h-32 w-full overflow-hidden border-b-2 border-foreground bg-muted">
-                      <span
-                        aria-hidden
-                        className="brutal-hatch absolute inset-0 opacity-20"
-                      />
-                      {form.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={form.image}
-                          alt={`Banner ${form.title}`}
-                          loading="lazy"
-                          className="relative block h-auto max-h-[22rem] w-full object-contain"
-                        />
-                      ) : null}
-                      {form.isPaid ? (
-                        <span className="brutal-eyebrow absolute left-0 top-0 bg-foreground px-3 py-2 text-background">
-                          {form.priceText}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  <div className="flex flex-1 flex-col gap-3 p-5">
-                    <h2
-                      title={form.tooltip}
-                      className="break-words font-display text-xl font-black uppercase leading-tight tracking-tight"
-                    >
-                      {form.title}
-                    </h2>
-                    {form.description ? (
-                      <p className="line-clamp-3 font-mono text-xs leading-relaxed text-muted-foreground">
-                        {form.description}
-                      </p>
-                    ) : null}
-
-                    <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <FormsFacepile
-                        total={form.totalResponses}
-                        seed={form.id}
-                        label={data.countLabel}
-                      />
-                      <span className="brutal-eyebrow text-muted-foreground">
-                        · {String(form.totalFields).padStart(2, '0')}{' '}
-                        {data.fieldLabel}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-3">
-                      {data.layout === 'menu' ? (
-                        <Badge variant="outline">{form.priceText}</Badge>
-                      ) : (
-                        <span />
-                      )}
-                      <span className="brutal-eyebrow flex items-center gap-2 border-2 border-foreground px-3 py-2 transition-colors group-hover:bg-foreground group-hover:text-background">
-                        {data.actionLabel}
-                        <ArrowUpRight className="h-4 w-4" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
+                  form={form}
+                  actionLabel={data.actionLabel}
+                  countLabel={data.countLabel}
+                  fieldLabel={data.fieldLabel}
+                  hasBanner={data.layout === 'poster'}
+                  hasPriceBadge={data.layout === 'menu'}
+                />
               ))}
             </div>
           )}

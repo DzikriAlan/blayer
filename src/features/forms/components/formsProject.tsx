@@ -6,6 +6,7 @@ import FormsFacepile from './formsFacepile'
 
 export interface FormsProjectItem {
   id: string
+  slug: string
   title: string
   tooltip: string
   priceText: string
@@ -35,7 +36,7 @@ export default function FormsProject({
       {data.map((project) => (
         <Link
           key={project.id}
-          href={`/forms/${project.id}`}
+          href={project.slug ? `/f/${project.slug}` : `/forms/${project.id}`}
           className="group flex min-w-0 flex-col border-2 border-foreground bg-paper transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
         >
           <div className="flex items-center justify-between gap-3 border-b-2 border-foreground bg-foreground px-5 py-3 text-background">

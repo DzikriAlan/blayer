@@ -297,7 +297,7 @@ describe('kartu berchip tidak melebarkan halaman', () => {
 
     const { container } = render(<FormsExplore templateId="freelance" />)
 
-    const card = container.querySelector('a[href="/forms/form-1"]')
+    const card = container.querySelector('a[href="/f/form-satu"]')
     expect(card?.className).toContain('min-w-0')
   })
 
@@ -308,7 +308,7 @@ describe('kartu berchip tidak melebarkan halaman', () => {
 
     const { container } = render(<FormsExplore templateId="psychometric" />)
 
-    const card = container.querySelector('a[href="/forms/form-1"]')
+    const card = container.querySelector('a[href="/f/form-satu"]')
     expect(card?.className).toContain('min-w-0')
   })
 })
