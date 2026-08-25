@@ -23,8 +23,6 @@ const getDetail = (): DataFormsDetail => ({
   id: 'form-1',
   title: 'Ujian Sejarah',
   description: 'Kerjakan sendiri',
-  purpose: '',
-  isAiEnabled: false,
   templateId: 'exam',
   image: '',
   meeting: '',

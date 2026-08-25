@@ -28,7 +28,6 @@ export interface FormsFieldInput {
 export interface PayloadPostForms {
   title: string
   description: string
-  purpose: string
   templateId: string
   image: string
   meeting: string
@@ -55,8 +54,6 @@ export interface DataForms {
   id: string
   title: string
   description: string
-  purpose: string
-  isAiEnabled: boolean
   templateId: string
   isPublished: boolean
   totalFields: number
@@ -105,8 +102,6 @@ export interface DataFormsDetail {
   id: string
   title: string
   description: string
-  purpose: string
-  isAiEnabled: boolean
   templateId: string
   image: string
   meeting: string

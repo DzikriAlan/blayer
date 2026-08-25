@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import formsHandler from '@/pages/api/v1/forms/index'
 import responsesListHandler from '@/pages/api/v1/responses/list/[formId]'
-import analysisHandler from '@/pages/api/v1/analysis/[formId]'
 
 vi.mock('@/shared/lib/prisma', () => ({
   prisma: {
@@ -63,13 +62,4 @@ describe('Otorisasi Rute API (Authorization Coverage)', () => {
     expect(res.body).toEqual({ message: 'Perlu masuk lebih dulu.' })
   })
 
-  it('TC-AUTHZ-03 analysis run menolak akses tanpa token (401)', async () => {
-    const res = getResponse()
-    await analysisHandler(
-      { method: 'POST', headers: {}, query: { formId: 'f1' } } as never,
-      res as never
-    )
-    expect(res.statusCode).toBe(401)
-    expect(res.body).toEqual({ message: 'Perlu masuk lebih dulu.' })
-  })
 })

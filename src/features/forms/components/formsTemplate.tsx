@@ -19,8 +19,6 @@ import {
 import type { FormsFieldType } from '../types/formsTypes'
 
 import { cn } from '@/shared/lib/utils'
-import { IS_AI_VISIBLE } from '@/shared/lib/features'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 export interface FormsTemplateField {
@@ -35,8 +33,6 @@ export interface FormsTemplateField {
 export interface FormsTemplateValues {
   title: string
   description: string
-  isAiEnabled: boolean
-  purpose: string
   image: string
   meeting: string
   video: string
@@ -200,9 +196,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Pendaftaran Workshop',
       description:
         'Kuota terbatas. Konfirmasi kehadiran akan dikirim lewat email.',
-      isAiEnabled: false,
       isPublished: true,
-      purpose: '',
       image: '',
       meeting: '',
       video: '',
@@ -231,9 +225,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Kelas Online — Dasar Membangun Web',
       description:
         'Lengkapi data diri, lalu selesaikan pembayaran. Video materi langsung terbuka begitu formulir terkirim.',
-      isAiEnabled: false,
       isPublished: true,
-      purpose: '',
       image: '',
       meeting: '',
       video: '',
@@ -278,10 +270,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Frontend Engineer — PT Nusantara Digital',
       description:
         'Jakarta Selatan · Hybrid · Penuh Waktu · S1 Teknik Informatika · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
-      isAiEnabled: true,
       isPublished: true,
-      purpose:
-        'Menyeleksi pelamar untuk posisi Frontend Engineer. Nilai kemampuan problem solving, ketahanan menghadapi tekanan, kemauan belajar, dan kecocokan dengan budaya kerja kolaboratif. Beri peringkat pelamar dan tentukan siapa yang paling layak dilanjutkan ke tahap interview beserta alasannya.',
       image: '',
       meeting: '',
       video: '',
@@ -354,10 +343,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Redesain Landing Page Company Profile',
       description:
         'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Kami butuh landing page baru yang lebih cepat dan enak dibaca di ponsel. Aset desain sudah tersedia dalam bentuk Figma.',
-      isAiEnabled: true,
       isPublished: true,
-      purpose:
-        'Memilih freelancer untuk mengerjakan proyek ini. Nilai kesesuaian portofolio dengan kebutuhan, kejelasan rencana pengerjaan, kewajaran tawaran biaya terhadap ruang lingkup, dan kesiapan mulai. Urutkan penawaran dari yang paling meyakinkan, lalu sebutkan siapa yang layak diajak bicara lebih lanjut beserta alasannya.',
       image: '',
       meeting: '',
       video: '',
@@ -414,10 +400,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Ujian Tengah Semester — Sejarah Kelas XI',
       description:
         'Kerjakan seluruh soal dalam waktu 60 menit. Jawaban esai dinilai dari ketepatan argumen dan bukti yang kamu sebutkan.',
-      isAiEnabled: true,
       isPublished: true,
-      purpose:
-        'Menilai pemahaman siswa terhadap materi ujian. Beri skor untuk setiap siswa berdasarkan ketepatan jawaban pilihan ganda dan kedalaman argumen pada jawaban esai. Urutkan siswa dari nilai tertinggi, lalu sebutkan siapa yang perlu remedial beserta topik yang belum dikuasai.',
       image: '',
       meeting: '',
       video: '',
@@ -468,9 +451,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Pesan Menu — Meja Restoran',
       description:
         'Pilih makanan dan minumanmu, lalu bayar lewat QRIS atau metode lain. Pesanan langsung masuk ke dapur setelah pembayaran dikonfirmasi.',
-      isAiEnabled: false,
       isPublished: true,
-      purpose: '',
       image: '',
       meeting: '',
       video: '',
@@ -531,10 +512,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Formulir Lamaran Kerja',
       description:
         'Lengkapi data berikut. Kami akan menghubungi pelamar yang lolos tahap screening.',
-      isAiEnabled: true,
       isPublished: true,
-      purpose:
-        'Menyaring pelamar kerja. Nilai kesesuaian pengalaman dengan posisi yang dilamar, kewajaran ekspektasi gaji, dan kesiapan bergabung. Urutkan pelamar dari yang paling sesuai, lalu tandai siapa saja yang layak dipanggil interview beserta alasannya.',
       image: '',
       meeting: '',
       video: '',
@@ -580,10 +558,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       title: 'Survei Kepuasan Pelanggan',
       description:
         'Masukanmu membantu kami memperbaiki layanan. Pengisian hanya butuh dua menit.',
-      isAiEnabled: true,
       isPublished: true,
-      purpose:
-        'Mengukur kepuasan pelanggan dan menemukan masalah yang paling mendesak. Rangkum keluhan yang paling sering muncul, urutkan responden dari yang paling puas hingga paling kecewa, lalu rekomendasikan tiga perbaikan prioritas beserta alasannya.',
       image: '',
       meeting: '',
       video: '',
@@ -626,9 +601,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     values: {
       title: '',
       description: '',
-      isAiEnabled: true,
       isPublished: true,
-      purpose: '',
       image: '',
       meeting: '',
       video: '',
@@ -686,7 +659,6 @@ export default function FormsTemplate({
           const Icon = template.icon
           const isActive = activeId === template.id
           const isFiltered = filterId === template.id
-          const isAiEnabled = template.values.isAiEnabled
 
           return (
             <div
@@ -699,19 +671,6 @@ export default function FormsTemplate({
               <div>
                 <div className="flex items-start justify-between gap-3">
                   <Icon className="h-6 w-6 shrink-0" />
-                  {IS_AI_VISIBLE ? (
-                    <Badge
-                      variant={
-                        isActive
-                          ? 'secondary'
-                          : isAiEnabled
-                            ? 'default'
-                            : 'muted'
-                      }
-                    >
-                      {isAiEnabled ? 'AI ON' : 'AI OFF'}
-                    </Badge>
-                  ) : null}
                 </div>
 
                 <h3 className="mt-4 break-words font-display text-xl font-black uppercase leading-none tracking-tight">

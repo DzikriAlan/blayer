@@ -25,8 +25,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         id: form.id,
         title: form.title,
         description: form.description ?? '',
-        purpose: form.purpose ?? '',
-        isAiEnabled: !!form.purpose,
         templateId: form.templateId ?? '',
         isPublished: form.isPublished,
         totalFields: form._count.fields,

@@ -102,25 +102,25 @@ beforeEach(() => {
 })
 
 describe('detail form untuk pengisi', () => {
-  it('TC-40a menahan tujuan AI dan link rahasia dari pengisi tanpa sesi', async () => {
+  it('TC-40a menahan link rahasia dari pengisi tanpa sesi', async () => {
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
     expect(res.statusCode).toBe(200)
     expect(res.body.data).toMatchObject({
-      purpose: '',
       meeting: '',
       video: '',
       qrisImage: 'https://cdn/qris.png',
-      isAiEnabled: true,
     })
+    expect(res.body.data).not.toHaveProperty('purpose')
   })
 
-  it('TC-40b menahan tujuan dan link dari akun lain yang sudah masuk', async () => {
+  it('TC-40b menahan link dari akun lain yang sudah masuk', async () => {
     authMock.user = { id: 'user-b', email: 'b@blayer.id' }
 
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
-    expect(res.body.data).toMatchObject({ purpose: '', meeting: '', video: '' })
+    expect(res.body.data).toMatchObject({ meeting: '', video: '' })
+    expect(res.body.data).not.toHaveProperty('purpose')
   })
 
   it('TC-40c memberi isi utuh kepada pemiliknya', async () => {
@@ -129,10 +129,10 @@ describe('detail form untuk pengisi', () => {
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
     expect(res.body.data).toMatchObject({
-      purpose: 'Pilih peserta paling relevan dengan materi',
       meeting: 'https://meet.google.com/rahasia',
       video: 'https://youtu.be/rahasia',
     })
+    expect(res.body.data).not.toHaveProperty('purpose')
   })
 
   it('TC-40d menyamarkan draf sebagai tidak ada untuk non-pemilik', async () => {

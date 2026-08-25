@@ -11,7 +11,6 @@ export interface FormFieldInput {
 export interface FormBodyInput {
   title?: string
   description?: string
-  purpose?: string
   templateId?: string
   image?: string
   meeting?: string
@@ -120,7 +119,6 @@ export const getFormsInput = (body: FormBodyInput) => {
     data: {
       title,
       description: getNullable(body.description),
-      purpose: getNullable(body.purpose),
       templateId: getNullable(body.templateId),
       bannerUrl: getNullable(body.image),
       meetingUrl: getNullable(body.meeting),

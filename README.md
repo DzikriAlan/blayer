@@ -9,7 +9,6 @@ Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interak
 * Merancang **arsitektur full-stack berlapis** dengan **Next.js 14, React 18, TypeScript, Tailwind CSS, dan Shadcn/UI**, memisahkan tiap fitur menjadi `types → states → services → controllers → components` sehingga penambahan fitur baru mengikuti jalur yang sudah tetap dan tidak menyusun ulang pola dari nol.
 * Membangun **satu form builder yang melayani delapan bentuk produk berbeda** — ujian, psikotes kerja, proyek freelance, survei, pendaftaran acara, pemesanan, kursus, dan penilaian — diturunkan dari satu field `view` pada template, sehingga halaman isi, layar setelah kirim, dan dashboard hasil menyesuaikan diri tanpa cabang kode per produk.
 * Mengimplementasikan **autentikasi dan kepemilikan data** dengan **Supabase Auth**, mendukung masuk lewat username-kata sandi maupun Google OAuth, dengan penolakan ditegakkan di API (401 tanpa token, 403 untuk milik akun lain) — bukan sekadar menyembunyikan halaman di browser.
-* Mengembangkan **analisis hasil berbasis AI** memakai **Anthropic Claude** dengan keluaran berskema, menghasilkan ringkasan, peringkat, dan rekomendasi yang merujuk pada jawaban konkret, lalu menyimpannya agar dashboard tetap berisi setelah halaman dimuat ulang.
 * Menerapkan **mode ujian berlapis** — dipakai ujian sekolah maupun psikotes kerja — yang menonaktifkan klik kanan, salin-tempel, seleksi teks, serta pintasan tab baru, pencarian, cetak, dan devtools, ditambah pencatatan lama pengerjaan tiap peserta.
 * Menyusun **penanganan keadaan data terpusat** lewat komponen `LoadData`, sehingga keadaan memuat, kosong, gagal, dan tidak terverifikasi ditangani satu tempat dan tiap permukaan tidak menyusun ulang logika yang sama.
 * Menjaga **kualitas lewat pengujian otomatis** dengan **Vitest dan Testing Library** — 168 uji yang menutup builder, halaman isi, guard halaman, layar kredensial, hingga kepemilikan data di API, dengan tiap kasus terpetakan ke ID kebutuhan di `TEST_CASE.md`.
@@ -31,7 +30,6 @@ Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interak
 | **Database** | PostgreSQL (Supabase) | Basis data relasional yang andal dan bisa diskalakan |
 | **ORM** | Prisma | Akses basis data bertipe dan sinkronisasi skema |
 | **File Storage** | Supabase Storage | Banner acara dan kode QRIS yang permanen dan bisa dibuka tanpa login |
-| **AI** | Anthropic Claude SDK | Ringkasan, peringkat, dan rekomendasi hasil form |
 | **Testing** | Vitest + Testing Library | Uji unit dan komponen yang selaras dengan struktur fitur |
 | **Icons** | Lucide React | Pustaka ikon yang konsisten dan aksesibel |
 | **Code Quality** | ESLint + TypeScript Strict | Linting dan pemeriksaan tipe demi keterawatan |
@@ -80,8 +78,6 @@ SUPABASE_URL="https://xxxx.supabase.co"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 SUPABASE_BANNER_BUCKET="form-banners"
 
-# Analisis AI
-ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 Aktifkan Google OAuth di dashboard Supabase:
@@ -253,9 +249,8 @@ Sebelum melepas ke publik:
 2. **Pooler untuk aplikasinya.** `DATABASE_URL` yang dipakai aplikasi harus URL
    pooler (`?pgbouncer=true&connection_limit=1`). Tanpa itu, tiap instance
    serverless membuka pool sendiri dan koneksi Postgres habis di bawah trafik.
-3. **Rahasia server tanpa prefix publik.** `SUPABASE_SERVICE_ROLE_KEY`,
-   `SUPABASE_SECRET_KEY`, dan `ANTHROPIC_API_KEY` tidak boleh pernah diberi
-   prefix `NEXT_PUBLIC_` — apa pun dengan prefix itu ikut terkirim ke browser.
+3. **Rahasia server tanpa prefix publik.** `SUPABASE_SERVICE_ROLE_KEY` dan
+   `SUPABASE_SECRET_KEY` tidak boleh pernah diberi prefix `NEXT_PUBLIC_` — apa pun dengan prefix itu ikut terkirim ke browser.
    Lihat `.env.example` untuk daftar lengkapnya.
 4. **CI hijau.** `.github/workflows/ci.yml` menjalankan lint, typecheck, test,
    dan build di tiap PR. Jangan deploy dari branch yang merah.

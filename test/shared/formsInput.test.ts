@@ -38,9 +38,8 @@ describe('normalisasi payload form', () => {
   })
 
   it('TC-42j menyimpan teks kosong sebagai null, bukan string kosong', () => {
-    const { data } = getFormsInput(getBody({ purpose: '   ', description: '' }))
+    const { data } = getFormsInput(getBody({ description: '   ' }))
 
-    expect(data?.purpose).toBe(null)
     expect(data?.description).toBe(null)
   })
 

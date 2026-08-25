@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 
 import PageShell from '@/components/page-shell'
 import { LoadData } from '@/shared/components/load-data'
-import AnalysisResult from '@/features/analysis/components/analysisResult'
+import ResponsesResult from '@/features/responses/components/responsesResult'
 
 const FormsResultPage: NextPage = () => {
   const router = useRouter()
@@ -28,7 +28,7 @@ const FormsResultPage: NextPage = () => {
         railNote="RANKED"
       >
         {formId ? (
-          <AnalysisResult formId={formId} />
+          <ResponsesResult formId={formId} />
         ) : (
           <LoadData response={{ isLoading: true }} minHeight="60vh" />
         )}

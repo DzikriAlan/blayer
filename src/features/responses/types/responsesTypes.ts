@@ -45,8 +45,6 @@ export interface DataResponsesListItem {
 export interface DataResponsesList {
   formId: string
   title: string
-  purpose: string
-  isAiEnabled: boolean
   templateId: string
   fields: DataResponsesListField[]
   responses: DataResponsesListItem[]

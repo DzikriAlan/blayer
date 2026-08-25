@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import { ShieldCheck, Lock, Cpu, EyeOff } from 'lucide-react'
+import { ShieldCheck, Lock, EyeOff } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -40,19 +40,10 @@ const Privacy: NextPage = () => {
 
             <section>
               <h2 className="flex items-center gap-2 font-display text-xl font-bold uppercase text-foreground">
-                <Cpu className="size-5 text-primary" /> 2. Pengungkapan Pemrosesan AI (Anthropic Claude)
+                <EyeOff className="size-5 text-primary" /> 2. Retensi &amp; Penghapusan Data
               </h2>
               <p className="mt-2 text-muted-foreground">
-                Sesuai dengan Undang-Undang Perlindungan Data Pribadi (UU PDP No. 27 Tahun 2022), kami memberitahukan secara transparan bahwa jawaban pada form yang mengaktifkan analisis AI akan diproses menggunakan <strong>Anthropic Claude SDK</strong>. Data hanya digunakan untuk menghasilkan evaluasi, skor, dan rekomendasi real-time, serta tidak dipergunakan untuk melatih model AI publik.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="flex items-center gap-2 font-display text-xl font-bold uppercase text-foreground">
-                <EyeOff className="size-5 text-primary" /> 3. Retensi &amp; Penghapusan Data
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Data jawaban dan hasil analisis disimpan secara aman di PostgreSQL Supabase. Saat pembuat form menghapus form dari dashboard, seluruh data jawaban dan analisis terkait akan secara otomatis terhapus secara permanen dari basis data (*cascade deletion*).
+                Data jawaban disimpan secara aman di PostgreSQL Supabase. Saat pembuat form menghapus form dari dashboard, seluruh data jawaban terkait akan secara otomatis terhapus secara permanen dari basis data (*cascade deletion*).
               </p>
             </section>
           </div>

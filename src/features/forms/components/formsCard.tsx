@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { ArrowUpRight, BarChart3, Loader2, Pencil, Trash2 } from 'lucide-react'
 
-import { IS_AI_VISIBLE } from '@/shared/lib/features'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
@@ -9,8 +8,6 @@ interface Props {
   index: number
   id: string
   title: string
-  purpose: string
-  isAiEnabled: boolean
   status: string
   totalFields: number
   totalResponses: number
@@ -23,8 +20,6 @@ export default function FormsCard({
   index,
   id,
   title,
-  purpose,
-  isAiEnabled,
   status,
   totalFields,
   totalResponses,
@@ -44,11 +39,6 @@ export default function FormsCard({
             {title}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
-            {IS_AI_VISIBLE ? (
-              <Badge variant={isAiEnabled ? 'default' : 'muted'}>
-                {isAiEnabled ? 'AI ON' : 'AI OFF'}
-              </Badge>
-            ) : null}
             <Badge variant={status === 'LIVE' ? 'secondary' : 'outline'}>
               {status}
             </Badge>
@@ -57,13 +47,6 @@ export default function FormsCard({
       </div>
 
       <div className="mt-4 sm:pl-[3.75rem]">
-        {IS_AI_VISIBLE && isAiEnabled ? (
-          <p className="line-clamp-2 max-w-xl font-mono text-xs leading-relaxed text-muted-foreground">
-            <span className="text-primary">{'>> '}</span>
-            {purpose}
-          </p>
-        ) : null}
-
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:gap-x-5 sm:gap-y-2">
           <span className="brutal-eyebrow">{totalFields} FIELDS</span>
           <span aria-hidden className="hidden h-3 w-px bg-foreground/30 sm:block" />

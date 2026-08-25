@@ -67,7 +67,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       id: form.id,
       title: form.title,
       description: form.description ?? '',
-      isAiEnabled: !!form.purpose,
       templateId: form.templateId ?? '',
       image: form.bannerUrl ?? '',
       qrisImage: form.qrisUrl ?? '',
@@ -80,7 +79,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!isOwner) {
       return sendSuccess(res, {
         message: 'Detail form berhasil dimuat',
-        data: { ...shared, purpose: '', meeting: '', video: '' },
+        data: { ...shared, meeting: '', video: '' },
       })
     }
 
@@ -88,7 +87,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       message: 'Detail form berhasil dimuat',
       data: {
         ...shared,
-        purpose: form.purpose ?? '',
         meeting: form.meetingUrl ?? '',
         video: form.videoUrl ?? '',
       },

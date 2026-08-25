@@ -163,7 +163,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       description:
         formsDetail.data?.description ||
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
-      isAiEnabled: formsDetail.data?.isAiEnabled ?? false,
       hasEmailInput,
       isProctored: ['exam', 'psychometric'].includes(getView()),
       hasEventDetail: getView() === 'event',
@@ -353,9 +352,7 @@ export default function ResponsesSubmit({ formId }: Props) {
             <span className="text-foreground">.</span>
           </h1>
           <p className="mt-5 max-w-md font-mono text-sm leading-relaxed">
-            {data.isAiEnabled
-              ? 'Jawabanmu sudah tersimpan dan siap dianalisis oleh AI berdasarkan tujuan form ini.'
-              : 'Jawabanmu sudah tersimpan.'}
+            Jawabanmu sudah tersimpan.
           </p>
         </div>
 
@@ -363,7 +360,7 @@ export default function ResponsesSubmit({ formId }: Props) {
           <Button asChild>
             <Link href={`/forms/${formId}/result`}>
               <BarChart3 />
-              {data.isAiEnabled ? 'Lihat Analisis' : 'Lihat Jawaban'}
+              Lihat Jawaban
             </Link>
           </Button>
           <Button asChild variant="danger" size="sm">
@@ -487,20 +484,6 @@ export default function ResponsesSubmit({ formId }: Props) {
       {data.submitError ? (
         <p className="brutal-eyebrow border-b-2 border-foreground bg-primary px-7 py-4 text-primary-foreground">
           {data.submitError}
-        </p>
-      ) : null}
-
-      {data.isAiEnabled ? (
-        <p className="border-b-2 border-foreground bg-muted px-5 py-4 font-mono text-xs leading-relaxed text-muted-foreground sm:px-7">
-          Jawabanmu di form ini akan dianalisis dengan bantuan AI pihak ketiga
-          (Anthropic) untuk membuat ringkasan dan peringkat bagi pembuat form.{' '}
-          <Link
-            href="/privacy"
-            className="font-bold text-foreground underline underline-offset-4 hover:text-primary"
-          >
-            Kebijakan privasi
-          </Link>
-          .
         </p>
       ) : null}
 

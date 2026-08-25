@@ -36,8 +36,6 @@ const getForm = (overrides: Partial<DataForms> = {}): DataForms => ({
   id: 'form-1',
   title: 'Ujian Sejarah',
   description: '',
-  purpose: '',
-  isAiEnabled: false,
   templateId: 'exam',
   isPublished: true,
   totalFields: 6,

@@ -47,8 +47,6 @@ export default function FormsList() {
     const getMappedItem = (item: DataForms) => ({
       id: item.id,
       title: item.title,
-      purpose: item.purpose,
-      isAiEnabled: item.isAiEnabled,
       status: item.isPublished ? 'LIVE' : 'DRAFT',
       totalFields: item.totalFields,
       totalResponses: item.totalResponses,
@@ -56,9 +54,7 @@ export default function FormsList() {
     })
 
     const getIsKeywordMatch = (item: DataForms, keyword: string) =>
-      !keyword ||
-      item.title.toLowerCase().includes(keyword) ||
-      item.purpose.toLowerCase().includes(keyword)
+      !keyword || item.title.toLowerCase().includes(keyword)
 
     const getTemplateName = (templateId: string) =>
       FORMS_TEMPLATES.find((template) => template.id === templateId)?.name ?? ''
@@ -93,7 +89,7 @@ export default function FormsList() {
         ? `Tidak ada form yang cocok dengan "${filters.search}". Coba kata kunci lain.`
         : filters.templateId
           ? `Belum ada form yang dibuat dari template ${getTemplateName(filters.templateId)}. Klik Use untuk membuat yang pertama.`
-          : 'Mulai dengan membuat form pertama dan tentukan tujuannya agar AI bisa menganalisis jawaban yang masuk.',
+          : 'Mulai dengan membuat form pertama, lalu bagikan tautannya untuk mengumpulkan jawaban.',
       emptyImage: '/no-data.svg',
       errorTitle: 'Something Broke',
       errorSubtitle: forms.statusSubtitle,
@@ -219,7 +215,7 @@ export default function FormsList() {
             <Input
               value={filters.search}
               onChange={(event) => editFormsSearch(event.target.value)}
-              placeholder="Search title or purpose"
+              placeholder="Search title"
               aria-label="Cari form"
             />
           </div>
@@ -275,8 +271,6 @@ export default function FormsList() {
               index={data.startIndex + index}
               id={item.id}
               title={item.title}
-              purpose={item.purpose}
-              isAiEnabled={item.isAiEnabled}
               status={item.status}
               totalFields={item.totalFields}
               totalResponses={item.totalResponses}

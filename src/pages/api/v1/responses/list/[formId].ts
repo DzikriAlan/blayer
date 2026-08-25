@@ -78,8 +78,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     data: {
       id: form.id,
       title: form.title,
-      purpose: form.purpose ?? '',
-      isAiEnabled: !!form.purpose,
       templateId: form.templateId ?? '',
       fields: form.fields.map((field) => ({
         id: field.id,

@@ -24,8 +24,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import SectionHead from '@/components/section-head'
-import { cn } from '@/shared/lib/utils'
-import { IS_AI_VISIBLE } from '@/shared/lib/features'
 import FormsFieldEditor from './formsFieldEditor'
 import FormsTemplate, {
   FORMS_TEMPLATES,
@@ -59,8 +57,6 @@ const schema = z
   .object({
     title: z.string().min(1, 'Judul form wajib diisi'),
     description: z.string(),
-    isAiEnabled: z.boolean(),
-    purpose: z.string(),
     image: z.string(),
     meeting: z.string(),
     video: z.string(),
@@ -70,15 +66,6 @@ const schema = z
     fields: z.array(fieldSchema).min(1, 'Tambahkan minimal satu field'),
   })
   .superRefine((values, ctx) => {
-    if (values.isAiEnabled && values.purpose.trim().length < 20) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['purpose'],
-        message:
-          'Jelaskan tujuan minimal 20 karakter agar AI paham konteksnya',
-      })
-    }
-
     if (values.meeting.trim() && !/^https?:\/\/\S+$/.test(values.meeting.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -142,8 +129,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     defaultValues: {
       title: '',
       description: '',
-      isAiEnabled: IS_AI_VISIBLE,
-      purpose: '',
       image: '',
       meeting: '',
       video: '',
@@ -162,7 +147,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   const watchedTitle = form.watch('title')
   const watchedFields = form.watch('fields')
   const watchedPublished = form.watch('isPublished')
-  const watchedAiEnabled = form.watch('isAiEnabled')
   const watchedBannerUrl = form.watch('image')
   const watchedQrisUrl = form.watch('qrisImage')
   const watchedFieldTypes = (form.watch('fields') ?? []).map((field) => field.type)
@@ -211,12 +195,10 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       pagination: { currentPage: 1, perPage: mappedList.length },
       title: watchedTitle,
       titleError: form.formState.errors.title?.message ?? '',
-      purposeError: form.formState.errors.purpose?.message ?? '',
       fieldsError: form.formState.errors.fields?.message ?? '',
       optionError: filters.optionError,
       activeTemplateId: filters.activeTemplateId,
       isPublished: watchedPublished,
-      isAiEnabled: watchedAiEnabled,
       hasEventDetail: getView() === 'event',
       hasCourseDetail: getView() === 'course',
       hasPaymentDetail: PAID_VIEWS.includes(getView()),
@@ -237,7 +219,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     watchedTitle,
     watchedFields,
     watchedPublished,
-    watchedAiEnabled,
     watchedBannerUrl,
     watchedQrisUrl,
     watchedFieldTypes,
@@ -278,7 +259,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     form.reset({
       ...template.values,
-      isAiEnabled: IS_AI_VISIBLE && template.values.isAiEnabled,
     })
     setFilters((prev) => ({
       ...prev,
@@ -359,7 +339,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     const payload: PayloadPostForms = {
       title: values.title,
       description: values.description,
-      purpose: values.isAiEnabled ? values.purpose.trim() : '',
       templateId: filters.activeTemplateId,
       image: data.hasBanner ? values.image : '',
       meeting: data.hasEventDetail ? values.meeting.trim() : '',
@@ -403,7 +382,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
 
     form.reset({
       ...template.values,
-      isAiEnabled: IS_AI_VISIBLE && template.values.isAiEnabled,
     })
     setFilters((prev) => ({
       ...prev,
@@ -433,8 +411,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     form.reset({
       title: detail.title,
       description: detail.description,
-      isAiEnabled: IS_AI_VISIBLE && !!detail.purpose,
-      purpose: detail.purpose,
       image: detail.image,
       meeting: detail.meeting,
       video: detail.video,
@@ -644,80 +620,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
         </div>
       ) : null}
 
-      {IS_AI_VISIBLE ? (
-      <div
-        className={cn(
-          'border-b-2 border-foreground px-5 py-7 sm:px-7',
-          data.isAiEnabled
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-paper text-foreground'
-        )}
-      >
-        <div className="flex items-stretch gap-3">
-          <span
-            className={cn(
-              'brutal-eyebrow px-3 py-2',
-              data.isAiEnabled
-                ? 'bg-foreground text-primary'
-                : 'bg-muted text-muted-foreground'
-            )}
-          >
-            AI TARGET — {data.isAiEnabled ? 'ON' : 'OFF'}
-          </span>
-          <span
-            aria-hidden
-            className={cn(
-              'brutal-hatch flex-1',
-              data.isAiEnabled ? 'opacity-40' : 'opacity-15'
-            )}
-          />
-        </div>
-
-        <h2 className="mt-5 font-display text-3xl font-black uppercase leading-none tracking-tight sm:text-4xl">
-          What should AI decide
-          <span className={data.isAiEnabled ? 'text-foreground' : 'text-primary'}>
-            ?
-          </span>
-        </h2>
-
-        <div className="mt-6 flex items-center gap-3">
-          <Checkbox
-            id="form-ai-enabled"
-            checked={data.isAiEnabled}
-            onCheckedChange={(checked) =>
-              form.setValue('isAiEnabled', checked === true)
-            }
-          />
-          <Label htmlFor="form-ai-enabled">Aktifkan analisis AI</Label>
-        </div>
-
-        {data.isAiEnabled ? (
-          <div className="mt-6">
-            <Textarea
-              id="form-purpose"
-              className="min-h-[130px] border-foreground bg-paper text-foreground"
-              placeholder="Contoh: Ujian tengah semester Sejarah kelas XI. Nilai pemahaman siswa terhadap materi, ketepatan jawaban pilihan ganda, dan kedalaman argumen pada jawaban esai. Urutkan siswa dari nilai tertinggi dan sebutkan siapa yang perlu remedial beserta topik yang belum dikuasai."
-              {...form.register('purpose')}
-            />
-            <p className="mt-3 font-mono text-xs leading-relaxed">
-              Semakin jelas tujuannya, semakin tajam peringkat dan rekomendasi
-              yang dihasilkan AI.
-            </p>
-            {data.purposeError ? (
-              <p className="brutal-eyebrow mt-3 bg-foreground px-3 py-2 text-primary">
-                {data.purposeError}
-              </p>
-            ) : null}
-          </div>
-        ) : (
-          <p className="mt-6 max-w-xl font-mono text-xs leading-relaxed text-muted-foreground">
-            Form tetap bisa diisi dan semua jawaban tersimpan seperti biasa —
-            kamu hanya tidak mendapat peringkat dan rekomendasi otomatis. Semua
-            jawaban mentah tetap bisa dilihat di halaman hasil.
-          </p>
-        )}
-      </div>
-      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-foreground bg-muted px-5 py-4 sm:px-7">
         <p className="brutal-eyebrow">

@@ -69,8 +69,6 @@ const getDetail = (
   id: 'form-1',
   title: 'Pesan Menu — Warung Blayer',
   description: 'Pilih makanan dan minumanmu.',
-  purpose: '',
-  isAiEnabled: false,
   templateId: 'restaurant',
   image: '',
   meeting: '',
