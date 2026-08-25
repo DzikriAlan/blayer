@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import handler from '@/pages/api/v1/responses/index'
+import handler, { SUBMIT_LIMIT } from '@/pages/api/v1/responses/index'
 import { resetRateLimit } from '@/shared/lib/rateLimit'
 
 const { prismaMock } = vi.hoisted(() => ({
@@ -128,16 +128,16 @@ describe('pengiriman jawaban', () => {
   })
 
   it('TC-41e menahan banjir jawaban dari satu sumber ke satu form', async () => {
-    for (let index = 0; index < 5; index += 1) await call(validBody)
+    for (let index = 0; index < SUBMIT_LIMIT; index += 1) await call(validBody)
 
     const res = await call(validBody)
 
     expect(res.statusCode).toBe(429)
-    expect(prismaMock.formResponse.create).toHaveBeenCalledTimes(5)
+    expect(prismaMock.formResponse.create).toHaveBeenCalledTimes(SUBMIT_LIMIT)
   })
 
   it('TC-41f batasnya per form, bukan mengunci pengirim di form lain', async () => {
-    for (let index = 0; index < 5; index += 1) await call(validBody)
+    for (let index = 0; index < SUBMIT_LIMIT; index += 1) await call(validBody)
 
     const res = await call({ ...validBody, formId: 'form-2' })
 
@@ -145,7 +145,7 @@ describe('pengiriman jawaban', () => {
   })
 
   it('TC-41g pengirim dari IP lain tidak ikut terkunci', async () => {
-    for (let index = 0; index < 5; index += 1) await call(validBody)
+    for (let index = 0; index < SUBMIT_LIMIT; index += 1) await call(validBody)
 
     const res = await call(validBody, '10.0.0.2')
 
@@ -155,8 +155,8 @@ describe('pengiriman jawaban', () => {
   it('TC-41h tanpa proxy tepercaya, alamat karangan tidak menambah kuota', async () => {
     delete process.env.TRUST_PROXY_HOPS
 
-    for (let index = 0; index < 5; index += 1) {
-      await call(validBody, `10.0.0.${index}`)
+    for (let index = 0; index < SUBMIT_LIMIT; index += 1) {
+      await call(validBody, `10.0.0.${index % 250}`)
     }
 
     const res = await call(validBody, '203.0.113.9')

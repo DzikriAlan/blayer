@@ -7,6 +7,9 @@ import { enforceRateLimit } from '@/shared/lib/rateLimit'
 const MAX_ANSWER_LENGTH = 5_000
 const MAX_NAME_LENGTH = 200
 
+export const SUBMIT_LIMIT = 100
+export const SUBMIT_WINDOW_MS = 60_000
+
 const getTrimmed = (value: unknown, max: number) =>
   typeof value === 'string' ? value.trim().slice(0, max) : ''
 
@@ -32,8 +35,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (
     !(await enforceRateLimit(req, res, {
       name: 'responses-create',
-      limit: 5,
-      windowMs: 60_000,
+      limit: SUBMIT_LIMIT,
+      windowMs: SUBMIT_WINDOW_MS,
       scope: formId,
     }))
   ) {
