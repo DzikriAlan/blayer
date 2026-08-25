@@ -24,6 +24,7 @@ vi.mock('@/features/forms/controllers/formsControllers', () => ({
 
 const getForm = (overrides: Record<string, unknown> = {}) => ({
   id: 'form-1',
+  slug: 'form-satu',
   title: 'Form Satu',
   description: 'Penjelasan singkat',
   templateId: 'exam',

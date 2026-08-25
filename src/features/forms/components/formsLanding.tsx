@@ -41,6 +41,42 @@ export default function FormsLanding() {
         course: 'KELAS BERBAYAR',
       })[view] ?? 'FORM'
 
+    const getShortName = (view: string) =>
+      ({
+        event: 'Event',
+        course: 'Kursus',
+        psychometric: 'Psikotes',
+        freelance: 'Freelance',
+        exam: 'Ujian',
+        order: 'Pesanan',
+        survey: 'Survei',
+        scoring: 'Form',
+      })[view] ?? 'Form'
+
+    const getTags = (description: string) =>
+      description
+        .split('·')
+        .slice(0, -1)
+        .map((part) => part.trim().toUpperCase())
+        .filter((part) => part.length > 1 && part.length <= 24)
+
+    const getPriceText = (amount: number) =>
+      amount > 0 ? `Rp${new Intl.NumberFormat('id-ID').format(amount)}` : 'Gratis'
+
+    const getCategoryForms = (templateId: string, countLabel: string) =>
+      formsPublic.data
+        .filter((raw) => raw.templateId === templateId)
+        .map((raw) => ({
+          id: raw.id,
+          slug: raw.slug,
+          title: raw.title,
+          image: raw.image,
+          priceText: getPriceText(raw.price),
+          isPaid: raw.price > 0,
+          tags: getTags(raw.description),
+          countText: `${raw.totalResponses} ${countLabel}`,
+        }))
+
     const getTotalForm = (templateId: string) =>
       formsPublic.data.filter((raw) => raw.templateId === templateId).length
 
@@ -55,11 +91,17 @@ export default function FormsLanding() {
 
     const mappedList = visibleTemplates.map((template) => ({
       id: template.id,
-      name: template.name,
+      name: getShortName(template.view),
       description: FORMS_VIEW_COPY[template.view].lead,
       viewLabel: getViewLabel(template.view),
       icon: template.icon,
       availabilityText: getAvailabilityText(template),
+      actionLabel: FORMS_VIEW_COPY[template.view].action,
+      emptyText: FORMS_VIEW_COPY[template.view].emptySubtitle,
+      forms: getCategoryForms(
+        template.id,
+        FORMS_VIEW_COPY[template.view].countLabel
+      ),
     }))
 
     const totalResponses = formsPublic.data.reduce(

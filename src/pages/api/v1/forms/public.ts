@@ -31,6 +31,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     select: {
       id: true,
+      slug: true,
       title: true,
       description: true,
       templateId: true,
@@ -47,6 +48,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const mapped = items.map((form) => ({
     id: form.id,
+    slug: form.slug ?? '',
     title: form.title,
     description: form.description ?? '',
     templateId: form.templateId ?? '',

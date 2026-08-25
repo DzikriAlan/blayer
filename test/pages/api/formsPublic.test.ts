@@ -98,6 +98,7 @@ describe('katalog form publik', () => {
       'id',
       'image',
       'price',
+      'slug',
       'templateId',
       'title',
       'totalFields',

@@ -71,6 +71,7 @@ export interface Forms {
 
 export interface DataFormsPublic {
   id: string
+  slug: string
   title: string
   description: string
   templateId: string
