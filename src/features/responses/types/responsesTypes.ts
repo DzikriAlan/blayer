@@ -4,6 +4,7 @@ export interface PayloadPostResponses {
   email: string
   answers: Record<string, string | string[]>
   duration: number
+  idempotencyKey: string
 }
 
 export interface PayloadGetResponsesList {

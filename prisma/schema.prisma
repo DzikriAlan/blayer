@@ -56,10 +56,12 @@ model FormResponse {
   respondentEmail String?
   answers         Json
   durationSeconds Int?
+  idempotencyKey  String?
   createdAt       DateTime @default(now())
 
   form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
 
+  @@unique([formId, idempotencyKey])
   @@index([formId])
   @@index([formId, createdAt, id])
   @@map("form_responses")

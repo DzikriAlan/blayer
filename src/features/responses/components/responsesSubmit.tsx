@@ -257,12 +257,23 @@ export default function ResponsesSubmit({ formId }: Props) {
       return answers
     }
 
+    const getSubmitKey = () => {
+      if (!submitKeyRef.current) {
+        submitKeyRef.current =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      }
+      return submitKeyRef.current
+    }
+
     const payload: PayloadPostResponses = {
       formId,
       name: filters.name,
       email: filters.email,
       answers: getPaidAnswers(),
       duration: getDurationSeconds(),
+      idempotencyKey: getSubmitKey(),
     }
 
     storeResponses.mutate(payload)
@@ -273,6 +284,7 @@ export default function ResponsesSubmit({ formId }: Props) {
   }, [formId, setGetFormsDetail])
 
   const startedAtRef = useRef(0)
+  const submitKeyRef = useRef('')
 
   useEffect(() => {
     if (formsDetail.status !== 'success') return

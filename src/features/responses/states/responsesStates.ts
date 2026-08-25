@@ -26,6 +26,7 @@ export const useResponsesStates = create<ResponsesStore>((set) => ({
     email: '',
     answers: {},
     duration: 0,
+    idempotencyKey: '',
   },
 
   payloadGetResponsesList: {

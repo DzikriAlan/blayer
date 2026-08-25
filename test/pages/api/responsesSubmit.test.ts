@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Prisma } from '@prisma/client'
 
 import handler, { SUBMIT_LIMIT } from '@/pages/api/v1/responses/index'
 import { resetRateLimit } from '@/shared/lib/rateLimit'
@@ -6,7 +7,7 @@ import { resetRateLimit } from '@/shared/lib/rateLimit'
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: {
     form: { findUnique: vi.fn() },
-    formResponse: { create: vi.fn(), count: vi.fn() },
+    formResponse: { create: vi.fn(), count: vi.fn(), findFirst: vi.fn() },
   },
 }))
 
@@ -83,6 +84,7 @@ beforeEach(async () => {
     .fn()
     .mockResolvedValue({ id: 'res-1', createdAt: new Date('2026-08-19') })
   prismaMock.formResponse.count = vi.fn().mockResolvedValue(3)
+  prismaMock.formResponse.findFirst = vi.fn().mockResolvedValue(null)
 })
 
 describe('pengiriman jawaban', () => {
@@ -125,6 +127,51 @@ describe('pengiriman jawaban', () => {
 
     const saved = prismaMock.formResponse.create.mock.calls[0][0].data.answers
     expect(saved['field-1']).toHaveLength(5000)
+  })
+
+  it('TC-41i kirim ulang dengan kunci yang sama tidak menggandakan jawaban', async () => {
+    const body = { ...validBody, idempotencyKey: 'kunci-1' }
+
+    const first = await call(body)
+    expect(first.statusCode).toBe(201)
+
+    prismaMock.formResponse.findFirst = vi
+      .fn()
+      .mockResolvedValue({ id: 'res-1', createdAt: new Date('2026-08-19') })
+
+    const second = await call(body)
+
+    expect(second.statusCode).toBe(200)
+    expect(second.body.data).toMatchObject({ id: 'res-1' })
+    expect(prismaMock.formResponse.create).toHaveBeenCalledTimes(1)
+  })
+
+  it('TC-41j dua permintaan berbarengan tetap menyisakan satu baris', async () => {
+    const duplicate = Object.assign(
+      new Prisma.PrismaClientKnownRequestError('unik dilanggar', {
+        code: 'P2002',
+        clientVersion: 'uji',
+      })
+    )
+
+    prismaMock.formResponse.create = vi.fn().mockRejectedValue(duplicate)
+    prismaMock.formResponse.findFirst = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ id: 'res-1', createdAt: new Date('2026-08-19') })
+
+    const res = await call({ ...validBody, idempotencyKey: 'kunci-2' })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.body.data).toMatchObject({ id: 'res-1' })
+  })
+
+  it('TC-41k tanpa kunci, tiap kiriman tetap dianggap jawaban baru', async () => {
+    await call(validBody)
+    await call(validBody)
+
+    expect(prismaMock.formResponse.findFirst).not.toHaveBeenCalled()
+    expect(prismaMock.formResponse.create).toHaveBeenCalledTimes(2)
   })
 
   it('TC-41e menahan banjir jawaban dari satu sumber ke satu form', async () => {

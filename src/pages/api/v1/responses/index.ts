@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/shared/lib/prisma'
 import { withApi } from '@/shared/lib/apiHandler'
 import { sendFailure, sendMethodNotAllowed, sendSuccess } from '@/shared/lib/apiResponse'
@@ -6,6 +7,7 @@ import { enforceRateLimit } from '@/shared/lib/rateLimit'
 
 const MAX_ANSWER_LENGTH = 5_000
 const MAX_NAME_LENGTH = 200
+const MAX_KEY_LENGTH = 64
 
 export const SUBMIT_LIMIT = 100
 export const SUBMIT_WINDOW_MS = 60_000
@@ -16,13 +18,15 @@ const getTrimmed = (value: unknown, max: number) =>
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') return sendMethodNotAllowed(res, req.method, ['POST'])
 
-  const { formId, name, email, answers, duration } = req.body as {
-    formId?: string
-    name?: string
-    email?: string
-    answers?: Record<string, unknown>
-    duration?: number
-  }
+  const { formId, name, email, answers, duration, idempotencyKey } =
+    req.body as {
+      formId?: string
+      name?: string
+      email?: string
+      answers?: Record<string, unknown>
+      duration?: number
+      idempotencyKey?: string
+    }
 
   if (!formId || !answers) {
     return sendFailure(res, {
@@ -95,27 +99,62 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .map(([fieldId, value]) => [fieldId, getAnswerValue(value)])
   )
 
-  const response = await prisma.formResponse.create({
-    data: {
-      formId,
-      respondentName: getTrimmed(name, MAX_NAME_LENGTH) || null,
-      respondentEmail: getTrimmed(email, MAX_NAME_LENGTH) || null,
-      answers: cleanAnswers as never,
-      durationSeconds:
-        typeof duration === 'number' &&
-        Number.isFinite(duration) &&
-        duration >= 0
-          ? Math.round(duration)
-          : null,
-    },
-    select: { id: true, createdAt: true },
-  })
+  const submitKey = getTrimmed(idempotencyKey, MAX_KEY_LENGTH) || null
+
+  const getReplayed = async () => {
+    if (!submitKey) return null
+
+    return prisma.formResponse.findFirst({
+      where: { formId, idempotencyKey: submitKey },
+      select: { id: true, createdAt: true },
+    })
+  }
+
+  const getCreated = async () => {
+    try {
+      return {
+        response: await prisma.formResponse.create({
+          data: {
+            formId,
+            respondentName: getTrimmed(name, MAX_NAME_LENGTH) || null,
+            respondentEmail: getTrimmed(email, MAX_NAME_LENGTH) || null,
+            answers: cleanAnswers as never,
+            idempotencyKey: submitKey,
+            durationSeconds:
+              typeof duration === 'number' &&
+              Number.isFinite(duration) &&
+              duration >= 0
+                ? Math.round(duration)
+                : null,
+          },
+          select: { id: true, createdAt: true },
+        }),
+        isReplay: false,
+      }
+    } catch (error) {
+      const isDuplicate =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+
+      const replayed = isDuplicate ? await getReplayed() : null
+      if (!replayed) throw error
+
+      return { response: replayed, isReplay: true }
+    }
+  }
+
+  const replayed = await getReplayed()
+  const { response, isReplay } = replayed
+    ? { response: replayed, isReplay: true }
+    : await getCreated()
 
   const totalResponse = await prisma.formResponse.count({ where: { formId } })
 
   return sendSuccess(res, {
-    status: 201,
-    message: 'Jawaban berhasil dikirim',
+    status: isReplay ? 200 : 201,
+    message: isReplay
+      ? 'Jawaban ini sudah pernah terkirim'
+      : 'Jawaban berhasil dikirim',
     data: {
       id: response.id,
       totalResponses: totalResponse,
