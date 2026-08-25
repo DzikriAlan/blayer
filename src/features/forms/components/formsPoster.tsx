@@ -69,23 +69,21 @@ export default function FormsPoster({
       <div className="flex flex-1 flex-col gap-3 p-5">
         <h2
           title={form.tooltip}
-          className="break-words font-display text-xl font-black uppercase leading-tight tracking-tight"
+          className="line-clamp-2 min-h-[2.5em] break-words font-display text-xl font-black uppercase leading-tight tracking-tight"
         >
           {form.title}
         </h2>
-        {form.description ? (
-          <p className="line-clamp-3 font-mono text-xs leading-relaxed text-muted-foreground">
-            {form.description}
-          </p>
-        ) : null}
+        <p className="line-clamp-3 min-h-[4.875em] font-mono text-xs leading-relaxed text-muted-foreground">
+          {form.description}
+        </p>
 
-        <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="mt-auto flex min-w-0 items-center gap-x-2 overflow-hidden whitespace-nowrap">
           <FormsFacepile
             total={form.totalResponses}
             seed={form.id}
             label={countLabel}
           />
-          <span className="brutal-eyebrow text-muted-foreground">
+          <span className="brutal-eyebrow shrink-0 text-muted-foreground">
             · {String(form.totalFields).padStart(2, '0')} {fieldLabel}
           </span>
         </div>
