@@ -147,7 +147,12 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
         ) : null}
       </div>
 
-      <LoadData response={category.listState} className="mt-8" minHeight="30vh">
+      {/* Tinggi minimumnya disamakan dengan satu kartu acara supaya kategori
+          kosong tidak menciutkan halaman saat penyaringnya berpindah. */}
+      <LoadData
+        response={category.listState}
+        className="mt-8 min-h-[368px] sm:min-h-[435px]"
+      >
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {category.listedForms.map((item) => (
             <FormsPoster

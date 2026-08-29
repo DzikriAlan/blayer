@@ -140,6 +140,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-30d | F-30 | Keadaan kosong dan gagal | Judul serta alasannya tampil, isi aslinya tidak dirender | Otomatis | `loadData.test.tsx` |
 | TC-30e | F-30 | Data sudah siap | Isi dirender dan tidak ada indikator memuat yang tersisa | Otomatis | `loadData.test.tsx` |
 | TC-30f | F-30 | Membuka `/forms/[id]` sebelum router siap | Halaman menampilkan keadaan memuat, bukan layar kosong | Manual | — |
+| TC-30g | F-30 | Berpindah antar kategori acara di halaman depan | Kategori kosong menampilkan ilustrasi, judul, dan alasannya setinggi satu kartu acara — halaman tidak menciut lalu memanjang lagi | Manual | — |
 | TC-33a | F-33 | Membuka alamat yang tidak dikenal | Halaman 404 sendiri tampil dengan kode, judul, dan alasannya | Otomatis | `errorPages.test.tsx` |
 | TC-33b | F-33 | Memeriksa halaman 404 | Ada jalan keluar ke beranda, daftar form, dan builder | Otomatis | `errorPages.test.tsx` |
 | TC-33c | F-33 | Membuka halaman 500 | Dibedakan dari 404 dan tetap menyediakan jalan kembali | Otomatis | `errorPages.test.tsx` |

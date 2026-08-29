@@ -168,7 +168,10 @@ export function LoadData({
 
   if (!isLoading && placeholder) {
     return (
-      <div style={wrapperStyle} className={className}>
+      <div
+        style={wrapperStyle}
+        className={cn('flex flex-col justify-center', className)}
+      >
         <PlaceholderSection
           placeholder={placeholder}
           response={response}
