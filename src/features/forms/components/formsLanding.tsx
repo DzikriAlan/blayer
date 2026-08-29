@@ -28,13 +28,6 @@ export default function FormsLanding() {
   const categoryRef = useRef<HTMLElement>(null)
 
   const data = useMemo(() => {
-    const getViewLabel = (view: string) =>
-      ({
-        scoring: 'SKOR & PERINGKAT',
-        survey: 'RINGKASAN SURVEI',
-        event: 'DAFTAR PESERTA',
-      })[view] ?? 'FORM'
-
     const getCategoryForms = (templateId: string) =>
       formsPublic.data
         .filter((raw) => raw.templateId === templateId)
@@ -63,7 +56,6 @@ export default function FormsLanding() {
         id: template.id,
         name: template.name,
         description: copy.lead,
-        viewLabel: getViewLabel(template.view),
         icon: template.icon,
         availabilityText: `${String(getTotalForm(template.id)).padStart(
           2,
@@ -99,8 +91,12 @@ export default function FormsLanding() {
       heroCategories: mappedList.map((item) => ({
         id: item.id,
         name: item.name,
-        viewLabel: item.viewLabel,
         icon: item.icon,
+        totalForm: item.forms.length,
+        totalResponses: item.forms.reduce(
+          (total, form) => total + form.totalResponses,
+          0
+        ),
       })),
       marqueeWords: [...MARQUEE_WORDS, ...MARQUEE_WORDS],
     }
@@ -122,6 +118,7 @@ export default function FormsLanding() {
         totalForm={data.totalForm}
         totalResponses={data.totalResponses}
         onLoadFormsCategory={loadFormsCategory}
+        onLoadFormsExplore={loadFormsExplore}
       />
 
       <div

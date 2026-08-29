@@ -11,7 +11,6 @@ export interface FormsCategoryItem {
   id: string
   name: string
   description: string
-  viewLabel: string
   icon: LucideIcon
   availabilityText: string
   actionLabel: string

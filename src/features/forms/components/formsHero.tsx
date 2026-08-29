@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowDown, ArrowRight, type LucideIcon } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUpRight, type LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -8,8 +8,9 @@ const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
 export interface FormsHeroCategory {
   id: string
   name: string
-  viewLabel: string
   icon: LucideIcon
+  totalForm: number
+  totalResponses: number
 }
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
   totalForm: number
   totalResponses: number
   onLoadFormsCategory: () => void
+  onLoadFormsExplore: (templateId: string) => void
 }
 
 export default function FormsHero({
@@ -26,6 +28,7 @@ export default function FormsHero({
   totalForm,
   totalResponses,
   onLoadFormsCategory,
+  onLoadFormsExplore,
 }: Props) {
   const stats = [
     { key: 'kategori', label: 'KATEGORI', value: totalCategory },
@@ -83,33 +86,44 @@ export default function FormsHero({
         </div>
 
         <div className="border-2 border-foreground bg-background">
-          <div className="flex items-stretch gap-3 border-b-2 border-foreground bg-foreground px-5 py-2.5 text-background">
-           <span className="brutal-eyebrow"></span>
-            <span aria-hidden className="brutal-hatch flex-1 opacity-40" />
+          <div className="flex items-center justify-between gap-3 border-b-2 border-foreground bg-foreground px-5 py-3 text-background">
+            <span className="brutal-eyebrow">ACARA YANG SEDANG DIBUKA</span>
+            <span className="brutal-eyebrow opacity-70">
+              {String(totalCategory).padStart(2, '0')} KATEGORI
+            </span>
           </div>
 
           <ul>
-            {categories.map((category, index) => {
+            {categories.map((category) => {
               const Icon = category.icon
+              const isOpen = category.totalForm > 0
+
               return (
-                <li
-                  key={category.id}
-                  className="flex items-center gap-4 border-b-2 border-foreground px-5 py-3.5 last:border-b-0"
-                >
-                  <span className="brutal-index h-10 w-10">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block break-words font-display text-lg font-black uppercase leading-tight tracking-tight">
-                      {category.name}
+                <li key={category.id} className="border-b-2 border-foreground last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => onLoadFormsExplore(category.id)}
+                    className="group flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <span className="brutal-index h-10 w-10 shrink-0 transition-colors group-hover:bg-background group-hover:text-foreground">
+                      <Icon className="h-5 w-5" />
                     </span>
-                    <span className="brutal-eyebrow text-muted-foreground">
-                      {category.viewLabel}
+
+                    <span className="min-w-0 flex-1">
+                      <span className="block break-words font-display text-lg font-black uppercase leading-tight tracking-tight">
+                        {category.name}
+                      </span>
+                      <span className="brutal-eyebrow text-muted-foreground transition-colors group-hover:text-primary-foreground/80">
+                        {isOpen
+                          ? `${String(category.totalForm).padStart(2, '0')} ACARA · ${String(
+                              category.totalResponses
+                            ).padStart(2, '0')} TERDAFTAR`
+                          : 'BELUM ADA ACARA'}
+                      </span>
                     </span>
-                  </span>
-                  <span className="brutal-eyebrow shrink-0 text-muted-foreground">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
+
+                    <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary-foreground" />
+                  </button>
                 </li>
               )
             })}
