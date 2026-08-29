@@ -183,13 +183,13 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-36k | F-36 | Membuka `/kategori/[id]` di peramban | Judul tab memakai kalimat yang sama dengan halamannya sejak balasan pertama, bukan setelah JavaScript jalan | Manual | — |
 | TC-36l | F-36 | Membuka kategori acara berisi banner lebar | Tanggal dan tempat di tepi poster tetap terbaca, tidak terpangkas bingkai kartu | Manual | — |
 | TC-36h | F-36 | Membuka alamat kategori yang tidak ada | Server membalas 404, bukan 200 dengan halaman kosong | Manual | — |
-| TC-36i | F-36 | Menekan Eksplor Kategori di halaman depan | Berpindah ke halaman kategori; daftar tidak lagi terbuka di dalam kartu | Manual | — |
+| TC-36i | F-36 | Menekan Lihat Semua pada kategori yang dipilih | Berpindah ke halaman kategori; daftar tidak lagi terbuka di dalam kartu | Manual | — |
 | TC-36j | F-36 | Membuka halaman kategori tanpa login | Isinya tampil penuh — kategori adalah permukaan publik | Manual | — |
 | TC-29a | F-29 | Membuka halaman depan | Urutan section: navbar, hero, statistik, pita, kategori, footer | Manual | — |
 | TC-29e | F-29 | Menekan salah satu tombol kategori di halaman depan | Daftar menyempit ke kategori itu; menekannya lagi mengembalikan seluruh acara | Manual | — |
 | TC-29b | F-29 | Membuka halaman depan di lebar ponsel | Navigasi berubah jadi tombol menu, isi tidak meluber ke samping | Manual | — |
-| TC-29c | F-29 | Menekan "Jelajahi Kategori" | Halaman menggulir mulus ke bagian kategori | Manual | — |
-| TC-29d | F-29 | Membaca ajakan di halaman depan | Tidak ada klaim bisa membuat form tanpa akun | Manual | — |
+| TC-29c | F-29 | Membaca hero halaman depan | Tidak ada tombol ajakan bertindak; jalan masuknya lewat acara populer dan penyaring kategori | Manual | — |
+| TC-29d | F-29 | Membaca tiga jaminan di hero | Ketiganya benar: mengisi form tidak menuntut akun, tiket terbit setelah submit, dan link acara ikut dikirim | Manual | — |
 | TC-31a | F-31 | Membuka halaman depan dan halaman aplikasi | Lambang Blayer tampil di navbar dan di bilah atas, keduanya menautkan ke beranda | Manual | — |
 | TC-31b | F-31 | Memeriksa tab peramban | Favicon memakai lambang Blayer, bukan ikon bawaan | Manual | — |
 | TC-32a | F-32 | Membuka tiap halaman pada 320, 390, dan 768 px | `scrollWidth` sama dengan lebar viewport — tidak ada geseran samping | Manual | — |

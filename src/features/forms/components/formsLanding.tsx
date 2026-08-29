@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { useRouter } from 'next/router'
 
 import { useFormsStates } from '../states/formsStates'
@@ -26,8 +26,6 @@ export default function FormsLanding() {
   const router = useRouter()
   const { formsPublic } = useFormsStates()
   const { fetchFormsPublic } = useFormsControllers()
-
-  const categoryRef = useRef<HTMLElement>(null)
 
   const data = useMemo(() => {
     const getCategoryForms = (templateId: string) =>
@@ -112,10 +110,6 @@ export default function FormsLanding() {
     router.push(`/kategori/${templateId}`)
   }
 
-  const loadFormsCategory = () => {
-    categoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   return (
     <>
       <FormsHero
@@ -123,7 +117,6 @@ export default function FormsLanding() {
         totalCategory={data.totalCategory}
         totalForm={data.totalForm}
         totalResponses={data.totalResponses}
-        onLoadFormsCategory={loadFormsCategory}
       />
 
       <div
@@ -144,7 +137,6 @@ export default function FormsLanding() {
       </div>
 
       <section
-        ref={categoryRef}
         id="kategori"
         className="scroll-mt-24 border-b-2 border-foreground bg-background"
       >

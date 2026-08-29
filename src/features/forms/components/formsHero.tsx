@@ -1,10 +1,21 @@
 import Link from 'next/link'
-import { ArrowDown, ArrowRight, ArrowUpRight, type LucideIcon } from 'lucide-react'
+import {
+  ArrowUpRight,
+  Ticket,
+  UserRoundCheck,
+  Video,
+  type LucideIcon,
+} from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
 
 const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
+
+const ASSURANCES = [
+  { key: 'akun', icon: UserRoundCheck, label: 'IKUT TANPA AKUN' },
+  { key: 'tiket', icon: Ticket, label: 'TIKET TERBIT SEKETIKA' },
+  { key: 'link', icon: Video, label: 'LINK ACARA IKUT DIKIRIM' },
+] as const
 
 export interface FormsHeroEvent {
   id: string
@@ -20,7 +31,6 @@ interface Props {
   totalCategory: number
   totalForm: number
   totalResponses: number
-  onLoadFormsCategory: () => void
 }
 
 export default function FormsHero({
@@ -28,7 +38,6 @@ export default function FormsHero({
   totalCategory,
   totalForm,
   totalResponses,
-  onLoadFormsCategory,
 }: Props) {
   const eventState = {
     data: events,
@@ -73,25 +82,23 @@ export default function FormsHero({
             lain.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-4">
-            <Button asChild size="lg">
-              <Link href="/forms/create">
-                Buat Form <ArrowRight />
-              </Link>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              onClick={onLoadFormsCategory}
-            >
-              Jelajahi Kategori <ArrowDown />
-            </Button>
-          </div>
+          <ul className="mt-8 grid grid-cols-3 border-2 border-foreground bg-background">
+            {ASSURANCES.map((assurance) => {
+              const Icon = assurance.icon
 
-          <p className="brutal-eyebrow mt-5 text-muted-foreground">
-            PILIH TEMPLATE · SESUAIKAN PERTANYAAN · BAGIKAN TAUTANNYA
-          </p>
+              return (
+                <li
+                  key={assurance.key}
+                  className="flex flex-col gap-2.5 border-r-2 border-foreground px-3 py-3.5 last:border-r-0 sm:px-4"
+                >
+                  <Icon className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="brutal-eyebrow leading-relaxed">
+                    {assurance.label}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
         </div>
 
         <div className="border-2 border-foreground bg-background">
