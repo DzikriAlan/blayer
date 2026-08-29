@@ -32,7 +32,6 @@ export interface PayloadPostForms {
   templateId: string
   image: string
   meeting: string
-  video: string
   qrisImage: string
   price: number
   isPublished: boolean
@@ -109,7 +108,6 @@ export interface DataFormsDetail {
   templateId: string
   image: string
   meeting: string
-  video: string
   qrisImage: string
   price: number
   isPublished: boolean

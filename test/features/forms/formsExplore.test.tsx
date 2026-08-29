@@ -84,21 +84,6 @@ describe('halaman kategori', () => {
     expect(screen.getAllByText('Daftar Acara').length).toBeGreaterThan(0)
   })
 
-  it('TC-36c kelas berbayar memajang harganya di sampul', () => {
-    setCatalogue([
-      getForm({
-        templateId: 'course',
-        title: 'Kelas Desain',
-        image: 'https://contoh.test/kelas.png',
-        price: 150000,
-      }),
-    ])
-
-    render(<FormsExplore templateId="course" />)
-
-    expect(screen.getByText('Rp150.000')).toBeInTheDocument()
-    expect(screen.getAllByText('Ikut Kelas').length).toBeGreaterThan(0)
-  })
 
   it('TC-36d menu restoran memakai satuan pilihan dan pesanan', () => {
     setCatalogue([
@@ -112,123 +97,10 @@ describe('halaman kategori', () => {
     expect(screen.getAllByText('Pesan Sekarang').length).toBeGreaterThan(0)
   })
 
-  it('TC-36m psikotes disajikan seperti lowongan di job portal', () => {
-    setCatalogue([
-      getForm({
-        templateId: 'psychometric',
-        title: 'Frontend Engineer — PT Nusantara Digital',
-        image: 'https://contoh.test/logo.png',
-        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-      }),
-    ])
 
-    render(<FormsExplore templateId="psychometric" />)
 
-    expect(
-      screen.getByRole('heading', {
-        name: /Lowongan Yang Sedang Membuka Psikotes/i,
-        level: 1,
-      })
-    ).toBeInTheDocument()
-    expect(screen.getByText(/01 LOWONGAN DIBUKA/)).toBeInTheDocument()
-    expect(screen.getByText(/03 PELAMAR/)).toBeInTheDocument()
-    expect(screen.getByText('3 HARI LALU')).toBeInTheDocument()
-    expect(screen.getByRole('img')).toHaveAttribute(
-      'alt',
-      'Logo Frontend Engineer — PT Nusantara Digital'
-    )
-    expect(screen.getAllByText('Lamar & Kerjakan').length).toBeGreaterThan(0)
-    expect(screen.getByRole('heading', { level: 2 })).toHaveAttribute(
-      'title',
-      'Frontend Engineer — PT Nusantara Digital'
-    )
-    expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
-  })
 
-  it('TC-36p keterangan lowongan dipecah jadi chip yang bisa dipindai', () => {
-    setCatalogue([
-      getForm({
-        templateId: 'psychometric',
-        title: 'Data Analyst — Sentra Data Group',
-        description:
-          'Surabaya · Kerja di Kantor · Kontrak 12 Bulan · D3/S1 Statistika · Terbuka untuk lulusan baru. Psikotes menakar ketelitian.',
-      }),
-    ])
 
-    render(<FormsExplore templateId="psychometric" />)
-
-    ;[
-      'Psikotes Terkunci',
-      'Surabaya',
-      'Kerja di Kantor',
-      'Kontrak 12 Bulan',
-      'D3/S1 Statistika',
-      'Terbuka untuk lulusan baru',
-    ].forEach((tag) => {
-      expect(screen.getByText(tag)).toBeInTheDocument()
-    })
-
-    expect(screen.getByText('Psikotes menakar ketelitian.')).toBeInTheDocument()
-  })
-
-  it('TC-36q deskripsi biasa tidak dipaksa jadi chip', () => {
-    setCatalogue([
-      getForm({
-        templateId: 'psychometric',
-        title: 'Backend Engineer — Tanpa Ruas',
-        description: 'Lowongan ini ditulis sebagai satu kalimat utuh saja.',
-      }),
-    ])
-
-    render(<FormsExplore templateId="psychometric" />)
-
-    expect(
-      screen.getByText('Lowongan ini ditulis sebagai satu kalimat utuh saja.')
-    ).toBeInTheDocument()
-  })
-
-  it('TC-38a proyek freelance memajang anggarannya di kepala kartu', () => {
-    setCatalogue([
-      getForm({
-        templateId: 'freelance',
-        title: 'Redesain Landing Page',
-        description:
-          'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Aset desain sudah tersedia.',
-        price: 4500000,
-        totalFields: 7,
-      }),
-    ])
-
-    render(<FormsExplore templateId="freelance" />)
-
-    expect(
-      screen.getByRole('heading', {
-        name: /Proyek Yang Bisa Kamu Garap/i,
-        level: 1,
-      })
-    ).toBeInTheDocument()
-    expect(screen.getByText('BUDGET')).toBeInTheDocument()
-    expect(screen.getByText('Rp4.500.000')).toBeInTheDocument()
-    expect(screen.getByText('Web Development')).toBeInTheDocument()
-    expect(screen.getByText(/03 PENAWARAN/)).toBeInTheDocument()
-    expect(screen.getByText(/07 ISIAN/)).toBeInTheDocument()
-    expect(screen.getAllByText('Ajukan Penawaran').length).toBeGreaterThan(0)
-  })
-
-  it('TC-38b proyek tanpa anggaran ditandai masih bisa dinego', () => {
-    setCatalogue([
-      getForm({
-        templateId: 'freelance',
-        title: 'Penulisan Artikel SEO',
-        price: 0,
-      }),
-    ])
-
-    render(<FormsExplore templateId="freelance" />)
-
-    expect(screen.getByText('Nego')).toBeInTheDocument()
-    expect(screen.queryByText('Gratis')).not.toBeInTheDocument()
-  })
 
   it('TC-39 jumlah yang sudah ikut dipajang sebagai tumpukan wajah', () => {
     setCatalogue([
@@ -285,33 +157,6 @@ describe('halaman kategori', () => {
   })
 })
 
-describe('kartu berchip tidak melebarkan halaman', () => {
-  it('TC-32e kartu proyek boleh menyempit di bawah lebar chipnya', () => {
-    setCatalogue([
-      getForm({
-        templateId: 'freelance',
-        title: 'Penulisan 20 Artikel SEO Bidang Properti',
-        price: 12000000,
-      }),
-    ])
-
-    const { container } = render(<FormsExplore templateId="freelance" />)
-
-    const card = container.querySelector('a[href="/f/form-satu"]')
-    expect(card?.className).toContain('min-w-0')
-  })
-
-  it('TC-32f kartu lowongan boleh menyempit di bawah lebar chipnya', () => {
-    setCatalogue([
-      getForm({ templateId: 'psychometric', title: 'Backend Engineer — Kalbe' }),
-    ])
-
-    const { container } = render(<FormsExplore templateId="psychometric" />)
-
-    const card = container.querySelector('a[href="/f/form-satu"]')
-    expect(card?.className).toContain('min-w-0')
-  })
-})
 
 describe('jalan kembali dari katalog kategori', () => {
   beforeEach(() => {

@@ -13,10 +13,10 @@ import FormsCategory from './formsCategory'
 import { FORMS_TEMPLATES, FORMS_VIEW_COPY } from './formsTemplate'
 
 const MARQUEE_WORDS = [
-  'PSIKOTES KERJA',
   'PENDAFTARAN ACARA',
-  'PROYEK FREELANCE',
-  'KELAS BERBAYAR',
+  'UJIAN SEKOLAH',
+  'PESANAN RESTORAN',
+  'SURVEI KEPUASAN',
   'SKOR OTOMATIS',
   'BAYAR QRIS',
 ]
@@ -33,20 +33,14 @@ export default function FormsLanding() {
       ({
         scoring: 'SKOR & PERINGKAT',
         exam: 'UJIAN TERKUNCI',
-        psychometric: 'SELEKSI KERJA',
         survey: 'RINGKASAN SURVEI',
         event: 'DAFTAR PESERTA',
         order: 'PESANAN & BAYAR',
-        freelance: 'PENAWARAN PROYEK',
-        course: 'KELAS BERBAYAR',
       })[view] ?? 'FORM'
 
     const getShortName = (view: string) =>
       ({
         event: 'Event',
-        course: 'Kursus',
-        psychometric: 'Psikotes',
-        freelance: 'Freelance',
         exam: 'Ujian',
         order: 'Pesanan',
         survey: 'Survei',

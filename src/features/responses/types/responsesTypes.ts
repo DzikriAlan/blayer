@@ -16,7 +16,6 @@ export interface DataResponses {
   totalResponses: number
   createdAt: string
   meeting: string
-  video: string
 }
 
 export interface Responses {

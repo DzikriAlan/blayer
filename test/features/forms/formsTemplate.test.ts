@@ -29,16 +29,7 @@ describe('katalog template', () => {
   })
 
   it('TC-04 setiap template punya view yang dikenali', () => {
-    const views = [
-      'scoring',
-      'exam',
-      'psychometric',
-      'survey',
-      'event',
-      'order',
-      'course',
-      'freelance',
-    ]
+    const views = ['scoring', 'exam', 'survey', 'event', 'order']
 
     FORMS_TEMPLATES.forEach((template) => {
       expect(views).toContain(template.view)
@@ -72,26 +63,24 @@ describe('katalog template', () => {
 })
 
 describe('katalog kategori halaman depan', () => {
-  it('TC-36 psikotes menggantikan ujian sekolah di etalase depan', () => {
+  it('TC-36 ujian sekolah tampil di etalase depan', () => {
     const featuredIds = FORMS_TEMPLATES.filter(
       (template) => template.isFeatured
     ).map((template) => template.id)
 
-    expect(featuredIds).toContain('psychometric')
-    expect(featuredIds).not.toContain('exam')
+    expect(featuredIds).toContain('exam')
   })
 
   it('TC-36 ujian sekolah tetap bisa dipakai membuat form', () => {
     expect(getTemplate('exam')?.isVisible).toBe(true)
   })
 
-  it('TC-38 freelance menggantikan menu restoran di etalase depan', () => {
+  it('TC-38 menu restoran tampil di etalase depan', () => {
     const featuredIds = FORMS_TEMPLATES.filter(
       (template) => template.isFeatured
     ).map((template) => template.id)
 
-    expect(featuredIds).toContain('freelance')
-    expect(featuredIds).not.toContain('restaurant')
+    expect(featuredIds).toContain('restaurant')
   })
 
   it('TC-38 kategori etalase tampil dalam urutan yang ditetapkan katalog', () => {
@@ -99,12 +88,7 @@ describe('katalog kategori halaman depan', () => {
       (template) => template.isFeatured
     ).map((template) => template.id)
 
-    expect(featuredIds).toEqual([
-      'event',
-      'course',
-      'psychometric',
-      'freelance',
-    ])
+    expect(featuredIds).toEqual(['event', 'exam', 'restaurant'])
   })
 
   it('TC-38 menu restoran tetap bisa dipakai membuat form', () => {
@@ -112,51 +96,7 @@ describe('katalog kategori halaman depan', () => {
   })
 })
 
-describe('template proyek freelance', () => {
-  const freelance = getTemplate('freelance')
 
-  it('TC-38 memakai view freelance dan tampil di daftar pilihan', () => {
-    expect(freelance?.view).toBe('freelance')
-    expect(freelance?.isVisible).toBe(true)
-  })
-
-  it('TC-38 anggaran proyek ditetapkan pemilik proyek sebagai angka positif', () => {
-    expect(Number(freelance?.values.price)).toBeGreaterThan(0)
-  })
-
-  it('TC-38 penawar diminta portofolio, tawaran biaya, dan rencana kerja', () => {
-    expect(getFieldLabels('freelance')).toEqual([
-      'Bidang Keahlian Utama',
-      'Tautan Portofolio',
-      'Tawaran Biaya Pengerjaan (Rp)',
-      'Perkiraan Lama Pengerjaan',
-      'Bagaimana rencanamu mengerjakan proyek ini?',
-      'Pernah mengerjakan proyek serupa?',
-      'Kapan Bisa Mulai Mengerjakan',
-    ])
-  })
-})
-
-describe('template psikotes kerja', () => {
-  const psychometric = getTemplate('psychometric')
-
-  it('TC-36 memakai view psychometric dan tampil di daftar pilihan', () => {
-    expect(psychometric?.view).toBe('psychometric')
-    expect(psychometric?.isVisible).toBe(true)
-  })
-
-  it('TC-36 pelamar ditanya posisi, pengalaman, dan tautan CV', () => {
-    expect(getFieldLabels('psychometric')).toContain('Posisi yang Dilamar')
-    expect(getFieldLabels('psychometric')).toContain('Tautan CV atau LinkedIn')
-
-    const cv = psychometric?.values.fields.find(
-      (field) => field.label === 'Tautan CV atau LinkedIn'
-    )
-
-    expect(cv?.type).toBe('URL')
-    expect(cv?.isRequired).toBe(true)
-  })
-})
 
 describe('template menu restoran', () => {
   const restaurant = getTemplate('restaurant')
@@ -205,41 +145,6 @@ describe('template menu restoran', () => {
   })
 })
 
-describe('template kursus kelas', () => {
-  const course = getTemplate('course')
-
-  it('TC-19 memakai view course dan tampil di daftar pilihan', () => {
-    expect(course?.view).toBe('course')
-    expect(course?.isVisible).toBe(true)
-  })
-
-  it('TC-19 peserta tidak diminta memilih paket kelas', () => {
-    const hasMenuField = course?.values.fields.some(
-      (field) => field.type === 'MENU'
-    )
-
-    expect(hasMenuField).toBe(false)
-    expect(getFieldLabels('course')).toEqual([
-      'Nomor WhatsApp',
-      'Level Pengalamanmu',
-      'Apa yang ingin kamu capai setelah kelas ini?',
-      'Metode Pembayaran',
-    ])
-  })
-
-  it('TC-20 harga kelas ditetapkan pembuat form sebagai angka positif', () => {
-    expect(Number(course?.values.price)).toBeGreaterThan(0)
-  })
-
-  it('TC-15 kursus tetap menawarkan metode pembayaran', () => {
-    const payment = course?.values.fields.find(
-      (field) => field.type === 'PAYMENT'
-    )
-
-    expect(payment?.isRequired).toBe(true)
-    expect(getOptions(payment?.optionText ?? '').length).toBeGreaterThan(1)
-  })
-})
 
 describe('template acara', () => {
   it('TC-25 pendaftar tidak lagi ditanya tanggal acara', () => {

@@ -87,7 +87,7 @@ export default function ResponsesDashboard({
     const getResultView = () => {
       const template = FORMS_TEMPLATES.find((item) => item.id === templateId)
 
-      if (['event', 'order', 'course'].includes(template?.view ?? ''))
+      if (['event', 'order'].includes(template?.view ?? ''))
         return 'registry'
       if (template?.view === 'survey') return 'summary'
       if (template) return 'scoring'

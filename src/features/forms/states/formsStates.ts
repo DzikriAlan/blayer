@@ -35,7 +35,6 @@ export const useFormsStates = create<FormsStore>((set) => ({
     templateId: '',
     image: '',
     meeting: '',
-    video: '',
     qrisImage: '',
     price: 0,
     isPublished: true,

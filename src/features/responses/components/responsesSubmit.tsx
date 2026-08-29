@@ -25,7 +25,6 @@ import ResponsesField from './responsesField'
 import ResponsesGuard from './responsesGuard'
 import ResponsesEvent from './responsesEvent'
 import ResponsesOrder from './responsesOrder'
-import ResponsesCourse from './responsesCourse'
 
 const NO_EMAIL_VIEWS = ['order']
 
@@ -163,17 +162,13 @@ export default function ResponsesSubmit({ formId }: Props) {
         formsDetail.data?.description ||
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
       hasEmailInput,
-      isProctored: ['exam', 'psychometric'].includes(getView()),
+      isProctored: getView() === 'exam',
       hasEventDetail: getView() === 'event',
       isEventDone: getView() === 'event',
       isOrderDone: getView() === 'order',
-      isCourseDone: getView() === 'course',
-      hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
-        getView()
-      ),
+      hasBanner: ['event', 'order'].includes(getView()),
       image: formsDetail.data?.image ?? '',
       meeting: responses.data?.meeting || formsDetail.data?.meeting || '',
-      video: responses.data?.video || formsDetail.data?.video || '',
       qrisImage: formsDetail.data?.qrisImage ?? '',
       orderItems,
       orderAmount,
@@ -314,21 +309,6 @@ export default function ResponsesSubmit({ formId }: Props) {
     )
   }
 
-  if (data.isSubmitted && data.isCourseDone) {
-    return (
-      <ResponsesCourse
-        formId={formId}
-        title={data.title}
-        description={formsDetail.data?.description ?? ''}
-        image={data.image}
-        video={data.video}
-        name={filters.name}
-        items={data.orderItems}
-        amount={data.orderAmount}
-        paymentMethod={data.paymentMethod}
-      />
-    )
-  }
 
   if (data.isSubmitted && data.isEventDone) {
     return (

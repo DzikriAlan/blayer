@@ -39,7 +39,14 @@ const getOwnerId = async () => {
   return owner.id
 }
 
-const OBSOLETE_TEMPLATE_IDS = ['csat', 'recruitment', 'blank']
+const OBSOLETE_TEMPLATE_IDS = [
+  'csat',
+  'recruitment',
+  'blank',
+  'psychometric',
+  'freelance',
+  'course',
+]
 
 const EXAM_FIELDS = [
   {
@@ -159,164 +166,6 @@ const STUDENTS = [
   },
 ]
 
-const PSYCHOMETRIC_POSITIONS = [
-  'Frontend Engineer',
-  'Backend Engineer',
-  'Product Designer',
-  'Data Analyst',
-  'Project Manager',
-]
-
-const PSYCHOMETRIC_FIELDS = [
-  {
-    label: 'Posisi yang Dilamar',
-    type: 'SELECT',
-    isRequired: true,
-    options: PSYCHOMETRIC_POSITIONS,
-  },
-  { label: 'Lama Pengalaman Kerja (tahun)', type: 'NUMBER', isRequired: true },
-  { label: 'Tautan CV atau LinkedIn', type: 'URL', isRequired: true },
-  {
-    label:
-      'Ceritakan satu proyek tersulit yang pernah kamu tangani dan bagaimana kamu menyelesaikannya.',
-    type: 'LONG_TEXT',
-    isRequired: true,
-  },
-  {
-    label:
-      'Deadline tinggal dua hari, lalu ditemukan bug besar di fitur utama. Apa yang kamu lakukan pertama kali?',
-    type: 'LONG_TEXT',
-    isRequired: true,
-  },
-  {
-    label: 'Saya nyaman menerima kritik atas hasil kerja saya.',
-    type: 'SCALE',
-    isRequired: true,
-  },
-  {
-    label: 'Saya paling produktif ketika bekerja...',
-    type: 'RADIO',
-    isRequired: true,
-    options: [
-      'Sendiri dengan fokus penuh',
-      'Berpasangan (pair programming)',
-      'Dalam tim besar',
-      'Fleksibel, tergantung situasi',
-    ],
-  },
-  { label: 'Kapan Bisa Mulai Bekerja', type: 'DATE', isRequired: true },
-  {
-    label: 'Bidang apa yang ingin kamu dalami setahun ke depan?',
-    type: 'CHECKBOX',
-    options: [
-      'Performance',
-      'Accessibility',
-      'Design System',
-      'Testing',
-      'DevOps',
-    ],
-  },
-]
-
-const APPLICANTS = [
-  {
-    name: 'Alya Rahmadani',
-    email: 'alya.rahmadani@mail.com',
-    durationSeconds: 1840,
-    answers: [
-      'Frontend Engineer',
-      '4',
-      'https://linkedin.com/in/alya-rahmadani',
-      'Migrasi dashboard internal dari Angular lama ke React tanpa membekukan rilis fitur. Saya pecah per modul, jalankan dua kerangka berdampingan di balik satu shell, lalu pindahkan satu layar tiap sprint sambil menahan agar bundle tidak membengkak. Enam bulan selesai, waktu muat halaman awal turun dari 5,2 detik ke 1,8 detik.',
-      'Saya kumpulkan buktinya dulu — reproduksi, cakupan pengguna yang kena, dan sejak rilis mana muncul. Baru setelah itu saya bawa ke PM dengan dua pilihan: tunda fitur kecil di rilis ini, atau kirim perbaikan sementara yang aman. Yang tidak saya lakukan adalah menambal buru-buru tanpa tahu akarnya.',
-      '9',
-      'Berpasangan (pair programming)',
-      '2026-09-15',
-      ['Performance', 'Accessibility', 'Design System'],
-    ],
-  },
-  {
-    name: 'Reza Fadhilah',
-    email: 'reza.fadhilah@mail.com',
-    durationSeconds: 2210,
-    answers: [
-      'Frontend Engineer',
-      '3',
-      'https://github.com/rezafadhilah',
-      'Membangun ulang alur pembayaran e-commerce yang tingkat gagalnya 12%. Saya lacak lewat log dan ternyata sebagian besar gagal karena timeout di perangkat lambat. Saya potong tiga panggilan API jadi satu, tambah retry dengan backoff, dan siapkan status pembayaran yang bisa dipulihkan. Tingkat gagal turun ke 3%.',
-      'Cek dampaknya ke pengguna dulu: berapa banyak yang kena dan seberapa parah. Kalau bisa dimatikan lewat feature flag, saya matikan dulu supaya tidak terus merugikan, baru perbaiki dengan kepala dingin.',
-      '8',
-      'Fleksibel, tergantung situasi',
-      '2026-10-01',
-      ['Performance', 'Testing'],
-    ],
-  },
-  {
-    name: 'Nabila Kusuma',
-    email: 'nabila.kusuma@mail.com',
-    durationSeconds: 1520,
-    answers: [
-      'Frontend Engineer',
-      '2',
-      'https://linkedin.com/in/nabilakusuma',
-      'Saya menangani halaman katalog yang lambat karena semua gambar dimuat sekaligus. Saya pakai lazy loading dan ukuran gambar responsif, lalu hasilnya halaman jadi jauh lebih ringan di ponsel.',
-      'Saya laporkan ke lead dulu supaya keputusannya tidak diambil sendirian, sambil mulai menelusuri penyebabnya.',
-      '7',
-      'Dalam tim besar',
-      '2026-09-01',
-      ['Accessibility', 'Design System'],
-    ],
-  },
-  {
-    name: 'Damar Prasetyo',
-    email: 'damar.prasetyo@mail.com',
-    durationSeconds: 980,
-    answers: [
-      'Frontend Engineer',
-      '1',
-      'https://github.com/damarpras',
-      'Saya pernah membuat landing page perusahaan sendirian. Sulit karena desainnya banyak berubah, tapi akhirnya selesai tepat waktu.',
-      'Langsung diperbaiki secepatnya supaya tidak menghambat rilis.',
-      '6',
-      'Sendiri dengan fokus penuh',
-      '2026-08-25',
-      ['Testing'],
-    ],
-  },
-  {
-    name: 'Sekar Ayu Pratiwi',
-    email: 'sekar.pratiwi@mail.com',
-    durationSeconds: 2680,
-    answers: [
-      'Product Designer',
-      '5',
-      'https://dribbble.com/sekarayu',
-      'Menyatukan tiga produk yang antarmukanya berbeda-beda ke dalam satu design system. Tantangannya bukan komponen, tapi meyakinkan tiga tim dengan prioritas berbeda. Saya mulai dari komponen yang paling sering dipakai, ukur berapa layar yang bisa dipangkas, lalu pakai angka itu untuk mengajak tim berikutnya.',
-      'Saya duduk bareng engineer untuk tahu opsi teknisnya dulu, lalu saya siapkan versi desain yang lebih sederhana yang tetap menyelesaikan masalah pengguna kalau memang waktunya mepet.',
-      '10',
-      'Berpasangan (pair programming)',
-      '2026-09-20',
-      ['Design System', 'Accessibility'],
-    ],
-  },
-  {
-    name: 'Gilang Ramadhan',
-    email: 'gilang.ramadhan@mail.com',
-    durationSeconds: 1330,
-    answers: [
-      'Data Analyst',
-      '3',
-      'https://linkedin.com/in/gilangramadhan',
-      'Membereskan laporan penjualan yang angkanya selalu beda antara tim finance dan tim produk. Ternyata keduanya memakai definisi transaksi yang berbeda. Saya susun satu kamus metrik dan satu tabel sumber, lalu semua laporan diarahkan ke sana.',
-      'Saya cari dulu seberapa besar datanya terpengaruh, karena bug di data biasanya diam-diam sudah mengotori laporan sebelumnya.',
-      '8',
-      'Fleksibel, tergantung situasi',
-      '2026-10-05',
-      ['Performance', 'Testing'],
-    ],
-  },
-]
-
 const EVENT_FIELDS = [
   { label: 'Asal Instansi atau Perusahaan', type: 'SHORT_TEXT' },
   {
@@ -333,7 +182,7 @@ const EVENT_FIELDS = [
 
 const ATTENDEE_ROWS = [
   ['Sinta Larasati', 'Tokopedia', 'Sesi Malam (19.00 - 21.00)'],
-  ['Arif Nugroho', 'Freelance', 'Sesi Pagi (09.00 - 12.00)'],
+  ['Arif Nugroho', 'Pekerja Mandiri', 'Sesi Pagi (09.00 - 12.00)'],
   ['Dewi Kartika', 'Bank Mandiri', 'Sesi Malam (19.00 - 21.00)'],
   ['Rizky Ramadhan', 'Universitas Indonesia', 'Sesi Siang (13.00 - 16.00)'],
   ['Putri Ayu', 'Gojek', 'Sesi Malam (19.00 - 21.00)'],
@@ -341,7 +190,7 @@ const ATTENDEE_ROWS = [
   ['Nadia Safitri', 'Telkom Indonesia', 'Sesi Malam (19.00 - 21.00)'],
   ['Fajar Hidayat', 'Binus University', 'Sesi Siang (13.00 - 16.00)'],
   ['Ayu Lestari', 'Traveloka', 'Sesi Malam (19.00 - 21.00)'],
-  ['Gilang Permana', 'Freelance', 'Sesi Pagi (09.00 - 12.00)'],
+  ['Gilang Permana', 'Pekerja Mandiri', 'Sesi Pagi (09.00 - 12.00)'],
 ]
 
 const MENU_OPTIONS = [
@@ -440,180 +289,6 @@ const ORDER_ROWS = [
   ],
 ]
 
-const FREELANCE_FIELDS = [
-  {
-    label: 'Bidang Keahlian Utama',
-    type: 'SELECT',
-    isRequired: true,
-    options: [
-      'Web Development',
-      'Mobile Development',
-      'UI/UX Design',
-      'Penulisan Konten',
-      'Data & Otomasi',
-    ],
-  },
-  { label: 'Tautan Portofolio', type: 'URL', isRequired: true },
-  { label: 'Tawaran Biaya Pengerjaan (Rp)', type: 'NUMBER', isRequired: true },
-  {
-    label: 'Perkiraan Lama Pengerjaan',
-    type: 'SELECT',
-    isRequired: true,
-    options: [
-      'Kurang dari 1 minggu',
-      '1-2 minggu',
-      '3-4 minggu',
-      'Lebih dari 1 bulan',
-    ],
-  },
-  {
-    label: 'Bagaimana rencanamu mengerjakan proyek ini?',
-    type: 'LONG_TEXT',
-    isRequired: true,
-  },
-  {
-    label: 'Pernah mengerjakan proyek serupa?',
-    type: 'RADIO',
-    isRequired: true,
-    options: [
-      'Sudah, lebih dari lima kali',
-      'Sudah, satu sampai lima kali',
-      'Belum pernah, tapi bidangnya sama',
-      'Belum sama sekali',
-    ],
-  },
-  { label: 'Kapan Bisa Mulai Mengerjakan', type: 'DATE', isRequired: true },
-]
-
-const BIDDERS = [
-  {
-    name: 'Fikri Ardiansyah',
-    email: 'fikri.ardiansyah@mail.com',
-    durationSeconds: 1260,
-    answers: [
-      'Web Development',
-      'https://fikri.dev/portofolio',
-      '4200000',
-      '3-4 minggu',
-      'Minggu pertama saya pakai untuk audit halaman lama: ukur Lighthouse, catat aset yang membengkak, lalu susun struktur komponen dari Figma yang sudah ada. Minggu kedua implementasi, minggu ketiga penyesuaian di ponsel dan perbaikan hasil review. Dari kalian saya butuh akses Figma dan satu orang yang bisa dimintai keputusan cepat soal copy.',
-      'Sudah, lebih dari lima kali',
-      '2026-08-25',
-    ],
-  },
-  {
-    name: 'Tania Marlina',
-    email: 'tania.marlina@mail.com',
-    durationSeconds: 1580,
-    answers: [
-      'UI/UX Design',
-      'https://dribbble.com/taniamarlina',
-      '5000000',
-      '3-4 minggu',
-      'Saya mulai dari menyusun ulang alur halaman supaya bagian penawaran tidak tenggelam di bawah, lalu bikin dua alternatif tata letak untuk dipilih. Setelah disepakati, saya rapikan komponennya jadi satu berkas Figma yang siap diserahkan ke developer.',
-      'Sudah, satu sampai lima kali',
-      '2026-09-01',
-    ],
-  },
-  {
-    name: 'Bram Nugraha',
-    email: 'bram.nugraha@mail.com',
-    durationSeconds: 720,
-    answers: [
-      'Web Development',
-      'https://github.com/bramnugraha',
-      '3000000',
-      '1-2 minggu',
-      'Saya kerjakan pakai template yang sudah saya punya, tinggal disesuaikan warna dan isinya supaya cepat selesai.',
-      'Belum pernah, tapi bidangnya sama',
-      '2026-08-22',
-    ],
-  },
-  {
-    name: 'Laras Widyaningrum',
-    email: 'laras.widya@mail.com',
-    durationSeconds: 1940,
-    answers: [
-      'Penulisan Konten',
-      'https://laraswrites.id',
-      '2800000',
-      '1-2 minggu',
-      'Saya susun ulang naskahnya berdasarkan pertanyaan yang paling sering ditanyakan calon klien, bukan berdasarkan urutan produk. Setiap bagian saya beri satu ajakan yang jelas, lalu saya siapkan dua versi judul untuk diuji.',
-      'Sudah, lebih dari lima kali',
-      '2026-08-27',
-    ],
-  },
-  {
-    name: 'Yudha Prasetya',
-    email: 'yudha.prasetya@mail.com',
-    durationSeconds: 1120,
-    answers: [
-      'Data & Otomasi',
-      'https://yudhap.notion.site/portofolio',
-      '6500000',
-      'Lebih dari 1 bulan',
-      'Pipeline saya bangun bertahap: tarik data dari sumbernya dulu dengan penjadwalan harian, simpan mentah, baru dibersihkan di lapisan terpisah supaya kalau definisinya berubah tidak perlu tarik ulang. Dashboardnya menyusul setelah angkanya stabil.',
-      'Sudah, satu sampai lima kali',
-      '2026-09-08',
-    ],
-  },
-]
-
-const COURSE_PRICE = 350000
-
-const COURSE_PAYMENT_OPTIONS = [
-  'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
-  'Transfer Bank|Transfer ke rekening yang tertera, simpan buktinya',
-  'Virtual Account|Bayar lewat VA di aplikasi bankmu',
-]
-
-const COURSE_FIELDS = [
-  { label: 'Nomor WhatsApp', type: 'PHONE', isRequired: true },
-  {
-    label: 'Level Pengalamanmu',
-    type: 'RADIO',
-    isRequired: true,
-    options: [
-      'Belum pernah sama sekali',
-      'Sudah pernah belajar mandiri',
-      'Sudah bekerja di bidang ini',
-    ],
-  },
-  { label: 'Apa yang ingin kamu capai setelah kelas ini?', type: 'LONG_TEXT' },
-  {
-    label: 'Metode Pembayaran',
-    type: 'PAYMENT',
-    isRequired: true,
-    options: COURSE_PAYMENT_OPTIONS,
-  },
-]
-
-const STUDENT_ROWS = [
-  [
-    'Nabila Az-Zahra',
-    'Sudah pernah belajar mandiri',
-    'Ingin bisa membangun aplikasi sendiri dari nol sampai rilis.',
-    'QRIS',
-  ],
-  [
-    'Aditya Wijaya',
-    'Belum pernah sama sekali',
-    'Mau coba pindah karier ke bidang teknologi.',
-    'Transfer Bank',
-  ],
-  [
-    'Kirana Maheswari',
-    'Sudah bekerja di bidang ini',
-    'Butuh mentor untuk mereview arsitektur proyek kantor.',
-    'Virtual Account',
-  ],
-  [
-    'Yusuf Ramadhan',
-    'Belum pernah sama sekali',
-    'Ingin punya portofolio pertama sebelum melamar kerja.',
-    'QRIS',
-  ],
-]
-
 const getDemoName = (name) => `[DEMO] ${name}`
 
 const getSlug = (name) =>
@@ -658,30 +333,6 @@ const EXAM_FORMS = [
     description:
       'Kesempatan kedua untuk siswa yang nilainya belum tuntas. Fokus soal ada pada latar belakang lahirnya pergerakan nasional.',
     students: STUDENTS.slice(3),
-  },
-]
-
-const PSYCHOMETRIC_FORMS = [
-  {
-    title: '[DEMO] Frontend Engineer — PT Nusantara Digital',
-    description:
-      'Jakarta Selatan · Hybrid · Penuh Waktu · S1 Teknik Informatika · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
-    bannerUrl: '/job-logo-nusantara.svg',
-    applicants: APPLICANTS,
-  },
-  {
-    title: '[DEMO] Product Designer — Arunika Labs',
-    description:
-      'Bandung · Kerja Jarak Jauh · Penuh Waktu · S1 Desain Komunikasi Visual · 3-5 tahun pengalaman. Psikotes berisi soal situasional seputar kerja lintas tim dan cara mengambil keputusan desain saat waktunya sempit.',
-    bannerUrl: '/job-logo-arunika.svg',
-    applicants: APPLICANTS.slice(0, 3),
-  },
-  {
-    title: '[DEMO] Data Analyst — Sentra Data Group',
-    description:
-      'Surabaya · Kerja di Kantor · Kontrak 12 Bulan · D3/S1 Statistika · Terbuka untuk lulusan baru. Psikotes menakar ketelitian, cara membaca angka yang janggal, dan ketahanan mengerjakan hal berulang.',
-    bannerUrl: '/job-logo-sentra.svg',
-    applicants: APPLICANTS.slice(3),
   },
 ]
 
@@ -733,57 +384,6 @@ const RESTAURANT_FORMS = [
   },
 ]
 
-const FREELANCE_FORMS = [
-  {
-    title: '[DEMO] Redesain Landing Page Company Profile',
-    description:
-      'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Kami butuh landing page baru yang lebih cepat dan enak dibaca di ponsel. Aset desain sudah tersedia dalam bentuk Figma.',
-    priceAmount: 4500000,
-    bidders: BIDDERS,
-  },
-  {
-    title: '[DEMO] Aplikasi Kasir Sederhana untuk Warung',
-    description:
-      'Mobile Development · Kerja Jarak Jauh · Estimasi 6 Minggu · Level Senior. Butuh aplikasi kasir Android yang tetap jalan saat sinyal hilang dan menyimpan penjualan harian.',
-    priceAmount: 12000000,
-    bidders: BIDDERS.slice(0, 3),
-  },
-  {
-    title: '[DEMO] Penulisan 20 Artikel SEO Bidang Properti',
-    description:
-      'Penulisan Konten · Kerja Jarak Jauh · Estimasi 4 Minggu · Terbuka untuk Pemula. Dua puluh artikel siap tayang, riset kata kunci sudah kami sediakan.',
-    priceAmount: 0,
-    bidders: BIDDERS.slice(2),
-  },
-]
-
-const COURSE_FORMS = [
-  {
-    title: '[DEMO] Kelas Online — Dasar Membangun Web',
-    description:
-      'Lengkapi data diri, lalu selesaikan pembayaran. Video materi langsung terbuka begitu formulir terkirim.',
-    bannerUrl: '/class-intensive.svg',
-    videoUrl: 'https://www.youtube.com/watch?v=aircAruvnKk',
-    students: STUDENT_ROWS,
-  },
-  {
-    title: '[DEMO] Kelas Online — Bikin API dengan Node.js',
-    description:
-      'Belajar merancang endpoint, autentikasi, dan basis data dari nol. Rekaman bisa diulang kapan saja setelah mendaftar.',
-    bannerUrl: '/class-basic.svg',
-    videoUrl: 'https://www.youtube.com/watch?v=Oe421EPjeBE',
-    students: STUDENT_ROWS.slice(0, 2),
-  },
-  {
-    title: '[DEMO] Kelas Online — UI Design untuk Developer',
-    description:
-      'Dasar tipografi, spasi, dan warna supaya antarmuka buatanmu rapi tanpa perlu menunggu desainer.',
-    bannerUrl: '/class-mentoring.svg',
-    videoUrl: 'https://www.youtube.com/watch?v=YiLUYf4HDh4',
-    students: STUDENT_ROWS.slice(1),
-  },
-]
-
 const seedExam = async () => {
   const ids = []
 
@@ -817,43 +417,6 @@ const seedExam = async () => {
   }
 
   console.log(`• ${EXAM_FORMS.length} form ujian dibuat`)
-  return ids[0]
-}
-
-const seedPsychometric = async () => {
-  const ids = []
-
-  for (const demo of PSYCHOMETRIC_FORMS) {
-    const form = await prisma.form.create({
-      data: {
-        userId: ownerId,
-        title: demo.title,
-        description: demo.description,
-        purpose: null,
-        templateId: 'psychometric',
-        bannerUrl: demo.bannerUrl,
-        isPublished: true,
-        fields: { create: getCreatedFields(PSYCHOMETRIC_FIELDS) },
-      },
-      include: { fields: { orderBy: { order: 'asc' } } },
-    })
-
-    for (const applicant of demo.applicants) {
-      await prisma.formResponse.create({
-        data: {
-          formId: form.id,
-          respondentName: getDemoName(applicant.name),
-          respondentEmail: applicant.email,
-          answers: getAnswers(form.fields, applicant.answers),
-          durationSeconds: applicant.durationSeconds,
-        },
-      })
-    }
-
-    ids.push(form.id)
-  }
-
-  console.log(`• ${PSYCHOMETRIC_FORMS.length} form psikotes dibuat`)
   return ids[0]
 }
 
@@ -948,88 +511,6 @@ const seedRestaurant = async () => {
   return ids[0]
 }
 
-const seedFreelance = async () => {
-  const ids = []
-
-  for (const demo of FREELANCE_FORMS) {
-    const form = await prisma.form.create({
-      data: {
-        userId: ownerId,
-        title: demo.title,
-        description: demo.description,
-        purpose: null,
-        templateId: 'freelance',
-        priceAmount: demo.priceAmount,
-        isPublished: true,
-        fields: { create: getCreatedFields(FREELANCE_FIELDS) },
-      },
-      include: { fields: { orderBy: { order: 'asc' } } },
-    })
-
-    for (const bidder of demo.bidders) {
-      await prisma.formResponse.create({
-        data: {
-          formId: form.id,
-          respondentName: getDemoName(bidder.name),
-          respondentEmail: bidder.email,
-          answers: getAnswers(form.fields, bidder.answers),
-          durationSeconds: bidder.durationSeconds,
-        },
-      })
-    }
-
-    ids.push(form.id)
-  }
-
-  console.log(`• ${FREELANCE_FORMS.length} form freelance dibuat`)
-  return ids[0]
-}
-
-const seedCourse = async () => {
-  const ids = []
-
-  for (const demo of COURSE_FORMS) {
-    const form = await prisma.form.create({
-      data: {
-        userId: ownerId,
-        title: demo.title,
-        description: demo.description,
-        purpose: null,
-        templateId: 'course',
-        bannerUrl: demo.bannerUrl,
-        qrisUrl: '/menu-es-teh.svg',
-        videoUrl: demo.videoUrl,
-        priceAmount: COURSE_PRICE,
-        isPublished: true,
-        fields: { create: getCreatedFields(COURSE_FIELDS) },
-      },
-      include: { fields: { orderBy: { order: 'asc' } } },
-    })
-
-    for (const [name, level, goal, method] of demo.students) {
-      await prisma.formResponse.create({
-        data: {
-          formId: form.id,
-          respondentName: getDemoName(name),
-          respondentEmail: `${getSlug(name)}@mail.com`,
-          answers: getAnswers(form.fields, [
-            '08123456789',
-            level,
-            goal,
-            `${method} — Rp${COURSE_PRICE.toLocaleString('id-ID')}`,
-          ]),
-          durationSeconds: 180 + goal.length,
-        },
-      })
-    }
-
-    ids.push(form.id)
-  }
-
-  console.log(`• ${COURSE_FORMS.length} form kursus dibuat`)
-  return ids[0]
-}
-
 const main = async () => {
   ownerId = await getOwnerId()
   console.log(`• pemilik form demo: ${SEED_OWNER_EMAIL} (${ownerId})`)
@@ -1037,15 +518,7 @@ const main = async () => {
   const removed = await prisma.form.deleteMany({
     where: {
       templateId: {
-        in: [
-          'exam',
-          'psychometric',
-          'event',
-          'restaurant',
-          'freelance',
-          'course',
-          ...OBSOLETE_TEMPLATE_IDS,
-        ],
+        in: ['exam', 'event', 'restaurant', ...OBSOLETE_TEMPLATE_IDS],
       },
     },
   })
@@ -1053,25 +526,15 @@ const main = async () => {
   if (removed.count) console.log(`• ${removed.count} form demo lama dihapus`)
 
   const examId = await seedExam()
-  const psychometricId = await seedPsychometric()
   const eventId = await seedEvent()
   const restaurantId = await seedRestaurant()
-  const freelanceId = await seedFreelance()
-  const courseId = await seedCourse()
 
   console.log('\nSelesai. Buka:')
   console.log(`  ujian    : /forms/${examId}  →  /forms/${examId}/result`)
-  console.log(
-    `  psikotes : /forms/${psychometricId}  →  /forms/${psychometricId}/result`
-  )
   console.log(`  acara    : /forms/${eventId}  →  /forms/${eventId}/result`)
   console.log(
     `  restoran : /forms/${restaurantId}  →  /forms/${restaurantId}/result`
   )
-  console.log(
-    `  freelance: /forms/${freelanceId}  →  /forms/${freelanceId}/result`
-  )
-  console.log(`  kursus   : /forms/${courseId}  →  /forms/${courseId}/result`)
 }
 
 main()

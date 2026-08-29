@@ -36,7 +36,6 @@ const getForm = (patch: Record<string, unknown> = {}) => ({
   templateId: 'event',
   bannerUrl: 'https://cdn/banner.png',
   meetingUrl: 'https://meet.google.com/rahasia',
-  videoUrl: 'https://youtu.be/rahasia',
   qrisUrl: 'https://cdn/qris.png',
   price: 50000,
   isPublished: true,
@@ -111,7 +110,6 @@ describe('detail form untuk pengisi', () => {
     expect(res.statusCode).toBe(200)
     expect(res.body.data).toMatchObject({
       meeting: '',
-      video: '',
       qrisImage: 'https://cdn/qris.png',
     })
     expect(res.body.data).not.toHaveProperty('purpose')
@@ -139,7 +137,7 @@ describe('detail form untuk pengisi', () => {
 
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
-    expect(res.body.data).toMatchObject({ meeting: '', video: '' })
+    expect(res.body.data).toMatchObject({ meeting: '' })
     expect(res.body.data).not.toHaveProperty('purpose')
   })
 
@@ -150,7 +148,6 @@ describe('detail form untuk pengisi', () => {
 
     expect(res.body.data).toMatchObject({
       meeting: 'https://meet.google.com/rahasia',
-      video: 'https://youtu.be/rahasia',
     })
     expect(res.body.data).not.toHaveProperty('purpose')
   })

@@ -147,17 +147,17 @@ describe('judul form di builder', () => {
     await loadCreate()
 
     await user.click(
-      within(getTemplateCard('Kursus Kelas')).getByRole('button', {
+      within(getTemplateCard('Menu Restoran')).getByRole('button', {
         name: 'Use',
       })
     )
 
     expect(router.replace).toHaveBeenCalledWith(
-      { pathname: '/forms/create', query: { template: 'course' } },
+      { pathname: '/forms/create', query: { template: 'restaurant' } },
       undefined,
       { shallow: true }
     )
-    expect(router.query.template).toBe('course')
+    expect(router.query.template).toBe('restaurant')
   })
 
   it('TC-01 builder tidak menampilkan tombol See karena tidak punya riwayat', async () => {

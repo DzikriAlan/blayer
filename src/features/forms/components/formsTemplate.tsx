@@ -3,14 +3,11 @@
 import {
   ArrowRight,
   ArrowUpRight,
-  Brain,
   Briefcase,
   CalendarDays,
   Eye,
   FilePlus2,
   GraduationCap,
-  Hammer,
-  PlayCircle,
   Star,
   UtensilsCrossed,
   type LucideIcon,
@@ -35,7 +32,6 @@ export interface FormsTemplateValues {
   description: string
   image: string
   meeting: string
-  video: string
   qrisImage: string
   price: string
   isPublished: boolean
@@ -45,12 +41,9 @@ export interface FormsTemplateValues {
 export type FormsTemplateView =
   | 'scoring'
   | 'exam'
-  | 'psychometric'
   | 'survey'
   | 'event'
   | 'order'
-  | 'course'
-  | 'freelance'
 
 export interface FormsViewCopy {
   heading: string
@@ -74,17 +67,6 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
     emptyTitle: 'Belum Ada Ujian Dibuka',
     emptySubtitle:
       'Belum ada ujian yang bisa dikerjakan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
-  },
-  psychometric: {
-    heading: 'Lowongan Yang Sedang Membuka Psikotes',
-    lead: 'Lowongan yang seleksinya sedang berjalan. Kerjakan psikotesnya sekarang juga, dan hasilmu langsung sampai ke perekrutnya.',
-    availabilityLabel: 'LOWONGAN DIBUKA',
-    countLabel: 'PELAMAR',
-    fieldLabel: 'SOAL',
-    action: 'Lamar & Kerjakan',
-    emptyTitle: 'Belum Ada Lowongan Dibuka',
-    emptySubtitle:
-      'Belum ada lowongan yang psikotesnya bisa dikerjakan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
   },
   scoring: {
     heading: 'Form Yang Bisa Kamu Isi',
@@ -129,28 +111,6 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
     emptyTitle: 'Belum Ada Menu Dibuka',
     emptySubtitle:
       'Belum ada menu yang bisa dipesan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
-  },
-  freelance: {
-    heading: 'Proyek Yang Bisa Kamu Garap',
-    lead: 'Proyek yang sedang mencari orang. Ajukan penawaran beserta rencana kerjamu, dan pemilik proyek memilih dari yang masuk.',
-    availabilityLabel: 'PROYEK DIBUKA',
-    countLabel: 'PENAWARAN',
-    fieldLabel: 'ISIAN',
-    action: 'Ajukan Penawaran',
-    emptyTitle: 'Belum Ada Proyek Dibuka',
-    emptySubtitle:
-      'Belum ada proyek yang bisa digarap sekarang. Lihat kategori lain, atau kembali lagi nanti.',
-  },
-  course: {
-    heading: 'Kelas Yang Bisa Kamu Ambil',
-    lead: 'Kelas yang pendaftarannya sedang dibuka. Selesaikan pembayarannya, dan materinya langsung terbuka untukmu.',
-    availabilityLabel: 'KELAS TERBUKA',
-    countLabel: 'PESERTA',
-    fieldLabel: 'ISIAN',
-    action: 'Ikut Kelas',
-    emptyTitle: 'Belum Ada Kelas Dibuka',
-    emptySubtitle:
-      'Belum ada kelas yang bisa diikuti sekarang. Lihat kategori lain, atau kembali lagi nanti.',
   },
 }
 
@@ -199,7 +159,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      video: '',
       qrisImage: '',
       price: '',
       fields: [
@@ -214,187 +173,12 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     },
   },
   {
-    id: 'course',
-    name: 'Kursus Kelas',
-    tagline: 'Pajang kelasmu di katalog kelas yang bisa langsung diambil pengunjung, dengan materi yang terbuka sendiri setelah mereka mendaftar.',
-    view: 'course',
-    isVisible: true,
-    isFeatured: true,
-    icon: PlayCircle,
-    values: {
-      title: 'Kelas Online — Dasar Membangun Web',
-      description:
-        'Lengkapi data diri, lalu selesaikan pembayaran. Video materi langsung terbuka begitu formulir terkirim.',
-      isPublished: true,
-      image: '',
-      meeting: '',
-      video: '',
-      qrisImage: '',
-      price: '350000',
-      fields: [
-        getField('Nomor WhatsApp', 'PHONE', true, '', '', '08xx'),
-        getField(
-          'Level Pengalamanmu',
-          'RADIO',
-          true,
-          'Belum pernah sama sekali\nSudah pernah belajar mandiri\nSudah bekerja di bidang ini'
-        ),
-        getField(
-          'Apa yang ingin kamu capai setelah kelas ini?',
-          'LONG_TEXT',
-          false
-        ),
-        getField(
-          'Metode Pembayaran',
-          'PAYMENT',
-          true,
-          [
-            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
-            'Transfer Bank|Transfer ke rekening yang tertera, simpan buktinya',
-            'Virtual Account|Bayar lewat VA di aplikasi bankmu',
-          ].join('\n'),
-          'Biaya kelas ditetapkan pengajar dan tampil di bawah ini.'
-        ),
-      ],
-    },
-  },
-  {
-    id: 'psychometric',
-    name: 'Psikotes Kerja',
-    tagline: 'Pasang lowonganmu di papan lowongan yang dijelajahi pencari kerja, lengkap dengan tesnya dan pelamar yang sudah dinilai dan diurutkan.',
-    view: 'psychometric',
-    isVisible: true,
-    isFeatured: true,
-    icon: Brain,
-    values: {
-      title: 'Frontend Engineer — PT Nusantara Digital',
-      description:
-        'Jakarta Selatan · Hybrid · Penuh Waktu · S1 Teknik Informatika · 2-4 tahun pengalaman. Kerjakan psikotesnya sekarang, hasilnya langsung dinilai. Jawab sejujurnya berdasarkan pengalaman nyata — tidak ada jawaban benar atau salah.',
-      isPublished: true,
-      image: '',
-      meeting: '',
-      video: '',
-      qrisImage: '',
-      price: '',
-      fields: [
-        getField(
-          'Posisi yang Dilamar',
-          'SELECT',
-          true,
-          'Frontend Engineer\nBackend Engineer\nProduct Designer\nData Analyst\nProject Manager'
-        ),
-        getField('Lama Pengalaman Kerja (tahun)', 'NUMBER', true),
-        getField(
-          'Tautan CV atau LinkedIn',
-          'URL',
-          true,
-          '',
-          'Pastikan tautannya bisa dibuka tanpa izin akses khusus.',
-          'https://'
-        ),
-        getField(
-          'Ceritakan satu proyek tersulit yang pernah kamu tangani dan bagaimana kamu menyelesaikannya.',
-          'LONG_TEXT',
-          true,
-          '',
-          'Jelaskan masalahnya, langkahmu, dan hasil akhirnya.'
-        ),
-        getField(
-          'Deadline tinggal dua hari, lalu ditemukan bug besar di fitur utama. Apa yang kamu lakukan pertama kali?',
-          'LONG_TEXT',
-          true
-        ),
-        getField(
-          'Saya nyaman menerima kritik atas hasil kerja saya.',
-          'SCALE',
-          true,
-          '',
-          '1 = sangat tidak setuju, 10 = sangat setuju'
-        ),
-        getField(
-          'Saya paling produktif ketika bekerja...',
-          'RADIO',
-          true,
-          'Sendiri dengan fokus penuh\nBerpasangan (pair programming)\nDalam tim besar\nFleksibel, tergantung situasi'
-        ),
-        getField(
-          'Kapan Bisa Mulai Bekerja',
-          'DATE',
-          true
-        ),
-        getField(
-          'Bidang apa yang ingin kamu dalami setahun ke depan?',
-          'CHECKBOX',
-          false,
-          'Performance\nAccessibility\nDesign System\nTesting\nDevOps'
-        ),
-      ],
-    },
-  },
-  {
-    id: 'freelance',
-    name: 'Proyek Freelance',
-    tagline: 'Pasang proyekmu di papan proyek yang dijelajahi freelancer, lalu bandingkan penawaran dan rencana kerja yang masuk berdampingan.',
-    view: 'freelance',
-    isVisible: true,
-    isFeatured: true,
-    icon: Hammer,
-    values: {
-      title: 'Redesain Landing Page Company Profile',
-      description:
-        'Web Development · Kerja Jarak Jauh · Estimasi 3 Minggu · Level Menengah. Kami butuh landing page baru yang lebih cepat dan enak dibaca di ponsel. Aset desain sudah tersedia dalam bentuk Figma.',
-      isPublished: true,
-      image: '',
-      meeting: '',
-      video: '',
-      qrisImage: '',
-      price: '4500000',
-      fields: [
-        getField(
-          'Bidang Keahlian Utama',
-          'SELECT',
-          true,
-          'Web Development\nMobile Development\nUI/UX Design\nPenulisan Konten\nData & Otomasi'
-        ),
-        getField(
-          'Tautan Portofolio',
-          'URL',
-          true,
-          '',
-          'Cantumkan karya yang paling dekat dengan proyek ini.',
-          'https://'
-        ),
-        getField('Tawaran Biaya Pengerjaan (Rp)', 'NUMBER', true),
-        getField(
-          'Perkiraan Lama Pengerjaan',
-          'SELECT',
-          true,
-          'Kurang dari 1 minggu\n1-2 minggu\n3-4 minggu\nLebih dari 1 bulan'
-        ),
-        getField(
-          'Bagaimana rencanamu mengerjakan proyek ini?',
-          'LONG_TEXT',
-          true,
-          '',
-          'Sebutkan tahapannya, alat yang dipakai, dan apa yang kamu butuhkan dari kami.'
-        ),
-        getField(
-          'Pernah mengerjakan proyek serupa?',
-          'RADIO',
-          true,
-          'Sudah, lebih dari lima kali\nSudah, satu sampai lima kali\nBelum pernah, tapi bidangnya sama\nBelum sama sekali'
-        ),
-        getField('Kapan Bisa Mulai Mengerjakan', 'DATE', true),
-      ],
-    },
-  },
-  {
     id: 'exam',
     name: 'Ujian Sekolah',
     tagline: 'Buka ujianmu di daftar ujian yang bisa dikerjakan peserta, lalu terima nilai, peringkat, dan catatan pengerjaannya tanpa memeriksa sendiri.',
     view: 'exam',
     isVisible: true,
-    isFeatured: false,
+    isFeatured: true,
     icon: GraduationCap,
     values: {
       title: 'Ujian Tengah Semester — Sejarah Kelas XI',
@@ -403,7 +187,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      video: '',
       qrisImage: '',
       price: '',
       fields: [
@@ -445,7 +228,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     tagline: 'Pajang menumu di daftar menu yang bisa dipesan langsung pengunjung, lalu terima pesanan beserta pembayarannya di tempat.',
     view: 'order',
     isVisible: true,
-    isFeatured: false,
+    isFeatured: true,
     icon: UtensilsCrossed,
     values: {
       title: 'Pesan Menu — Meja Restoran',
@@ -454,7 +237,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      video: '',
       qrisImage: '',
       price: '',
       fields: [
@@ -515,7 +297,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      video: '',
       qrisImage: '',
       price: '',
       fields: [
@@ -561,7 +342,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      video: '',
       qrisImage: '',
       price: '',
       fields: [
@@ -604,7 +384,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      video: '',
       qrisImage: '',
       price: '',
       fields: [

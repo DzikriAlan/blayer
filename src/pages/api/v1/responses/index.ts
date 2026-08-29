@@ -160,7 +160,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       totalResponses: totalResponse,
       createdAt: response.createdAt.toISOString(),
       meeting: form.meetingUrl ?? '',
-      video: form.videoUrl ?? '',
     },
   })
 }

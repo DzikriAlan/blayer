@@ -7,9 +7,9 @@ harus dilakukan tangan.
 | | |
 | --- | --- |
 | **Versi PRD yang diuji** | 1.9 |
-| **Terakhir diperbarui** | 19 Agustus 2026 |
-| **Kasus otomatis** | 170 |
-| **Berkas uji** | 23 |
+| **Terakhir diperbarui** | 29 Agustus 2026 |
+| **Kasus otomatis** | 231 |
+| **Berkas uji** | 36 |
 
 ---
 
@@ -40,8 +40,7 @@ test/
 │   ├── responses/
 │   │   ├── responsesField.test.tsx            # field menu, pembayaran, QRIS
 │   │   ├── responsesSubmit.test.tsx           # halaman isi form + pengiriman
-│   │   ├── responsesOrder.test.tsx            # struk pesanan
-│   │   └── responsesCourse.test.tsx           # halaman akses kelas
+│   │   └── responsesOrder.test.tsx            # struk pesanan
 │   └── uploads/
 │       └── uploadsBanner.test.tsx             # unggah banner dan kode QRIS
 ├── pages/
@@ -72,7 +71,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-34c | F-34 | Memakai template dari builder | Judul dari template ikut mengubah bilah atas | Otomatis | `formsCreate.test.tsx` |
 | TC-35a | F-01 | Datang lewat `?template=` lalu memilih template lain | Isian berpindah ke template baru dan tidak ditarik kembali ke yang lama | Otomatis | `formsCreate.test.tsx` |
 | TC-35b | F-01 | Memilih template di builder | `?template=` di URL ikut berubah mengikuti pilihan terakhir | Otomatis | `formsCreate.test.tsx` |
-| TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `psychometric`, `survey`, `event`, `order`, `course`, atau `freelance` | Otomatis | `formsTemplate.test.ts` |
+| TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `survey`, `event`, atau `order` | Otomatis | `formsTemplate.test.ts` |
 | TC-13a | F-13 | Menekan **See** pada kartu template | Riwayat form hanya menampilkan form dari template itu, dan baris filter aktif muncul | Otomatis | `formsList.test.tsx` |
 | TC-13b | F-13 | Menekan **Shown** (klik kedua) | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
 | TC-13c | F-13 | Menekan **Hapus Filter** | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
@@ -117,8 +116,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-16a | F-16 | Memilih metode QRIS pada form yang punya kode QRIS | Gambar QRIS milik pembuat form ditampilkan | Otomatis | `responsesField.test.tsx` |
 | TC-16b | F-16 | Memilih metode QRIS tanpa kode terunggah | Tidak ada gambar; pengisi diberi tahu harus menanyakan kodenya | Otomatis | `responsesField.test.tsx` |
 | TC-16c | F-16 | Membuka unggahan QRIS di builder | Tombol unggah berlabel "UNGGAH QRIS", bukan "UNGGAH BANNER" | Otomatis | `uploadsBanner.test.tsx` |
-| TC-20a | F-20 | Membuka form kursus berharga tetap | Total tagihan memakai `priceAmount` milik form | Otomatis | `responsesSubmit.test.tsx` |
-| TC-20b | F-20 | Memeriksa harga bawaan template kursus | Nilainya angka lebih dari 0 | Otomatis | `formsTemplate.test.ts` |
+| TC-20a | F-20 | Membuka form berharga tetap tanpa field menu | Total tagihan memakai `priceAmount` milik form | Otomatis | `responsesSubmit.test.tsx` |
 | TC-20c | F-20 | Mengisi harga dengan huruf atau angka negatif di builder | Simpan ditolak dengan pesan "Harga harus berupa angka lebih dari 0" | Manual | — |
 | TC-23a | F-23 | Memilih metode pembayaran apa pun | Halaman menyatakan pembayaran belum diverifikasi otomatis | Otomatis | `responsesField.test.tsx` |
 | TC-23b | F-23 | Membuka struk setelah kirim | Status tertulis menunggu konfirmasi petugas | Otomatis | `responsesOrder.test.tsx` |
@@ -133,11 +131,6 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-17b | F-17 | Memeriksa rincian struk | Tiap item tampil dengan jumlah dan subtotalnya | Otomatis | `responsesOrder.test.tsx` |
 | TC-17c | F-17 | Memeriksa penutup struk | Total tagihan dan metode pembayaran tercetak | Otomatis | `responsesOrder.test.tsx` |
 | TC-17d | F-17 | Mengirim pesanan tanpa item | Struk tetap terbaca dengan keterangan "Tidak Ada Item" | Otomatis | `responsesOrder.test.tsx` |
-| TC-22a | F-22 | Mengirim pendaftaran kelas dengan tautan YouTube | Video disematkan sebagai `youtube.com/embed/<id>` | Otomatis | `responsesCourse.test.tsx` |
-| TC-22b | F-22 | Memakai tautan pendek `youtu.be` | Tetap dikenali dan disematkan | Otomatis | `responsesCourse.test.tsx` |
-| TC-22c | F-22 | Memakai penyedia video lain | Disajikan sebagai tautan, bukan iframe | Otomatis | `responsesCourse.test.tsx` |
-| TC-22d | F-22 | Pengajar belum mengisi tautan video | Peserta diberi tahu pendaftarannya tetap tercatat | Otomatis | `responsesCourse.test.tsx` |
-| TC-22e | F-22 | Membuka halaman pendaftaran kelas sebelum submit | Tautan video tidak muncul di mana pun di halaman | Manual | — |
 | TC-11 | F-11 | Mendaftar acara lalu melihat tiket | Tiket memuat nama, sesi, lokasi, jumlah terdaftar, dan link Meet | Manual | — |
 | TC-12 | F-12 | Membuka halaman pendaftaran acara | Link Google Meet tidak tampil sebelum submit berhasil | Manual | — |
 
@@ -162,7 +155,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | ID | Kebutuhan | Skenario | Hasil yang diharapkan | Jenis | Berkas |
 | --- | --- | --- | --- | --- | --- |
 | TC-08a | F-08 | Membuka hasil form ujian | Tampil skor dan peringkat responden | Manual | — |
-| TC-08b | F-08 | Membuka hasil form acara, pesanan, atau kelas | Tampil daftar orang, bukan peringkat skor | Manual | — |
+| TC-08b | F-08 | Membuka hasil form acara atau pesanan | Tampil daftar orang, bukan peringkat skor | Manual | — |
 | TC-08c | F-08 | Membuka baris responden | Seluruh jawaban responden itu terbuka | Manual | — |
 | TC-09a | F-09 | Menekan tombol CSV | Berkas berisi tepat tiga kolom: Nama, Nilai, Waktu Pengerjaan | Manual | — |
 | TC-09b | F-09 | Mengekspor saat hasil terbagi beberapa halaman | Seluruh data ikut, bukan hanya halaman aktif | Manual | — |
@@ -215,20 +208,10 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-26ac | F-26 | Halaman depan dibuka pengunjung yang belum masuk | Tidak ada request ke endpoint terkunci — daftar form milik sendiri ditahan sampai ada sesi | Manual | — |
 | TC-36a | F-36 | Membuka kategori ujian | Judulnya menyebut yang bisa dilakukan, bukan nama template; disajikan sebagai daftar bernomor dengan satuan soal dan peserta | Otomatis | `formsExplore.test.tsx` |
 | TC-36b | F-36 | Membuka kategori acara | Poster dimuat utuh tanpa terpotong, dengan satuan terdaftar dan acara terbuka | Otomatis | `formsExplore.test.tsx` |
-| TC-36c | F-36 | Membuka kategori kelas berbayar | Harga tampil di sampul dalam format rupiah | Otomatis | `formsExplore.test.tsx` |
 | TC-36d | F-36 | Membuka kategori menu restoran | Disajikan berdampingan dengan satuan pilihan dan pesanan | Otomatis | `formsExplore.test.tsx` |
 | TC-36e | F-36 | Kategori berisi form dari template lain | Hanya form dari kategori itu yang tampil, dan jumlah tersedia mengikutinya | Otomatis | `formsExplore.test.tsx` |
 | TC-36f | F-36 | Kategori yang tidak dikenal | Dijelaskan alasannya dan tidak menawarkan template yang tidak ada | Otomatis | `formsExplore.test.tsx` |
 | TC-36g | F-36 | Memeriksa halaman kategori | Tidak ada ajakan membuat form — permukaan ini untuk yang datang ikut | Otomatis | `formsExplore.test.tsx` |
-| TC-36m | F-36 | Membuka kategori psikotes | Disajikan seperti papan lowongan job portal: logo perusahaan, umur lowongan, satuan pelamar dan soal, tombol melamar, tanpa label harga | Otomatis | `formsExplore.test.tsx` |
-| TC-36n | F-37 | Memeriksa katalog kategori halaman depan | Psikotes tampil, ujian sekolah tidak; ujian sekolah tetap tersedia di daftar template builder | Otomatis | `formsTemplate.test.ts` |
-| TC-36o | F-37 | Memeriksa template psikotes | Memakai `view: psychometric` dan menanyakan posisi yang dilamar serta tautan CV atau LinkedIn | Otomatis | `formsTemplate.test.ts` |
-| TC-36p | F-36 | Membuka kategori psikotes berdeskripsi berpola | Ruas sebelum kalimat pertama jadi chip terpisah — lokasi, bentuk kerja, status, gelar, pengalaman — sisanya tetap jadi paragraf | Otomatis | `formsExplore.test.tsx` |
-| TC-36q | F-36 | Membuka kategori psikotes berdeskripsi biasa | Deskripsi ditinggal utuh sebagai paragraf, tidak dipaksa jadi chip | Otomatis | `formsExplore.test.tsx` |
-| TC-38a | F-38 | Membuka kategori freelance | Anggaran tampil di kepala kartu dalam format rupiah, dengan satuan penawaran dan isian | Otomatis | `formsExplore.test.tsx` |
-| TC-38b | F-38 | Membuka proyek tanpa anggaran | Kepala kartu menandainya "Nego", bukan "Gratis" | Otomatis | `formsExplore.test.tsx` |
-| TC-38c | F-38 | Memeriksa katalog kategori halaman depan | Freelance tampil, menu restoran tidak; restoran tetap tersedia di daftar template builder | Otomatis | `formsTemplate.test.ts` |
-| TC-38d | F-38 | Memeriksa template freelance | Memakai `view: freelance`, beranggaran positif, dan menanyakan portofolio, tawaran biaya, serta rencana pengerjaan | Otomatis | `formsTemplate.test.ts` |
 | TC-36k | F-36 | Membuka `/kategori/[id]` di peramban | Judul tab memakai kalimat yang sama dengan halamannya sejak balasan pertama, bukan setelah JavaScript jalan | Manual | — |
 | TC-36l | F-36 | Membuka kategori acara berisi banner lebar | Tanggal dan tempat di tepi poster tetap terbaca, tidak terpangkas bingkai kartu | Manual | — |
 | TC-36h | F-36 | Membuka alamat kategori yang tidak ada | Server membalas 404, bukan 200 dengan halaman kosong | Manual | — |
@@ -244,8 +227,6 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-32b | F-32 | Memeriksa elemen di lebar ponsel | Tidak ada elemen yang melewati tepi kecuali di dalam wadah yang memang menggulir | Manual | — |
 | TC-32c | F-32 | Memeriksa tombol dan tautan di lebar ponsel | Semua sasaran sentuh minimal 32 px; kotak centang dibantu label yang bisa ditekan | Manual | — |
 | TC-32d | F-32 | Membuka halaman depan di bawah 640 px | Navigasi berubah jadi tombol menu yang bisa dibuka dan ditutup | Manual | — |
-| TC-32e | F-32 | Membuka kategori proyek di 320 px | Kartu proyek menyempit mengikuti layar; chip menggulir di dalam kartunya, halaman tidak ikut menggeser | Otomatis | `formsExplore.test.tsx` |
-| TC-32f | F-32 | Membuka kategori psikotes di 320 px | Kartu lowongan menyempit mengikuti layar dengan cara yang sama | Otomatis | `formsExplore.test.tsx` |
 | TC-32g | F-32 | Membuka alamat yang tidak dikenal di 320 px | Label tombol melipat, tidak meluber keluar kartu | Manual | — |
 
 ---
@@ -267,7 +248,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-39k | F-39 | Membuka halaman sunting | Judul, deskripsi, dan pertanyaan tersimpan termuat ke builder | Otomatis | `formsEdit.test.tsx` |
 | TC-39l | F-39 | Menyimpan dari halaman sunting | Yang terkirim PUT ke form itu, bukan pembuatan form baru | Otomatis | `formsEdit.test.tsx` |
 | TC-39m | F-39 | Menyimpan suntingan pertanyaan lama | Id field lama ikut terkirim supaya jawaban lama tetap punya pertanyaannya | Otomatis | `formsEdit.test.tsx` |
-| TC-40a | F-40 | Membuka detail form tanpa sesi | `purpose`, `meetingUrl`, dan `videoUrl` kosong; `qrisUrl` tetap ikut | Otomatis | `formsDetail.test.ts` |
+| TC-40a | F-40 | Membuka detail form tanpa sesi | `purpose` dan `meetingUrl` kosong; `qrisUrl` tetap ikut | Otomatis | `formsDetail.test.ts` |
 | TC-40b | F-40 | Membuka detail form milik akun lain | Ketiga kolom rahasia tetap kosong walau pemanggilnya sudah masuk | Otomatis | `formsDetail.test.ts` |
 | TC-40c | F-40 | Pemilik membuka detail formnya | Seluruh kolom terkirim utuh | Otomatis | `formsDetail.test.ts` |
 | TC-40d | F-40 | Menebak tautan form yang masih draf | Dibalas 404, bukan 403 yang membocorkan keberadaannya | Otomatis | `formsDetail.test.ts` |

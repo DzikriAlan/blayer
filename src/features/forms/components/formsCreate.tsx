@@ -42,7 +42,7 @@ const OPTION_TYPES: FormsFieldType[] = [
   'PAYMENT',
 ]
 
-const PAID_VIEWS = ['order', 'course']
+const PAID_VIEWS = ['order']
 
 const fieldSchema = z.object({
   id: z.string().optional(),
@@ -61,7 +61,6 @@ const schema = z
     description: z.string(),
     image: z.string(),
     meeting: z.string(),
-    video: z.string(),
     qrisImage: z.string(),
     price: z.string(),
     isPublished: z.boolean(),
@@ -99,13 +98,6 @@ const schema = z
       })
     }
 
-    if (values.video.trim() && !/^https?:\/\/\S+$/.test(values.video.trim())) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['video'],
-        message: 'Link video harus diawali http:// atau https://',
-      })
-    }
   })
 
 type FormValues = z.infer<typeof schema>
@@ -145,7 +137,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       description: '',
       image: '',
       meeting: '',
-      video: '',
       slug: '',
       qrisImage: '',
       price: '',
@@ -219,19 +210,14 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       activeTemplateId: filters.activeTemplateId,
       isPublished: watchedPublished,
       hasEventDetail: getView() === 'event',
-      hasCourseDetail: getView() === 'course',
       hasPaymentDetail: PAID_VIEWS.includes(getView()),
-      hasBanner: ['event', 'course', 'order', 'psychometric'].includes(
-        getView()
-      ),
+      hasBanner: ['event', 'order'].includes(getView()),
       image: watchedBannerUrl,
       qrisImage: watchedQrisUrl,
       hasFixedPrice:
         PAID_VIEWS.includes(getView()) && !watchedFieldTypes.includes('MENU'),
-      hasBudget: getView() === 'freelance',
       priceAmountError: form.formState.errors.price?.message ?? '',
       meetingUrlError: form.formState.errors.meeting?.message ?? '',
-      videoUrlError: form.formState.errors.video?.message ?? '',
       totalFields: mappedList.length,
     }
   }, [
@@ -364,12 +350,8 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       templateId: filters.activeTemplateId,
       image: data.hasBanner ? values.image : '',
       meeting: data.hasEventDetail ? values.meeting.trim() : '',
-      video: data.hasCourseDetail ? values.video.trim() : '',
       qrisImage: data.hasPaymentDetail ? values.qrisImage : '',
-      price:
-        data.hasFixedPrice || data.hasBudget
-          ? Number(values.price.trim()) || 0
-          : 0,
+      price: data.hasFixedPrice ? Number(values.price.trim()) || 0 : 0,
       isPublished: values.isPublished,
       fields: values.fields.map((field) => ({
         id: field.id || undefined,
@@ -437,7 +419,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       description: detail.description,
       image: detail.image,
       meeting: detail.meeting,
-      video: detail.video,
       qrisImage: detail.qrisImage,
       price: detail.price ? String(detail.price) : '',
       isPublished: detail.isPublished,
@@ -540,7 +521,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
         </div>
       </div>
 
-      {data.hasBanner || data.hasPaymentDetail || data.hasBudget ? (
+      {data.hasBanner || data.hasPaymentDetail ? (
         <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
           <span className="brutal-index">
             {data.hasPaymentDetail ? (
@@ -582,48 +563,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
               </div>
             ) : null}
 
-            {data.hasCourseDetail ? (
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="form-video-url">Link Video Kelas</Label>
-                <Input
-                  id="form-video-url"
-                  placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx"
-                  {...form.register('video')}
-                />
-                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                  Video baru terbuka setelah peserta memilih paket, membayar,
-                  dan formulirnya terkirim. Tautan YouTube diputar langsung di
-                  halaman, tautan lain dibuka di tab baru.
-                </p>
-                {data.videoUrlError ? (
-                  <p className="brutal-eyebrow text-primary">
-                    {data.videoUrlError}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
 
-            {data.hasBudget ? (
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="form-budget-amount">Budget Proyek (Rp)</Label>
-                <Input
-                  id="form-budget-amount"
-                  inputMode="numeric"
-                  placeholder="4500000"
-                  {...form.register('price')}
-                />
-                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                  Tulis angka polos tanpa titik. Angka ini tampil sebagai budget
-                  di papan proyek. Kosongkan kalau anggarannya masih terbuka
-                  untuk dinegosiasi.
-                </p>
-                {data.priceAmountError ? (
-                  <p className="brutal-eyebrow text-primary">
-                    {data.priceAmountError}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
 
             {data.hasFixedPrice ? (
               <div className="flex flex-col gap-3">

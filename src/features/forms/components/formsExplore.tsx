@@ -2,15 +2,12 @@
 
 import { useMemo } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { ArrowLeft, ArrowUpRight, Briefcase, Clock3 } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 
 import BackLink from '@/components/back-link'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
 import FormsFacepile from './formsFacepile'
-import FormsProject from './formsProject'
 import FormsPoster from './formsPoster'
 import type { DataFormsPublic } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
@@ -23,42 +20,25 @@ import {
 } from './formsTemplate'
 
 const getLayout = (view: FormsTemplateView) => {
-  if (view === 'event' || view === 'course') return 'poster'
+  if (view === 'event') return 'poster'
   if (view === 'order') return 'menu'
-  if (view === 'psychometric') return 'job'
-  if (view === 'freelance') return 'project'
   return 'list'
 }
 
-const getPostedText = (createdAt: string) => {
-  const days = Math.floor(
-    (Date.now() - new Date(createdAt).getTime()) / 86400000
-  )
-
-  if (!Number.isFinite(days) || days <= 0) return 'BARU HARI INI'
-  if (days === 1) return 'KEMARIN'
-  if (days < 30) return `${days} HARI LALU`
-
-  const months = Math.floor(days / 30)
-  return `${months} BULAN LALU`
-}
-
-const getCardDetail = (description: string) => {
+const getCardTags = (description: string) => {
   const parts = description
     .split('·')
     .map((part) => part.trim())
     .filter(Boolean)
 
-  if (parts.length < 2) return { tags: [], text: description }
+  if (parts.length < 2) return []
 
   const last = parts[parts.length - 1]
   const end = last.search(/\.(\s|$)/)
-  const tags = [...parts.slice(0, -1), end === -1 ? last : last.slice(0, end)]
 
-  return {
-    tags: tags.filter(Boolean),
-    text: end === -1 ? '' : last.slice(end + 1).trim(),
-  }
+  return [...parts.slice(0, -1), end === -1 ? last : last.slice(0, end)].filter(
+    Boolean
+  )
 }
 
 const getPriceText = (amount: number) =>
@@ -79,8 +59,6 @@ export default function FormsExplore({ templateId }: Props) {
     const view = template?.view ?? FORMS_TEMPLATE_DEFAULT_VIEW
 
     const getMappedForm = (item: DataFormsPublic) => {
-      const detail = getCardDetail(item.description)
-
       return {
         id: item.id,
         slug: item.slug,
@@ -89,10 +67,8 @@ export default function FormsExplore({ templateId }: Props) {
         image: item.image,
         priceText: getPriceText(item.price),
         isPaid: item.price > 0,
-        postedText: getPostedText(item.createdAt),
         tooltip: item.title,
-        tags: detail.tags,
-        summary: detail.text,
+        tags: getCardTags(item.description),
         totalFields: item.totalFields,
         totalResponses: item.totalResponses,
       }
@@ -167,94 +143,7 @@ export default function FormsExplore({ templateId }: Props) {
 
       <div className="mt-8">
         <LoadData response={data} minHeight="40vh">
-          {data.layout === 'project' ? (
-            <FormsProject
-              data={data.data}
-              actionLabel={data.actionLabel}
-              countLabel={data.countLabel}
-              fieldLabel={data.fieldLabel}
-            />
-          ) : data.layout === 'job' ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {data.data.map((form) => (
-                <Link
-                  key={form.id}
-                  href={form.slug ? `/f/${form.slug}` : `/forms/${form.id}`}
-                  className="group flex min-w-0 flex-col gap-4 border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
-                >
-                  <div className="flex items-start gap-4">
-                    <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border-2 border-foreground bg-muted">
-                      {form.image ? (
-                        <Image
-                          src={form.image}
-                          alt={`Logo ${form.title}`}
-                          fill
-                          unoptimized
-                          sizes="48px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <Briefcase className="h-5 w-5" />
-                      )}
-                    </span>
-
-                    <div className="min-w-0 flex-1">
-                      <h2
-                        title={form.tooltip}
-                        className="line-clamp-2 break-words font-display text-base font-black uppercase leading-tight tracking-tight sm:text-lg"
-                      >
-                        {form.title}
-                      </h2>
-                      <p className="brutal-eyebrow mt-2 flex items-center gap-1.5 text-muted-foreground">
-                        <Clock3 className="h-3.5 w-3.5" />
-                        {form.postedText}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="brutal-scroll-thin flex gap-2 overflow-x-auto pb-1">
-                    <Badge className="shrink-0 whitespace-nowrap">
-                      Psikotes Terkunci
-                    </Badge>
-                    {form.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                        className="shrink-0 whitespace-nowrap"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {form.summary ? (
-                    <p className="line-clamp-3 font-mono text-xs leading-relaxed text-muted-foreground">
-                      {form.summary}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <FormsFacepile
-                      total={form.totalResponses}
-                      seed={form.id}
-                      label={data.countLabel}
-                    />
-                    <span className="brutal-eyebrow text-muted-foreground">
-                      · {String(form.totalFields).padStart(2, '0')}{' '}
-                      {data.fieldLabel}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <span className="brutal-eyebrow flex items-center gap-2 border-2 border-foreground px-3 py-2 transition-colors group-hover:bg-foreground group-hover:text-background">
-                      {data.actionLabel}
-                      <ArrowUpRight className="h-4 w-4" />
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : data.layout === 'list' ? (
+          {data.layout === 'list' ? (
             <div className="border-x-2 border-t-2 border-foreground">
               {data.data.map((form, index) => (
                 <Link

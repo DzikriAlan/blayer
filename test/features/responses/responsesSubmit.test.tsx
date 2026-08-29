@@ -73,7 +73,6 @@ const getDetail = (
   templateId: 'restaurant',
   image: '',
   meeting: '',
-  video: '',
   qrisImage: '/qris-demo.svg',
   price: 0,
   isPublished: true,
@@ -200,7 +199,7 @@ describe('pengiriman jawaban', () => {
   it('TC-20 form berharga tetap menagih angka dari pembuat form', async () => {
     const user = userEvent.setup()
     state.formsDetail.data = getDetail({
-      templateId: 'course',
+      templateId: 'restaurant',
       price: 350000,
       fields: [
         getField({

@@ -80,7 +80,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!isOwner) {
       return sendSuccess(res, {
         message: 'Detail form berhasil dimuat',
-        data: { ...shared, meeting: '', video: '' },
+        data: { ...shared, meeting: '' },
       })
     }
 
@@ -89,7 +89,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       data: {
         ...shared,
         meeting: form.meetingUrl ?? '',
-        video: form.videoUrl ?? '',
       },
     })
   }

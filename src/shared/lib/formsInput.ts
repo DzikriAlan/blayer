@@ -17,7 +17,6 @@ export interface FormBodyInput {
   templateId?: string
   image?: string
   meeting?: string
-  video?: string
   qrisImage?: string
   price?: number
   isPublished?: boolean
@@ -137,7 +136,6 @@ export const getFormsInput = (body: FormBodyInput) => {
       templateId: getNullable(body.templateId),
       bannerUrl: getNullable(body.image),
       meetingUrl: getNullable(body.meeting),
-      videoUrl: getNullable(body.video),
       qrisUrl: getNullable(body.qrisImage),
       priceAmount:
         typeof body.price === 'number' &&

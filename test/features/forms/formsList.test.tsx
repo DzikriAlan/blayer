@@ -63,7 +63,7 @@ beforeEach(() => {
     data: [
       getForm(),
       getForm({ id: 'form-2', title: 'Pesan Menu', templateId: 'restaurant' }),
-      getForm({ id: 'form-3', title: 'Kelas Web', templateId: 'course' }),
+      getForm({ id: 'form-3', title: 'Webinar Produk', templateId: 'event' }),
     ],
   }
 })
@@ -74,7 +74,9 @@ describe('riwayat form', () => {
 
     expect(screen.getByRole('heading', { name: 'Ujian Sejarah' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Pesan Menu' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Kelas Web' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Webinar Produk' })
+    ).toBeInTheDocument()
   })
 
   it('TC-13 tombol See menyaring riwayat ke template itu saja', async () => {
@@ -131,14 +133,16 @@ describe('riwayat form', () => {
     state.forms.data = [getForm()]
     await loadList()
 
-    const courseCard = screen
-      .getByRole('heading', { name: 'Kursus Kelas' })
+    const restaurantCard = screen
+      .getByRole('heading', { name: 'Menu Restoran' })
       .closest('div')?.parentElement as HTMLElement
 
-    await user.click(within(courseCard).getByRole('button', { name: /See/ }))
+    await user.click(
+      within(restaurantCard).getByRole('button', { name: /See/ })
+    )
 
     expect(
-      screen.getByText(/Belum ada form yang dibuat dari template Kursus Kelas/)
+      screen.getByText(/Belum ada form yang dibuat dari template Menu Restoran/)
     ).toBeInTheDocument()
   })
 
@@ -184,9 +188,11 @@ describe('riwayat form', () => {
     const user = userEvent.setup()
     await loadList()
 
-    await user.type(screen.getByLabelText('Cari form'), 'kelas')
+    await user.type(screen.getByLabelText('Cari form'), 'webinar')
 
-    expect(screen.getByRole('heading', { name: 'Kelas Web' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Webinar Produk' })
+    ).toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { name: 'Ujian Sejarah' })
     ).not.toBeInTheDocument()
