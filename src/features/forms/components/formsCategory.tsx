@@ -153,7 +153,9 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
         response={category.listState}
         className="mt-8 min-h-[368px] sm:min-h-[435px]"
       >
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Di ponsel kartunya digulir menyamping dengan jari — tanpa bilah
+            gulir — lalu kembali jadi kisi begitu ruangnya cukup. */}
+        <div className="brutal-scroll-hidden -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
           {category.listedForms.map((item) => (
             <FormsPoster
               key={item.form.id}
@@ -163,6 +165,7 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
               fieldLabel={item.fieldLabel}
               hasBanner
               isFixedBanner
+              className="w-[78vw] max-w-[320px] shrink-0 snap-start sm:w-auto sm:max-w-none"
             />
           ))}
         </div>

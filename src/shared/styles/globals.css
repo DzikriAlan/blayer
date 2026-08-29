@@ -189,6 +189,19 @@
     background: hsl(var(--foreground));
   }
 
+  /* Di lebar ponsel daftarnya digulir dengan jari, jadi bilah gulir tebal
+     itu hanya memakan ruang kartu tanpa dipakai. Thumb-nya disembunyikan,
+     gulir samping tetap jalan. */
+  @media (max-width: 639px) {
+    .brutal-scroll-x {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .brutal-scroll-x::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   .brutal-scroll-hidden {
     scrollbar-width: none;
     -ms-overflow-style: none;
