@@ -8,7 +8,7 @@ harus dilakukan tangan.
 | --- | --- |
 | **Versi PRD yang diuji** | 1.9 |
 | **Terakhir diperbarui** | 29 Agustus 2026 |
-| **Kasus otomatis** | 202 |
+| **Kasus otomatis** | 203 |
 | **Berkas uji** | 35 |
 
 ---
@@ -174,6 +174,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-26ab | F-26 | Isi kolom yang dikirim katalog publik | `purpose`, `meetingUrl`, dan `userId` tidak ikut diminta dari database maupun dikirim | Otomatis | `formsPublic.test.ts` |
 | TC-26ac | F-26 | Halaman depan dibuka pengunjung yang belum masuk | Tidak ada request ke endpoint terkunci — daftar form milik sendiri ditahan sampai ada sesi | Manual | — |
 | TC-36a | F-36 | Membuka kategori survei | Judulnya menyebut yang bisa dilakukan, bukan nama template; disajikan sebagai daftar bernomor dengan satuan pertanyaan dan responden | Otomatis | `formsExplore.test.tsx` |
+| TC-36m | F-36 | Memeriksa naskah tiap kategori acara | Tiap kategori punya judul pengunjungnya sendiri dan tidak ada yang kembar | Otomatis | `formsTemplate.test.ts` |
 | TC-36b | F-36 | Membuka kategori acara | Poster dimuat utuh tanpa terpotong, dengan satuan terdaftar dan acara terbuka | Otomatis | `formsExplore.test.tsx` |
 | TC-36e | F-36 | Kategori berisi form dari template lain | Hanya form dari kategori itu yang tampil, dan jumlah tersedia mengikutinya | Otomatis | `formsExplore.test.tsx` |
 | TC-36f | F-36 | Kategori yang tidak dikenal | Dijelaskan alasannya dan tidak menawarkan template yang tidak ada | Otomatis | `formsExplore.test.tsx` |
@@ -184,6 +185,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-36i | F-36 | Menekan Eksplor Kategori di halaman depan | Berpindah ke halaman kategori; daftar tidak lagi terbuka di dalam kartu | Manual | — |
 | TC-36j | F-36 | Membuka halaman kategori tanpa login | Isinya tampil penuh — kategori adalah permukaan publik | Manual | — |
 | TC-29a | F-29 | Membuka halaman depan | Urutan section: navbar, hero, statistik, pita, kategori, footer | Manual | — |
+| TC-29e | F-29 | Menekan salah satu tombol kategori di halaman depan | Daftar menyempit ke kategori itu; menekannya lagi mengembalikan seluruh acara | Manual | — |
 | TC-29b | F-29 | Membuka halaman depan di lebar ponsel | Navigasi berubah jadi tombol menu, isi tidak meluber ke samping | Manual | — |
 | TC-29c | F-29 | Menekan "Jelajahi Kategori" | Halaman menggulir mulus ke bagian kategori | Manual | — |
 | TC-29d | F-29 | Membaca ajakan di halaman depan | Tidak ada klaim bisa membuat form tanpa akun | Manual | — |

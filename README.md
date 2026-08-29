@@ -7,11 +7,11 @@ Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interak
 ## What i do
 
 * Merancang **arsitektur full-stack berlapis** dengan **Next.js 14, React 18, TypeScript, Tailwind CSS, dan Shadcn/UI**, memisahkan tiap fitur menjadi `types → states → services → controllers → components` sehingga penambahan fitur baru mengikuti jalur yang sudah tetap dan tidak menyusun ulang pola dari nol.
-* Membangun **satu form builder yang melayani tiga bentuk produk berbeda** — pendaftaran acara, survei, dan form berskor — diturunkan dari satu field `view` pada template, sehingga halaman isi, layar setelah kirim, dan dashboard hasil menyesuaikan diri tanpa cabang kode per produk.
+* Membangun **satu form builder yang melayani tiga bentuk produk berbeda** — pendaftaran acara, survei, dan form berskor — diturunkan dari satu field `view` pada template, dan kategori acara (teknologi, olahraga, musik, bisnis) cukup ditambahkan sebagai entri katalog baru, sehingga halaman isi, layar setelah kirim, dan dashboard hasil menyesuaikan diri tanpa cabang kode per produk.
 * Mengimplementasikan **autentikasi dan kepemilikan data** dengan **Supabase Auth**, mendukung masuk lewat username-kata sandi maupun Google OAuth, dengan penolakan ditegakkan di API (401 tanpa token, 403 untuk milik akun lain) — bukan sekadar menyembunyikan halaman di browser.
 * Menurunkan **halaman kategori publik** dari `view` yang sama, sehingga pengunjung bisa menemukan dan mengikuti form yang sedang terbuka tanpa membuat akun, dan lama pengerjaan tiap jawaban tercatat sendiri.
 * Menyusun **penanganan keadaan data terpusat** lewat komponen `LoadData`, sehingga keadaan memuat, kosong, gagal, dan tidak terverifikasi ditangani satu tempat dan tiap permukaan tidak menyusun ulang logika yang sama.
-* Menjaga **kualitas lewat pengujian otomatis** dengan **Vitest dan Testing Library** — 202 uji yang menutup builder, halaman isi, guard halaman, layar kredensial, hingga kepemilikan data di API, dengan tiap kasus terpetakan ke ID kebutuhan di `TEST_CASE.md`.
+* Menjaga **kualitas lewat pengujian otomatis** dengan **Vitest dan Testing Library** — 203 uji yang menutup builder, halaman isi, guard halaman, layar kredensial, hingga kepemilikan data di API, dengan tiap kasus terpetakan ke ID kebutuhan di `TEST_CASE.md`.
 * Merawat **standar kode** memakai **ESLint, TypeScript strict mode, dan konvensi penamaan yang tertulis**, sehingga nama berkas, fungsi, dan prefix method bisa diturunkan langsung dari URL endpoint-nya.
 
 ---

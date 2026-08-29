@@ -13,7 +13,6 @@ export interface FormsPosterForm {
   totalResponses: number
   totalFields: number
   tooltip: string
-  tags: string[]
 }
 
 interface Props {

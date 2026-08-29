@@ -105,59 +105,59 @@ describe('judul form di builder', () => {
     await loadCreate(onEditFormsTitle)
 
     await user.click(
-      within(getTemplateCard('Pendaftaran Acara')).getByRole('button', {
+      within(getTemplateCard('Teknologi')).getByRole('button', {
         name: 'Use',
       })
     )
 
     await waitFor(() => {
       expect(onEditFormsTitle).toHaveBeenLastCalledWith(
-        'Pendaftaran Workshop'
+        'Meetup Frontend Jakarta'
       )
     })
   })
 
   it('TC-35 template lain tetap bisa dipilih setelah datang lewat ?template=', async () => {
     const user = userEvent.setup()
-    router.query = { template: 'event' }
+    router.query = { template: 'event-tech' }
     await loadCreate()
 
     await waitFor(() => {
       expect(screen.getByLabelText('Form Title')).toHaveValue(
-        'Pendaftaran Workshop'
+        'Meetup Frontend Jakarta'
       )
     })
 
     await user.click(
-      within(getTemplateCard('Survei Kepuasan')).getByRole('button', {
+      within(getTemplateCard('Olahraga')).getByRole('button', {
         name: 'Use',
       })
     )
 
     await waitFor(() => {
       expect(screen.getByLabelText('Form Title')).toHaveValue(
-        'Survei Kepuasan Pelanggan'
+        'Turnamen Futsal Antar Komunitas'
       )
     })
   })
 
   it('TC-35 memilih template memperbarui query di URL', async () => {
     const user = userEvent.setup()
-    router.query = { template: 'event' }
+    router.query = { template: 'event-tech' }
     await loadCreate()
 
     await user.click(
-      within(getTemplateCard('Survei Kepuasan')).getByRole('button', {
+      within(getTemplateCard('Olahraga')).getByRole('button', {
         name: 'Use',
       })
     )
 
     expect(router.replace).toHaveBeenCalledWith(
-      { pathname: '/forms/create', query: { template: 'csat' } },
+      { pathname: '/forms/create', query: { template: 'event-sport' } },
       undefined,
       { shallow: true }
     )
-    expect(router.query.template).toBe('csat')
+    expect(router.query.template).toBe('event-sport')
   })
 
   it('TC-01 builder tidak menampilkan tombol See karena tidak punya riwayat', async () => {

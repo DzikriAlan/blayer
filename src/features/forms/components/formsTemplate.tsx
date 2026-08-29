@@ -4,10 +4,13 @@ import {
   ArrowRight,
   ArrowUpRight,
   Briefcase,
-  CalendarDays,
+  Building2,
+  Cpu,
   Eye,
   FilePlus2,
+  Music,
   Star,
+  Trophy,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -93,8 +96,14 @@ export interface FormsTemplateItem {
   isVisible: boolean
   isFeatured: boolean
   icon: LucideIcon
+  copy?: Partial<FormsViewCopy>
   values: FormsTemplateValues
 }
+
+export const getFormsViewCopy = (
+  template: FormsTemplateItem | undefined,
+  view: FormsTemplateView
+): FormsViewCopy => ({ ...FORMS_VIEW_COPY[view], ...template?.copy })
 
 const getField = (
   label: string,
@@ -114,22 +123,29 @@ const getField = (
 
 export const FORMS_TEMPLATES: FormsTemplateItem[] = [
   {
-    id: 'event',
-    name: 'Pendaftaran Acara',
-    tagline: 'Pajang acaramu di daftar acara yang pendaftarannya sedang dibuka, lalu terima peserta beserta bukti ikutnya yang tersusun sendiri.',
+    id: 'event-tech',
+    name: 'Teknologi',
+    tagline: 'Pajang meetup, workshop, atau webinar teknologimu di kategori teknologi, lalu terima peserta beserta bukti ikutnya yang tersusun sendiri.',
     view: 'event',
     isVisible: true,
     isFeatured: true,
-    icon: CalendarDays,
+    icon: Cpu,
+    copy: {
+      heading: 'Acara Teknologi Yang Bisa Kamu Ikuti',
+      lead: 'Meetup, workshop, dan webinar teknologi yang pendaftarannya sedang dibuka. Daftar sekali, dan link acaranya langsung terbit.',
+      emptyTitle: 'Belum Ada Acara Teknologi Dibuka',
+      emptySubtitle:
+        'Belum ada acara teknologi yang pendaftarannya dibuka sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+    },
     values: {
-      title: 'Pendaftaran Workshop',
+      title: 'Meetup Frontend Jakarta',
       description:
-        'Kuota terbatas. Konfirmasi kehadiran akan dikirim lewat email.',
+        'Ngobrol santai soal performa web dan design system. Link Google Meet dikirim setelah kamu berhasil mendaftar.',
       isPublished: true,
       image: '',
       meeting: '',
       fields: [
-        getField('Asal Instansi atau Perusahaan', 'SHORT_TEXT'),
+        getField('Asal Instansi atau Komunitas', 'SHORT_TEXT'),
         getField(
           'Pilih Sesi',
           'SELECT',
@@ -140,12 +156,111 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     },
   },
   {
+    id: 'event-sport',
+    name: 'Olahraga',
+    tagline: 'Pajang turnamen, fun run, atau latihan bersamamu di kategori olahraga, lalu terima pendaftar beserta bukti ikutnya yang tersusun sendiri.',
+    view: 'event',
+    isVisible: true,
+    isFeatured: true,
+    icon: Trophy,
+    copy: {
+      heading: 'Acara Olahraga Yang Bisa Kamu Ikuti',
+      lead: 'Turnamen, fun run, dan latihan bersama yang pendaftarannya sedang dibuka. Daftar sekali, dan bukti ikutnya langsung terbit.',
+      emptyTitle: 'Belum Ada Acara Olahraga Dibuka',
+      emptySubtitle:
+        'Belum ada acara olahraga yang pendaftarannya dibuka sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+    },
+    values: {
+      title: 'Turnamen Futsal Antar Komunitas',
+      description:
+        'Terbuka untuk tim campuran. Setiap tim mengirim satu pendaftar sebagai perwakilan.',
+      isPublished: true,
+      image: '',
+      meeting: '',
+      fields: [
+        getField('Asal Instansi atau Komunitas', 'SHORT_TEXT'),
+        getField(
+          'Pilih Sesi',
+          'SELECT',
+          true,
+          'Sesi Pagi (07.00 - 10.00)\nSesi Sore (15.00 - 18.00)'
+        ),
+      ],
+    },
+  },
+  {
+    id: 'event-music',
+    name: 'Musik & Seni',
+    tagline: 'Pajang pertunjukan, pameran, atau kelas seni di kategori musik dan seni, lalu terima penonton beserta bukti ikutnya yang tersusun sendiri.',
+    view: 'event',
+    isVisible: true,
+    isFeatured: true,
+    icon: Music,
+    copy: {
+      heading: 'Acara Musik & Seni Yang Bisa Kamu Ikuti',
+      lead: 'Pertunjukan, pameran, dan kelas seni yang pendaftarannya sedang dibuka. Daftar sekali, dan bukti ikutnya langsung terbit.',
+      emptyTitle: 'Belum Ada Acara Musik & Seni Dibuka',
+      emptySubtitle:
+        'Belum ada acara musik atau seni yang pendaftarannya dibuka sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+    },
+    values: {
+      title: 'Pentas Musik Akustik',
+      description:
+        'Panggung terbuka untuk musisi lokal. Tempat duduk terbatas, datang lebih awal.',
+      isPublished: true,
+      image: '',
+      meeting: '',
+      fields: [
+        getField('Asal Instansi atau Komunitas', 'SHORT_TEXT'),
+        getField(
+          'Pilih Sesi',
+          'SELECT',
+          true,
+          'Sesi Sore (16.00 - 18.00)\nSesi Malam (19.30 - 22.00)'
+        ),
+      ],
+    },
+  },
+  {
+    id: 'event-business',
+    name: 'Bisnis & Karier',
+    tagline: 'Pajang seminar, job fair, atau sesi mentoring di kategori bisnis dan karier, lalu terima peserta beserta bukti ikutnya yang tersusun sendiri.',
+    view: 'event',
+    isVisible: true,
+    isFeatured: true,
+    icon: Building2,
+    copy: {
+      heading: 'Acara Bisnis & Karier Yang Bisa Kamu Ikuti',
+      lead: 'Seminar, job fair, dan sesi mentoring yang pendaftarannya sedang dibuka. Daftar sekali, dan link acaranya langsung terbit.',
+      emptyTitle: 'Belum Ada Acara Bisnis & Karier Dibuka',
+      emptySubtitle:
+        'Belum ada acara bisnis atau karier yang pendaftarannya dibuka sekarang. Lihat kategori lain, atau kembali lagi nanti.',
+    },
+    values: {
+      title: 'Webinar Karier di Industri Teknologi',
+      description:
+        'Sesi tanya jawab bareng praktisi soal jalur karier, portofolio, dan proses rekrutmen. Gratis untuk umum.',
+      isPublished: true,
+      image: '',
+      meeting: '',
+      fields: [
+        getField('Asal Instansi atau Komunitas', 'SHORT_TEXT'),
+        getField(
+          'Pilih Sesi',
+          'SELECT',
+          true,
+          'Sesi Siang (13.00 - 15.00)\nSesi Malam (19.00 - 21.00)'
+        ),
+      ],
+    },
+  },
+  {
     id: 'recruitment',
     name: 'Lamaran Kerja',
     tagline: 'Screening pelamar lengkap dengan ekspektasi gaji',
     view: 'scoring',
-    isVisible: true,
-    isFeatured: true,
+    isVisible: false,
+    isFeatured: false,
     icon: Briefcase,
     values: {
       title: 'Formulir Lamaran Kerja',
@@ -185,8 +300,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     name: 'Survei Kepuasan',
     tagline: 'Rating, skala rekomendasi, dan masukan pelanggan',
     view: 'survey',
-    isVisible: true,
-    isFeatured: true,
+    isVisible: false,
+    isFeatured: false,
     icon: Star,
     values: {
       title: 'Survei Kepuasan Pelanggan',

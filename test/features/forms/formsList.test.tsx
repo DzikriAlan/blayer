@@ -35,9 +35,9 @@ vi.mock('@/features/forms/controllers/formsControllers', () => ({
 const getForm = (overrides: Partial<DataForms> = {}): DataForms => ({
   id: 'form-1',
   slug: 'form-satu',
-  title: 'Survei Layanan',
+  title: 'Pentas Musik Akustik',
   description: '',
-  templateId: 'csat',
+  templateId: 'event-music',
   isPublished: true,
   totalFields: 6,
   totalResponses: 5,
@@ -62,8 +62,8 @@ beforeEach(() => {
     statusSubtitle: '',
     data: [
       getForm(),
-      getForm({ id: 'form-2', title: 'Lowongan Backend', templateId: 'recruitment' }),
-      getForm({ id: 'form-3', title: 'Webinar Produk', templateId: 'event' }),
+      getForm({ id: 'form-2', title: 'Fun Run 5K', templateId: 'event-sport' }),
+      getForm({ id: 'form-3', title: 'Webinar Produk', templateId: 'event-tech' }),
     ],
   }
 })
@@ -72,8 +72,8 @@ describe('riwayat form', () => {
   it('TC-13 semua form tampil sebelum filter dipakai', async () => {
     await loadList()
 
-    expect(screen.getByRole('heading', { name: 'Survei Layanan' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Lowongan Backend' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Pentas Musik Akustik' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Fun Run 5K' })).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Webinar Produk' })
     ).toBeInTheDocument()
@@ -84,16 +84,16 @@ describe('riwayat form', () => {
     await loadList()
 
     const recruitmentCard = screen
-      .getByRole('heading', { name: 'Lamaran Kerja' })
+      .getByRole('heading', { name: 'Olahraga' })
       .closest('div')?.parentElement as HTMLElement
 
     await user.click(within(recruitmentCard).getByRole('button', { name: /See/ }))
 
-    expect(screen.getByRole('heading', { name: 'Lowongan Backend' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Fun Run 5K' })).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Survei Layanan' })
+      screen.queryByRole('heading', { name: 'Pentas Musik Akustik' })
     ).not.toBeInTheDocument()
-    expect(screen.getByText(/FILTER TEMPLATE — Lamaran Kerja/)).toBeInTheDocument()
+    expect(screen.getByText(/FILTER TEMPLATE — Olahraga/)).toBeInTheDocument()
   })
 
   it('TC-13 klik See sekali lagi melepas filternya', async () => {
@@ -101,7 +101,7 @@ describe('riwayat form', () => {
     await loadList()
 
     const recruitmentCard = screen
-      .getByRole('heading', { name: 'Lamaran Kerja' })
+      .getByRole('heading', { name: 'Olahraga' })
       .closest('div')?.parentElement as HTMLElement
     const seeButton = within(recruitmentCard).getByRole('button', { name: /See/ })
 
@@ -110,7 +110,7 @@ describe('riwayat form', () => {
       within(recruitmentCard).getByRole('button', { name: /Shown/ })
     )
 
-    expect(screen.getByRole('heading', { name: 'Survei Layanan' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Pentas Musik Akustik' })).toBeInTheDocument()
     expect(screen.queryByText(/FILTER TEMPLATE/)).not.toBeInTheDocument()
   })
 
@@ -119,13 +119,13 @@ describe('riwayat form', () => {
     await loadList()
 
     const recruitmentCard = screen
-      .getByRole('heading', { name: 'Lamaran Kerja' })
+      .getByRole('heading', { name: 'Olahraga' })
       .closest('div')?.parentElement as HTMLElement
 
     await user.click(within(recruitmentCard).getByRole('button', { name: /See/ }))
     await user.click(screen.getByRole('button', { name: /Hapus Filter/ }))
 
-    expect(screen.getByRole('heading', { name: 'Survei Layanan' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Pentas Musik Akustik' })).toBeInTheDocument()
   })
 
   it('TC-13 template tanpa form memberi tahu cara membuat yang pertama', async () => {
@@ -134,7 +134,7 @@ describe('riwayat form', () => {
     await loadList()
 
     const recruitmentCard = screen
-      .getByRole('heading', { name: 'Lamaran Kerja' })
+      .getByRole('heading', { name: 'Olahraga' })
       .closest('div')?.parentElement as HTMLElement
 
     await user.click(
@@ -142,7 +142,7 @@ describe('riwayat form', () => {
     )
 
     expect(
-      screen.getByText(/Belum ada form yang dibuat dari template Lamaran Kerja/)
+      screen.getByText(/Belum ada form yang dibuat dari template Olahraga/)
     ).toBeInTheDocument()
   })
 
@@ -151,12 +151,12 @@ describe('riwayat form', () => {
     await loadList()
 
     const surveyCard = screen
-      .getByRole('heading', { name: 'Survei Kepuasan' })
+      .getByRole('heading', { name: 'Musik & Seni' })
       .closest('div')?.parentElement as HTMLElement
 
     await user.click(within(surveyCard).getByRole('button', { name: 'Use' }))
 
-    expect(push).toHaveBeenCalledWith('/forms/create?template=csat')
+    expect(push).toHaveBeenCalledWith('/forms/create?template=event-music')
   })
 
   it('TC-30 keadaan memuat ditangani LoadData, bukan daftar kosong', async () => {
@@ -165,7 +165,7 @@ describe('riwayat form', () => {
 
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Survei Layanan' })
+      screen.queryByRole('heading', { name: 'Pentas Musik Akustik' })
     ).not.toBeInTheDocument()
   })
 
@@ -194,7 +194,7 @@ describe('riwayat form', () => {
       screen.getByRole('heading', { name: 'Webinar Produk' })
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Survei Layanan' })
+      screen.queryByRole('heading', { name: 'Pentas Musik Akustik' })
     ).not.toBeInTheDocument()
   })
 })

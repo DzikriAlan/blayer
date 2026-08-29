@@ -5,9 +5,6 @@ import {
   FORMS_TEMPLATE_DEFAULT_VIEW,
 } from '@/features/forms/components/formsTemplate'
 
-const getTemplate = (id: string) =>
-  FORMS_TEMPLATES.find((template) => template.id === id)
-
 const getVisibleTemplates = () =>
   FORMS_TEMPLATES.filter((template) => template.isVisible)
 
@@ -65,7 +62,12 @@ describe('katalog kategori halaman depan', () => {
       (template) => template.isFeatured
     ).map((template) => template.id)
 
-    expect(featuredIds).toEqual(['event', 'recruitment', 'csat'])
+    expect(featuredIds).toEqual([
+      'event-tech',
+      'event-sport',
+      'event-music',
+      'event-business',
+    ])
   })
 
   it('TC-36 setiap kategori etalase juga bisa dipakai membuat form', () => {
@@ -77,10 +79,23 @@ describe('katalog kategori halaman depan', () => {
 
 describe('template acara', () => {
   it('TC-25 pendaftar tidak lagi ditanya tanggal acara', () => {
-    const hasDateField = getTemplate('event')?.values.fields.some(
-      (field) => field.type === 'DATE'
-    )
+    FORMS_TEMPLATES.filter((template) => template.view === 'event').forEach(
+      (template) => {
+        const hasDateField = template.values.fields.some(
+          (field) => field.type === 'DATE'
+        )
 
-    expect(hasDateField).toBe(false)
+        expect(hasDateField).toBe(false)
+      }
+    )
+  })
+
+  it('TC-36 tiap kategori acara membawa naskah pengunjungnya sendiri', () => {
+    const headings = FORMS_TEMPLATES.filter(
+      (template) => template.isFeatured
+    ).map((template) => template.copy?.heading)
+
+    expect(headings.every(Boolean)).toBe(true)
+    expect(new Set(headings).size).toBe(headings.length)
   })
 })

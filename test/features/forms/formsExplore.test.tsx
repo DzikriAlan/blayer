@@ -69,13 +69,13 @@ describe('halaman kategori', () => {
   it('TC-36b acara disajikan sebagai poster memakai banner formnya', () => {
     setCatalogue([
       getForm({
-        templateId: 'event',
+        templateId: 'event-tech',
         title: 'Webinar Produk',
         image: 'https://contoh.test/banner.png',
       }),
     ])
 
-    render(<FormsExplore templateId="event" />)
+    render(<FormsExplore templateId="event-tech" />)
 
     expect(screen.getByRole('img')).toHaveClass('object-contain')
     expect(screen.getByText(/03 TERDAFTAR/)).toBeInTheDocument()
@@ -86,10 +86,10 @@ describe('halaman kategori', () => {
 
   it('TC-39 jumlah yang sudah ikut dipajang sebagai tumpukan wajah', () => {
     setCatalogue([
-      getForm({ templateId: 'event', title: 'Webinar Produk', totalResponses: 7 }),
+      getForm({ templateId: 'event-tech', title: 'Webinar Produk', totalResponses: 7 }),
     ])
 
-    const { container } = render(<FormsExplore templateId="event" />)
+    const { container } = render(<FormsExplore templateId="event-tech" />)
 
     expect(container.querySelectorAll('[data-facepile-face]').length).toBe(4)
     expect(screen.getByText('+3')).toBeInTheDocument()
@@ -98,10 +98,10 @@ describe('halaman kategori', () => {
 
   it('TC-39 form yang belum diisi tidak menampilkan wajah sama sekali', () => {
     setCatalogue([
-      getForm({ templateId: 'event', title: 'Webinar Baru', totalResponses: 0 }),
+      getForm({ templateId: 'event-tech', title: 'Webinar Baru', totalResponses: 0 }),
     ])
 
-    const { container } = render(<FormsExplore templateId="event" />)
+    const { container } = render(<FormsExplore templateId="event-tech" />)
 
     expect(container.querySelectorAll('[data-facepile-face]').length).toBe(0)
     expect(screen.queryByText(/^\+/)).not.toBeInTheDocument()
@@ -111,7 +111,7 @@ describe('halaman kategori', () => {
   it('TC-36e hanya form dari kategori itu yang tampil', () => {
     setCatalogue([
       getForm({ id: 'a', templateId: 'csat', title: 'Survei Layanan' }),
-      getForm({ id: 'b', templateId: 'event', title: 'Webinar Produk' }),
+      getForm({ id: 'b', templateId: 'event-tech', title: 'Webinar Produk' }),
     ])
 
     render(<FormsExplore templateId="csat" />)
@@ -122,9 +122,9 @@ describe('halaman kategori', () => {
   })
 
   it('TC-36g halaman kategori tidak menawarkan pembuatan form', () => {
-    setCatalogue([getForm({ templateId: 'event', title: 'Webinar Produk' })])
+    setCatalogue([getForm({ templateId: 'event-tech', title: 'Webinar Produk' })])
 
-    render(<FormsExplore templateId="event" />)
+    render(<FormsExplore templateId="event-tech" />)
 
     expect(screen.queryByText('Use Template')).not.toBeInTheDocument()
     expect(screen.queryByText(/Buat/i)).not.toBeInTheDocument()
@@ -148,7 +148,7 @@ describe('jalan kembali dari katalog kategori', () => {
 
   it('TC-36c kembali ke halaman sebelumnya, bukan selalu ke halaman depan', async () => {
     const user = userEvent.setup()
-    render(<FormsExplore templateId="event" />)
+    render(<FormsExplore templateId="event-tech" />)
 
     await user.click(
       screen.getByRole('link', { name: 'Kembali ke halaman sebelumnya' })
@@ -160,7 +160,7 @@ describe('jalan kembali dari katalog kategori', () => {
   it('TC-36c dibuka langsung dari tautan, tujuannya tetap ada', async () => {
     const user = userEvent.setup()
     setHistoryLength(1)
-    render(<FormsExplore templateId="event" />)
+    render(<FormsExplore templateId="event-tech" />)
 
     const link = screen.getByRole('link', {
       name: 'Kembali ke halaman sebelumnya',
@@ -173,7 +173,7 @@ describe('jalan kembali dari katalog kategori', () => {
   })
 
   it('TC-36c Semua Kategori tetap menuju daftar kategori', () => {
-    render(<FormsExplore templateId="event" />)
+    render(<FormsExplore templateId="event-tech" />)
 
     expect(
       screen.getByRole('link', { name: /Semua Kategori/ })

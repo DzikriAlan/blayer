@@ -48,34 +48,51 @@ const OBSOLETE_TEMPLATE_IDS = [
   'course',
   'exam',
   'restaurant',
+  'event',
 ]
 
-const EVENT_FIELDS = [
-  { label: 'Asal Instansi atau Perusahaan', type: 'SHORT_TEXT' },
-  {
-    label: 'Pilih Sesi',
-    type: 'SELECT',
-    isRequired: true,
-    options: [
-      'Sesi Pagi (09.00 - 12.00)',
-      'Sesi Siang (13.00 - 16.00)',
-      'Sesi Malam (19.00 - 21.00)',
-    ],
-  },
+const getEventFields = (sessions) => [
+  { label: 'Asal Instansi atau Komunitas', type: 'SHORT_TEXT' },
+  { label: 'Pilih Sesi', type: 'SELECT', isRequired: true, options: sessions },
 ]
 
-const ATTENDEE_ROWS = [
-  ['Sinta Larasati', 'Tokopedia', 'Sesi Malam (19.00 - 21.00)'],
-  ['Arif Nugroho', 'Pekerja Mandiri', 'Sesi Pagi (09.00 - 12.00)'],
-  ['Dewi Kartika', 'Bank Mandiri', 'Sesi Malam (19.00 - 21.00)'],
-  ['Rizky Ramadhan', 'Universitas Indonesia', 'Sesi Siang (13.00 - 16.00)'],
-  ['Putri Ayu', 'Gojek', 'Sesi Malam (19.00 - 21.00)'],
-  ['Bayu Setiawan', 'Startup sendiri', 'Sesi Pagi (09.00 - 12.00)'],
-  ['Nadia Safitri', 'Telkom Indonesia', 'Sesi Malam (19.00 - 21.00)'],
-  ['Fajar Hidayat', 'Binus University', 'Sesi Siang (13.00 - 16.00)'],
-  ['Ayu Lestari', 'Traveloka', 'Sesi Malam (19.00 - 21.00)'],
-  ['Gilang Permana', 'Pekerja Mandiri', 'Sesi Pagi (09.00 - 12.00)'],
+const TECH_SESSIONS = [
+  'Sesi Pagi (09.00 - 12.00)',
+  'Sesi Siang (13.00 - 16.00)',
+  'Sesi Malam (19.00 - 21.00)',
 ]
+
+const SPORT_SESSIONS = ['Sesi Pagi (07.00 - 10.00)', 'Sesi Sore (15.00 - 18.00)']
+
+const MUSIC_SESSIONS = [
+  'Sesi Sore (16.00 - 18.00)',
+  'Sesi Malam (19.30 - 22.00)',
+]
+
+const BUSINESS_SESSIONS = [
+  'Sesi Siang (13.00 - 15.00)',
+  'Sesi Malam (19.00 - 21.00)',
+]
+
+const ATTENDEE_NAMES = [
+  ['Sinta Larasati', 'Tokopedia'],
+  ['Arif Nugroho', 'Pekerja Mandiri'],
+  ['Dewi Kartika', 'Bank Mandiri'],
+  ['Rizky Ramadhan', 'Universitas Indonesia'],
+  ['Putri Ayu', 'Gojek'],
+  ['Bayu Setiawan', 'Startup sendiri'],
+  ['Nadia Safitri', 'Telkom Indonesia'],
+  ['Fajar Hidayat', 'Binus University'],
+  ['Ayu Lestari', 'Traveloka'],
+  ['Gilang Permana', 'Komunitas Lari Senayan'],
+]
+
+const getAttendees = (sessions, total) =>
+  ATTENDEE_NAMES.slice(0, total).map(([name, instansi], index) => [
+    name,
+    instansi,
+    sessions[index % sessions.length],
+  ])
 
 const getDemoName = (name) => `[DEMO] ${name}`
 
@@ -105,28 +122,58 @@ const getCreatedFields = (list) =>
 
 const EVENT_FORMS = [
   {
+    templateId: 'event-tech',
+    sessions: TECH_SESSIONS,
     title: '[DEMO] Meetup Frontend Jakarta #7',
     description:
       'Ngobrol santai soal performa web dan design system. Link Google Meet dikirim setelah kamu berhasil mendaftar.',
-    bannerUrl: '/event-banner-demo.svg',
     meetingUrl: 'https://meet.google.com/xyz-demo-blayer',
-    attendees: ATTENDEE_ROWS,
+    totalAttendee: 10,
   },
   {
+    templateId: 'event-tech',
+    sessions: TECH_SESSIONS,
     title: '[DEMO] Workshop Design System untuk Tim Produk',
     description:
       'Praktik menyusun token, komponen, dan dokumentasi yang dipakai lintas tim. Peserta dibatasi 30 orang per sesi.',
-    bannerUrl: '/event-banner-demo.svg',
     meetingUrl: 'https://meet.google.com/dsw-demo-blayer',
-    attendees: ATTENDEE_ROWS.slice(0, 6),
+    totalAttendee: 6,
   },
   {
+    templateId: 'event-sport',
+    sessions: SPORT_SESSIONS,
+    title: '[DEMO] Turnamen Futsal Antar Komunitas',
+    description:
+      'Terbuka untuk tim campuran. Setiap tim mengirim satu pendaftar sebagai perwakilan.',
+    meetingUrl: null,
+    totalAttendee: 8,
+  },
+  {
+    templateId: 'event-sport',
+    sessions: SPORT_SESSIONS,
+    title: '[DEMO] Fun Run 5K Akhir Pekan',
+    description:
+      'Lari santai menyusuri kota bersama komunitas. Nomor dada diambil sehari sebelum acara.',
+    meetingUrl: null,
+    totalAttendee: 10,
+  },
+  {
+    templateId: 'event-music',
+    sessions: MUSIC_SESSIONS,
+    title: '[DEMO] Pentas Musik Akustik',
+    description:
+      'Panggung terbuka untuk musisi lokal. Tempat duduk terbatas, datang lebih awal.',
+    meetingUrl: null,
+    totalAttendee: 7,
+  },
+  {
+    templateId: 'event-business',
+    sessions: BUSINESS_SESSIONS,
     title: '[DEMO] Webinar Karier di Industri Teknologi',
     description:
       'Sesi tanya jawab bareng praktisi soal jalur karier, portofolio, dan proses rekrutmen. Gratis untuk umum.',
-    bannerUrl: '/event-banner-demo.svg',
     meetingUrl: 'https://meet.google.com/kar-demo-blayer',
-    attendees: ATTENDEE_ROWS.slice(4),
+    totalAttendee: 9,
   },
 ]
 
@@ -140,16 +187,18 @@ const seedEvent = async () => {
         title: demo.title,
         description: demo.description,
         purpose: null,
-        templateId: 'event',
-        bannerUrl: demo.bannerUrl,
+        templateId: demo.templateId,
+        bannerUrl: '/event-banner-demo.svg',
         meetingUrl: demo.meetingUrl,
         isPublished: true,
-        fields: { create: getCreatedFields(EVENT_FIELDS) },
+        fields: { create: getCreatedFields(getEventFields(demo.sessions)) },
       },
       include: { fields: { orderBy: { order: 'asc' } } },
     })
 
-    for (const [name, instansi, sesi] of demo.attendees) {
+    const attendees = getAttendees(demo.sessions, demo.totalAttendee)
+
+    for (const [name, instansi, sesi] of attendees) {
       const email = `${getSlug(name)}@mail.com`
       await prisma.formResponse.create({
         data: {
@@ -157,7 +206,7 @@ const seedEvent = async () => {
           respondentName: getDemoName(name),
           respondentEmail: email,
           answers: getAnswers(form.fields, [instansi, sesi]),
-          durationSeconds: 90 + demo.attendees.length * 7,
+          durationSeconds: 90 + attendees.length * 7,
         },
       })
     }
@@ -175,7 +224,15 @@ const main = async () => {
 
   const removed = await prisma.form.deleteMany({
     where: {
-      templateId: { in: ['event', ...OBSOLETE_TEMPLATE_IDS] },
+      templateId: {
+        in: [
+          'event-tech',
+          'event-sport',
+          'event-music',
+          'event-business',
+          ...OBSOLETE_TEMPLATE_IDS,
+        ],
+      },
     },
   })
 

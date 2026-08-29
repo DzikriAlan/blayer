@@ -10,14 +10,14 @@ import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
 import FormsHero from './formsHero'
 import FormsCategory from './formsCategory'
-import { FORMS_TEMPLATES, FORMS_VIEW_COPY } from './formsTemplate'
+import { FORMS_TEMPLATES, getFormsViewCopy } from './formsTemplate'
 
 const MARQUEE_WORDS = [
-  'PENDAFTARAN ACARA',
-  'LAMARAN KERJA',
-  'SURVEI KEPUASAN',
-  'SKOR OTOMATIS',
-  'PERINGKAT SENDIRI',
+  'TEKNOLOGI',
+  'OLAHRAGA',
+  'MUSIK & SENI',
+  'BISNIS & KARIER',
+  'TIKET TERBIT SENDIRI',
 ]
 
 export default function FormsLanding() {
@@ -35,20 +35,6 @@ export default function FormsLanding() {
         event: 'DAFTAR PESERTA',
       })[view] ?? 'FORM'
 
-    const getShortName = (view: string) =>
-      ({
-        event: 'Event',
-        survey: 'Survei',
-        scoring: 'Form',
-      })[view] ?? 'Form'
-
-    const getTags = (description: string) =>
-      description
-        .split('·')
-        .slice(0, -1)
-        .map((part) => part.trim().toUpperCase())
-        .filter((part) => part.length > 1 && part.length <= 24)
-
     const getCategoryForms = (templateId: string) =>
       formsPublic.data
         .filter((raw) => raw.templateId === templateId)
@@ -61,7 +47,6 @@ export default function FormsLanding() {
           totalResponses: raw.totalResponses,
           totalFields: raw.totalFields,
           tooltip: raw.title,
-          tags: getTags(raw.description),
         }))
 
     const getTotalForm = (templateId: string) =>
@@ -71,24 +56,26 @@ export default function FormsLanding() {
       (template) => template.isFeatured
     )
 
-    const getAvailabilityText = (template: (typeof FORMS_TEMPLATES)[number]) =>
-      `${String(getTotalForm(template.id)).padStart(2, '0')} ${
-        FORMS_VIEW_COPY[template.view].availabilityLabel
-      }`
+    const mappedList = visibleTemplates.map((template) => {
+      const copy = getFormsViewCopy(template, template.view)
 
-    const mappedList = visibleTemplates.map((template) => ({
-      id: template.id,
-      name: getShortName(template.view),
-      description: FORMS_VIEW_COPY[template.view].lead,
-      viewLabel: getViewLabel(template.view),
-      icon: template.icon,
-      availabilityText: getAvailabilityText(template),
-      actionLabel: FORMS_VIEW_COPY[template.view].action,
-      countLabel: FORMS_VIEW_COPY[template.view].countLabel,
-      fieldLabel: FORMS_VIEW_COPY[template.view].fieldLabel,
-      emptyText: FORMS_VIEW_COPY[template.view].emptySubtitle,
-      forms: getCategoryForms(template.id),
-    }))
+      return {
+        id: template.id,
+        name: template.name,
+        description: copy.lead,
+        viewLabel: getViewLabel(template.view),
+        icon: template.icon,
+        availabilityText: `${String(getTotalForm(template.id)).padStart(
+          2,
+          '0'
+        )} ${copy.availabilityLabel}`,
+        actionLabel: copy.action,
+        countLabel: copy.countLabel,
+        fieldLabel: copy.fieldLabel,
+        emptyText: copy.emptySubtitle,
+        forms: getCategoryForms(template.id),
+      }
+    })
 
     const totalResponses = formsPublic.data.reduce(
       (total, raw) => total + raw.totalResponses,
@@ -168,15 +155,16 @@ export default function FormsLanding() {
           </div>
 
           <h2 className="mt-7 max-w-2xl break-words font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
-            Ambil nilaimu,
+            Pilih acaranya,
             <br />
-            ambil kebutuhanmu
+            langsung ikut
             <span className="text-primary">.</span>
           </h2>
 
           <p className="mt-5 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-            Semuanya sedang berjalan sekarang. Pilih yang kamu butuhkan dan
-            ikut langsung — tanpa perlu membuat apa pun lebih dulu.
+            Semua pendaftarannya sedang dibuka sekarang. Pilih kategori yang
+            kamu minati dan daftar langsung — tanpa perlu membuat apa pun
+            lebih dulu.
           </p>
 
           <div className="mt-12">

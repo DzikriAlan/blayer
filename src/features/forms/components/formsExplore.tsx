@@ -15,28 +15,12 @@ import { useFormsControllers } from '../controllers/formsControllers'
 import {
   FORMS_TEMPLATES,
   FORMS_TEMPLATE_DEFAULT_VIEW,
-  FORMS_VIEW_COPY,
+  getFormsViewCopy,
   type FormsTemplateView,
 } from './formsTemplate'
 
 const getLayout = (view: FormsTemplateView) =>
   view === 'event' ? 'poster' : 'list'
-
-const getCardTags = (description: string) => {
-  const parts = description
-    .split('·')
-    .map((part) => part.trim())
-    .filter(Boolean)
-
-  if (parts.length < 2) return []
-
-  const last = parts[parts.length - 1]
-  const end = last.search(/\.(\s|$)/)
-
-  return [...parts.slice(0, -1), end === -1 ? last : last.slice(0, end)].filter(
-    Boolean
-  )
-}
 
 interface Props {
   templateId: string
@@ -58,7 +42,6 @@ export default function FormsExplore({ templateId }: Props) {
         description: item.description,
         image: item.image,
         tooltip: item.title,
-        tags: getCardTags(item.description),
         totalFields: item.totalFields,
         totalResponses: item.totalResponses,
       }
@@ -70,7 +53,7 @@ export default function FormsExplore({ templateId }: Props) {
 
     const isUnknown = !template
     const isLoading = formsPublic.status === 'loading'
-    const copy = FORMS_VIEW_COPY[view]
+    const copy = getFormsViewCopy(template, view)
 
     return {
       data: mappedList,
