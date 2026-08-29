@@ -5,6 +5,7 @@ import { ArrowUpRight, type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/components/ui/button'
+import { LoadData } from '@/shared/components/load-data'
 import FormsPoster, { type FormsPosterForm } from './formsPoster'
 
 export interface FormsCategoryItem {
@@ -16,7 +17,8 @@ export interface FormsCategoryItem {
   actionLabel: string
   countLabel: string
   fieldLabel: string
-  emptyText: string
+  emptyTitle: string
+  emptySubtitle: string
   forms: FormsPosterForm[]
 }
 
@@ -44,6 +46,10 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
 
     const totalForm = data.reduce((total, item) => total + item.forms.length, 0)
 
+    const listedForms = active
+      ? getListedForms(active)
+      : data.flatMap((item) => getListedForms(item))
+
     const buttons = [
       {
         id: ALL_ID,
@@ -68,13 +74,17 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
       availabilityText: active
         ? active.availabilityText
         : `${String(totalForm).padStart(2, '0')} ACARA TERBUKA`,
-      emptyText: active
-        ? active.emptyText
-        : 'Belum ada acara yang pendaftarannya dibuka sekarang. Kembali lagi nanti.',
       hasExplore: !!active,
-      listedForms: active
-        ? getListedForms(active)
-        : data.flatMap((item) => getListedForms(item)),
+      listState: {
+        data: listedForms,
+        isEmpty: !listedForms.length,
+        emptyTitle: active ? active.emptyTitle : 'Belum Ada Acara Dibuka',
+        emptySubtitle: active
+          ? active.emptySubtitle
+          : 'Belum ada acara yang pendaftarannya dibuka sekarang. Kembali lagi nanti.',
+        emptyImage: '/no-data.svg',
+      },
+      listedForms,
     }
   }, [data, filters.activeId])
 
@@ -137,8 +147,8 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
         ) : null}
       </div>
 
-      {category.listedForms.length ? (
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <LoadData response={category.listState} className="mt-8" minHeight="30vh">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {category.listedForms.map((item) => (
             <FormsPoster
               key={item.form.id}
@@ -151,11 +161,7 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
             />
           ))}
         </div>
-      ) : (
-        <p className="mt-8 font-mono text-sm leading-relaxed text-muted-foreground">
-          {category.emptyText}
-        </p>
-      )}
+      </LoadData>
     </div>
   )
 }

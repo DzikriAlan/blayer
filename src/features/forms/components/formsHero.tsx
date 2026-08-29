@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowDown, ArrowRight, ArrowUpRight, type LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { LoadData } from '@/shared/components/load-data'
 
 const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
 
@@ -29,6 +30,15 @@ export default function FormsHero({
   totalResponses,
   onLoadFormsCategory,
 }: Props) {
+  const eventState = {
+    data: events,
+    isEmpty: !events.length,
+    emptyTitle: 'Belum Ada Acara Dibuka',
+    emptySubtitle:
+      'Kategori acaranya tetap bisa dijelajahi di bagian bawah halaman ini.',
+    emptyImage: '/no-data.svg',
+  }
+
   const stats = [
     { key: 'kategori', label: 'KATEGORI', value: totalCategory },
     { key: 'form', label: 'FORM AKTIF', value: totalForm },
@@ -92,7 +102,7 @@ export default function FormsHero({
             </span>
           </div>
 
-          {events.length ? (
+          <LoadData response={eventState}>
             <ul>
               {events.map((event) => {
                 const Icon = event.icon
@@ -126,12 +136,7 @@ export default function FormsHero({
                 )
               })}
             </ul>
-          ) : (
-            <p className="px-5 py-8 font-mono text-xs leading-relaxed text-muted-foreground">
-              Belum ada acara yang pendaftarannya dibuka sekarang. Kategorinya
-              tetap bisa dijelajahi di bawah.
-            </p>
-          )}
+          </LoadData>
         </div>
       </div>
 

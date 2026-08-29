@@ -66,7 +66,8 @@ export default function FormsLanding() {
         actionLabel: copy.action,
         countLabel: copy.countLabel,
         fieldLabel: copy.fieldLabel,
-        emptyText: copy.emptySubtitle,
+        emptyTitle: copy.emptyTitle,
+        emptySubtitle: copy.emptySubtitle,
         forms: getCategoryForms(template.id),
       }
     })
