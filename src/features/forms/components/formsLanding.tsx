@@ -12,6 +12,8 @@ import FormsHero from './formsHero'
 import FormsCategory from './formsCategory'
 import { FORMS_TEMPLATES, getFormsViewCopy } from './formsTemplate'
 
+const HERO_EVENT_LIMIT = 4
+
 const MARQUEE_WORDS = [
   'TEKNOLOGI',
   'OLAHRAGA',
@@ -88,16 +90,19 @@ export default function FormsLanding() {
       totalCategory: mappedList.length,
       totalForm: formsPublic.data.length,
       totalResponses,
-      heroCategories: mappedList.map((item) => ({
-        id: item.id,
-        name: item.name,
-        icon: item.icon,
-        totalForm: item.forms.length,
-        totalResponses: item.forms.reduce(
-          (total, form) => total + form.totalResponses,
-          0
-        ),
-      })),
+      heroEvents: visibleTemplates
+        .flatMap((template) =>
+          getCategoryForms(template.id).map((form) => ({
+            id: form.id,
+            href: form.slug ? `/f/${form.slug}` : `/forms/${form.id}`,
+            title: form.title,
+            categoryName: template.name,
+            icon: template.icon,
+            totalResponses: form.totalResponses,
+          }))
+        )
+        .sort((left, right) => right.totalResponses - left.totalResponses)
+        .slice(0, HERO_EVENT_LIMIT),
       marqueeWords: [...MARQUEE_WORDS, ...MARQUEE_WORDS],
     }
   }, [formsPublic])
@@ -113,12 +118,11 @@ export default function FormsLanding() {
   return (
     <>
       <FormsHero
-        categories={data.heroCategories}
+        events={data.heroEvents}
         totalCategory={data.totalCategory}
         totalForm={data.totalForm}
         totalResponses={data.totalResponses}
         onLoadFormsCategory={loadFormsCategory}
-        onLoadFormsExplore={loadFormsExplore}
       />
 
       <div

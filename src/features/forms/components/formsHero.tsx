@@ -5,30 +5,29 @@ import { Button } from '@/components/ui/button'
 
 const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
 
-export interface FormsHeroCategory {
+export interface FormsHeroEvent {
   id: string
-  name: string
+  href: string
+  title: string
+  categoryName: string
   icon: LucideIcon
-  totalForm: number
   totalResponses: number
 }
 
 interface Props {
-  categories: FormsHeroCategory[]
+  events: FormsHeroEvent[]
   totalCategory: number
   totalForm: number
   totalResponses: number
   onLoadFormsCategory: () => void
-  onLoadFormsExplore: (templateId: string) => void
 }
 
 export default function FormsHero({
-  categories,
+  events,
   totalCategory,
   totalForm,
   totalResponses,
   onLoadFormsCategory,
-  onLoadFormsExplore,
 }: Props) {
   const stats = [
     { key: 'kategori', label: 'KATEGORI', value: totalCategory },
@@ -87,47 +86,52 @@ export default function FormsHero({
 
         <div className="border-2 border-foreground bg-background">
           <div className="flex items-center justify-between gap-3 border-b-2 border-foreground bg-foreground px-5 py-3 text-background">
-            <span className="brutal-eyebrow">ACARA YANG SEDANG DIBUKA</span>
+            <span className="brutal-eyebrow">ACARA PALING POPULER</span>
             <span className="brutal-eyebrow opacity-70">
-              {String(totalCategory).padStart(2, '0')} KATEGORI
+              {String(events.length).padStart(2, '0')} TERATAS
             </span>
           </div>
 
-          <ul>
-            {categories.map((category) => {
-              const Icon = category.icon
-              const isOpen = category.totalForm > 0
+          {events.length ? (
+            <ul>
+              {events.map((event) => {
+                const Icon = event.icon
 
-              return (
-                <li key={category.id} className="border-b-2 border-foreground last:border-b-0">
-                  <button
-                    type="button"
-                    onClick={() => onLoadFormsExplore(category.id)}
-                    className="group flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors hover:bg-primary hover:text-primary-foreground"
+                return (
+                  <li
+                    key={event.id}
+                    className="border-b-2 border-foreground last:border-b-0"
                   >
-                    <span className="brutal-index h-10 w-10 shrink-0 transition-colors group-hover:bg-background group-hover:text-foreground">
-                      <Icon className="h-5 w-5" />
-                    </span>
-
-                    <span className="min-w-0 flex-1">
-                      <span className="block break-words font-display text-lg font-black uppercase leading-tight tracking-tight">
-                        {category.name}
+                    <Link
+                      href={event.href}
+                      className="group flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors hover:bg-primary hover:text-primary-foreground"
+                    >
+                      <span className="brutal-index h-10 w-10 shrink-0 transition-colors group-hover:bg-background group-hover:text-foreground">
+                        <Icon className="h-5 w-5" />
                       </span>
-                      <span className="brutal-eyebrow text-muted-foreground transition-colors group-hover:text-primary-foreground/80">
-                        {isOpen
-                          ? `${String(category.totalForm).padStart(2, '0')} ACARA · ${String(
-                              category.totalResponses
-                            ).padStart(2, '0')} TERDAFTAR`
-                          : 'BELUM ADA ACARA'}
-                      </span>
-                    </span>
 
-                    <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary-foreground" />
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+                      <span className="min-w-0 flex-1">
+                        <span className="line-clamp-1 block break-words font-display text-lg font-black uppercase leading-tight tracking-tight">
+                          {event.title}
+                        </span>
+                        <span className="brutal-eyebrow text-muted-foreground transition-colors group-hover:text-primary-foreground/80">
+                          {String(event.totalResponses).padStart(2, '0')}{' '}
+                          TERDAFTAR · {event.categoryName}
+                        </span>
+                      </span>
+
+                      <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary-foreground" />
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="px-5 py-8 font-mono text-xs leading-relaxed text-muted-foreground">
+              Belum ada acara yang pendaftarannya dibuka sekarang. Kategorinya
+              tetap bisa dijelajahi di bawah.
+            </p>
+          )}
         </div>
       </div>
 
