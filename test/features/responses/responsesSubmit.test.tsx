@@ -68,35 +68,20 @@ const getDetail = (
 ): DataFormsDetail => ({
   id: 'form-1',
   slug: 'form-satu',
-  title: 'Pesan Menu — Warung Blayer',
-  description: 'Pilih makanan dan minumanmu.',
-  templateId: 'restaurant',
+  title: 'Meetup Frontend Jakarta',
+  description: 'Ngobrol santai soal performa web.',
+  templateId: 'event',
   image: '',
   meeting: '',
-  qrisImage: '/qris-demo.svg',
-  price: 0,
   isPublished: true,
   createdAt: '2026-08-18T00:00:00.000Z',
   fields: [
-    getField({ id: 'meja', label: 'Nomor Meja', type: 'SELECT', options: ['Meja 01', 'Meja 02'] }),
+    getField({ id: 'instansi', label: 'Asal Instansi' }),
     getField({
-      id: 'menu',
-      label: 'Pilih Menu',
-      type: 'MENU',
+      id: 'alasan',
+      label: 'Alasan Ikut',
       isRequired: true,
-      options: [
-        'Nasi Goreng Kampung|28000|/menu-nasi-goreng.svg',
-        'Es Teh Manis|8000|/menu-es-teh.svg',
-      ],
       order: 1,
-    }),
-    getField({
-      id: 'bayar',
-      label: 'Metode Pembayaran',
-      type: 'PAYMENT',
-      isRequired: true,
-      options: ['QRIS|Pindai kode', 'Tunai|Bayar di kasir'],
-      order: 2,
     }),
   ],
   ...overrides,
@@ -127,28 +112,18 @@ beforeEach(() => {
 })
 
 describe('identitas pengisi', () => {
-  it('TC-21 form pesanan hanya menanyakan nama, tidak email', async () => {
-    await loadSubmit()
-
-    expect(screen.getByLabelText('Full Name')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Email Address')).not.toBeInTheDocument()
-  })
-
-  it('TC-21 penomoran pertanyaan menyambung dari identitas yang tampil', async () => {
-    await loadSubmit()
-
-    expect(screen.getByText('02')).toBeInTheDocument()
-  })
-
-  it('TC-21 form acara tetap menanyakan email karena tiketnya dikirim ke sana', async () => {
-    state.formsDetail.data = getDetail({
-      templateId: 'event',
-      fields: [getField({ id: 'sesi', label: 'Pilih Sesi' })],
-    })
+  it('TC-21 identitas ditanya sekali lewat kolom bawaan halaman isi', async () => {
     await loadSubmit()
 
     expect(screen.getByLabelText('Full Name')).toBeInTheDocument()
     expect(screen.getByLabelText('Email Address')).toBeInTheDocument()
+  })
+
+  it('TC-21 penomoran pertanyaan menyambung dari kolom identitas', async () => {
+    await loadSubmit()
+
+    expect(screen.getByText('02')).toBeInTheDocument()
+    expect(screen.getByText('03')).toBeInTheDocument()
   })
 })
 
@@ -160,65 +135,22 @@ describe('pengiriman jawaban', () => {
     await user.click(screen.getByRole('button', { name: /Submit/ }))
 
     expect(mutate).not.toHaveBeenCalled()
-    expect(screen.getAllByText('This field is required.').length).toBe(2)
-  })
-
-  it('TC-15 metode pembayaran tersimpan bersama nominal tagihannya', async () => {
-    const user = userEvent.setup()
-    await loadSubmit()
-
-    await user.click(
-      screen.getAllByRole('button', { name: 'Tambah Nasi Goreng Kampung' })[0]
-    )
-    await user.click(screen.getByRole('button', { name: /QRIS/ }))
-    await user.click(screen.getByRole('button', { name: /Submit/ }))
-
-    expect(mutate).toHaveBeenCalledTimes(1)
-    expect(mutate.mock.calls[0][0]).toMatchObject({
-      formId: 'form-1',
-      answers: {
-        menu: ['Nasi Goreng Kampung'],
-        bayar: 'QRIS — Rp28.000',
-      },
-    })
+    expect(screen.getAllByText('This field is required.').length).toBe(1)
   })
 
   it('TC-07 lama pengerjaan ikut terkirim bersama jawaban', async () => {
     const user = userEvent.setup()
     await loadSubmit()
 
-    await user.click(
-      screen.getAllByRole('button', { name: 'Tambah Es Teh Manis' })[0]
-    )
-    await user.click(screen.getByRole('button', { name: /Tunai/ }))
+    await user.type(screen.getByLabelText(/Alasan Ikut/), 'Belajar')
     await user.click(screen.getByRole('button', { name: /Submit/ }))
 
-    expect(mutate.mock.calls[0][0].duration).toBeGreaterThanOrEqual(0)
-  })
-
-  it('TC-20 form berharga tetap menagih angka dari pembuat form', async () => {
-    const user = userEvent.setup()
-    state.formsDetail.data = getDetail({
-      templateId: 'restaurant',
-      price: 350000,
-      fields: [
-        getField({
-          id: 'bayar',
-          label: 'Metode Pembayaran',
-          type: 'PAYMENT',
-          isRequired: true,
-          options: ['QRIS|Pindai kode'],
-        }),
-      ],
+    expect(mutate).toHaveBeenCalledTimes(1)
+    expect(mutate.mock.calls[0][0]).toMatchObject({
+      formId: 'form-1',
+      answers: { alasan: 'Belajar' },
     })
-    await loadSubmit()
-
-    expect(screen.getByText('Rp350.000')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: /QRIS/ }))
-    await user.click(screen.getByRole('button', { name: /Submit/ }))
-
-    expect(mutate.mock.calls[0][0].answers.bayar).toBe('QRIS — Rp350.000')
+    expect(mutate.mock.calls[0][0].duration).toBeGreaterThanOrEqual(0)
   })
 })
 
@@ -240,15 +172,5 @@ describe('keadaan halaman', () => {
     await user.click(screen.getByRole('button', { name: 'Coba Lagi' }))
 
     expect(refetchFormsDetail).toHaveBeenCalled()
-  })
-
-  it('TC-05 halaman ujian ditandai terkunci lewat pencegah seleksi teks', async () => {
-    state.formsDetail.data = getDetail({
-      templateId: 'exam',
-      fields: [getField({ id: 'soal', label: 'Soal 1' })],
-    })
-    const { container } = await loadSubmit()
-
-    expect(container.querySelector('form')).toHaveClass('select-none')
   })
 })

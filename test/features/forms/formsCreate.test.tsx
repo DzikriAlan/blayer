@@ -105,59 +105,59 @@ describe('judul form di builder', () => {
     await loadCreate(onEditFormsTitle)
 
     await user.click(
-      within(getTemplateCard('Ujian Sekolah')).getByRole('button', {
+      within(getTemplateCard('Pendaftaran Acara')).getByRole('button', {
         name: 'Use',
       })
     )
 
     await waitFor(() => {
       expect(onEditFormsTitle).toHaveBeenLastCalledWith(
-        'Ujian Tengah Semester — Sejarah Kelas XI'
+        'Pendaftaran Workshop'
       )
     })
   })
 
   it('TC-35 template lain tetap bisa dipilih setelah datang lewat ?template=', async () => {
     const user = userEvent.setup()
-    router.query = { template: 'exam' }
+    router.query = { template: 'event' }
     await loadCreate()
 
     await waitFor(() => {
       expect(screen.getByLabelText('Form Title')).toHaveValue(
-        'Ujian Tengah Semester — Sejarah Kelas XI'
+        'Pendaftaran Workshop'
       )
     })
 
     await user.click(
-      within(getTemplateCard('Menu Restoran')).getByRole('button', {
+      within(getTemplateCard('Survei Kepuasan')).getByRole('button', {
         name: 'Use',
       })
     )
 
     await waitFor(() => {
       expect(screen.getByLabelText('Form Title')).toHaveValue(
-        'Pesan Menu — Meja Restoran'
+        'Survei Kepuasan Pelanggan'
       )
     })
   })
 
   it('TC-35 memilih template memperbarui query di URL', async () => {
     const user = userEvent.setup()
-    router.query = { template: 'exam' }
+    router.query = { template: 'event' }
     await loadCreate()
 
     await user.click(
-      within(getTemplateCard('Menu Restoran')).getByRole('button', {
+      within(getTemplateCard('Survei Kepuasan')).getByRole('button', {
         name: 'Use',
       })
     )
 
     expect(router.replace).toHaveBeenCalledWith(
-      { pathname: '/forms/create', query: { template: 'restaurant' } },
+      { pathname: '/forms/create', query: { template: 'csat' } },
       undefined,
       { shallow: true }
     )
-    expect(router.query.template).toBe('restaurant')
+    expect(router.query.template).toBe('csat')
   })
 
   it('TC-01 builder tidak menampilkan tombol See karena tidak punya riwayat', async () => {

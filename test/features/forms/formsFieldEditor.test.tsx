@@ -11,7 +11,7 @@ const renderEditor = (type: FormsFieldType, isOptionVisible = true) =>
     <FormsFieldEditor
       index={0}
       total={1}
-      label="Pilih Menu"
+      label="Pilih Sesi"
       description=""
       placeholder=""
       type={type}
@@ -27,12 +27,10 @@ const renderEditor = (type: FormsFieldType, isOptionVisible = true) =>
   )
 
 describe('daftar tipe field', () => {
-  it('TC-02 menyediakan 15 tipe field termasuk menu dan pembayaran', () => {
+  it('TC-02 menyediakan 13 tipe field', () => {
     const values = FORMS_FIELD_TYPES.map((item) => item.value)
 
-    expect(values).toHaveLength(15)
-    expect(values).toContain('MENU')
-    expect(values).toContain('PAYMENT')
+    expect(values).toHaveLength(13)
   })
 
   it('TC-02 tidak ada tipe yang tercatat dua kali', () => {
@@ -43,26 +41,6 @@ describe('daftar tipe field', () => {
 })
 
 describe('panduan pengisian opsi', () => {
-  it('TC-14 field menu menjelaskan format Nama|Harga|URL Gambar', () => {
-    renderEditor('MENU')
-
-    expect(
-      screen.getByText('Item — satu per baris: Nama|Harga|URL Gambar')
-    ).toBeInTheDocument()
-    expect(screen.getByText(/Harga ditulis angka polos/i)).toBeInTheDocument()
-  })
-
-  it('TC-15 field pembayaran menjelaskan asal tagihannya', () => {
-    renderEditor('PAYMENT')
-
-    expect(
-      screen.getByText('Metode — satu per baris: Metode|Petunjuk')
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(/Tagihan diambil dari field Menu Bergambar/i)
-    ).toBeInTheDocument()
-  })
-
   it('TC-02 field pilihan biasa memakai panduan bawaan', () => {
     renderEditor('SELECT')
 

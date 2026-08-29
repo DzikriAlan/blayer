@@ -18,7 +18,6 @@ export interface FormsCategoryItem {
   countLabel: string
   fieldLabel: string
   emptyText: string
-  hasPriceBadge: boolean
   forms: FormsPosterForm[]
 }
 
@@ -139,7 +138,6 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
                     fieldLabel={item.fieldLabel}
                     hasBanner
                     isFixedBanner
-                    hasPriceBadge={item.hasPriceBadge}
                     className="w-[78vw] max-w-[320px] shrink-0 snap-start sm:w-[360px] sm:max-w-none"
                   />
                 ))}

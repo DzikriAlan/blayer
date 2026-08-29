@@ -11,9 +11,6 @@ const getTemplate = (id: string) =>
 const getVisibleTemplates = () =>
   FORMS_TEMPLATES.filter((template) => template.isVisible)
 
-const getFieldLabels = (id: string) =>
-  (getTemplate(id)?.values.fields ?? []).map((field) => field.label)
-
 const getOptions = (optionText: string) =>
   optionText
     .split('\n')
@@ -29,7 +26,7 @@ describe('katalog template', () => {
   })
 
   it('TC-04 setiap template punya view yang dikenali', () => {
-    const views = ['scoring', 'exam', 'survey', 'event', 'order']
+    const views = ['scoring', 'survey', 'event']
 
     FORMS_TEMPLATES.forEach((template) => {
       expect(views).toContain(template.view)
@@ -50,7 +47,7 @@ describe('katalog template', () => {
   })
 
   it('TC-02 field pilihan selalu punya minimal dua opsi', () => {
-    const optionTypes = ['SELECT', 'RADIO', 'CHECKBOX', 'MENU', 'PAYMENT']
+    const optionTypes = ['SELECT', 'RADIO', 'CHECKBOX']
 
     getVisibleTemplates().forEach((template) => {
       template.values.fields
@@ -63,88 +60,20 @@ describe('katalog template', () => {
 })
 
 describe('katalog kategori halaman depan', () => {
-  it('TC-36 ujian sekolah tampil di etalase depan', () => {
+  it('TC-36 kategori etalase tampil dalam urutan yang ditetapkan katalog', () => {
     const featuredIds = FORMS_TEMPLATES.filter(
       (template) => template.isFeatured
     ).map((template) => template.id)
 
-    expect(featuredIds).toContain('exam')
+    expect(featuredIds).toEqual(['event', 'recruitment', 'csat'])
   })
 
-  it('TC-36 ujian sekolah tetap bisa dipakai membuat form', () => {
-    expect(getTemplate('exam')?.isVisible).toBe(true)
-  })
-
-  it('TC-38 menu restoran tampil di etalase depan', () => {
-    const featuredIds = FORMS_TEMPLATES.filter(
-      (template) => template.isFeatured
-    ).map((template) => template.id)
-
-    expect(featuredIds).toContain('restaurant')
-  })
-
-  it('TC-38 kategori etalase tampil dalam urutan yang ditetapkan katalog', () => {
-    const featuredIds = FORMS_TEMPLATES.filter(
-      (template) => template.isFeatured
-    ).map((template) => template.id)
-
-    expect(featuredIds).toEqual(['event', 'exam', 'restaurant'])
-  })
-
-  it('TC-38 menu restoran tetap bisa dipakai membuat form', () => {
-    expect(getTemplate('restaurant')?.isVisible).toBe(true)
+  it('TC-36 setiap kategori etalase juga bisa dipakai membuat form', () => {
+    FORMS_TEMPLATES.filter((template) => template.isFeatured).forEach(
+      (template) => expect(template.isVisible).toBe(true)
+    )
   })
 })
-
-
-
-describe('template menu restoran', () => {
-  const restaurant = getTemplate('restaurant')
-
-  it('TC-18 memakai view order dan tampil di daftar pilihan', () => {
-    expect(restaurant?.view).toBe('order')
-    expect(restaurant?.isVisible).toBe(true)
-  })
-
-  it('TC-18 field yang dibutuhkan pesanan meja tersedia', () => {
-    expect(getFieldLabels('restaurant')).toEqual([
-      'Nomor Meja',
-      'Pilih Menu',
-      'Cara Penyajian',
-      'Catatan untuk Dapur',
-      'Metode Pembayaran',
-    ])
-  })
-
-  it('TC-14 tiap opsi menu punya nama, harga angka, dan gambar', () => {
-    const menu = restaurant?.values.fields.find(
-      (field) => field.type === 'MENU'
-    )
-
-    expect(menu).toBeDefined()
-
-    getOptions(menu?.optionText ?? '').forEach((option) => {
-      const [name, price, imageUrl] = option.split('|')
-
-      expect(name.trim().length).toBeGreaterThan(0)
-      expect(Number(price)).toBeGreaterThan(0)
-      expect(imageUrl.trim().length).toBeGreaterThan(0)
-    })
-  })
-
-  it('TC-16 QRIS termasuk metode pembayaran yang ditawarkan', () => {
-    const payment = restaurant?.values.fields.find(
-      (field) => field.type === 'PAYMENT'
-    )
-    const methods = getOptions(payment?.optionText ?? '').map(
-      (option) => option.split('|')[0]
-    )
-
-    expect(methods).toContain('QRIS')
-    expect(methods.length).toBeGreaterThan(1)
-  })
-})
-
 
 describe('template acara', () => {
   it('TC-25 pendaftar tidak lagi ditanya tanggal acara', () => {

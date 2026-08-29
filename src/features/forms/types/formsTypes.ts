@@ -12,8 +12,6 @@ export type FormsFieldType =
   | 'CHECKBOX'
   | 'RATING'
   | 'SCALE'
-  | 'MENU'
-  | 'PAYMENT'
 
 export interface FormsFieldInput {
   id?: string
@@ -32,8 +30,6 @@ export interface PayloadPostForms {
   templateId: string
   image: string
   meeting: string
-  qrisImage: string
-  price: number
   isPublished: boolean
   fields: FormsFieldInput[]
 }
@@ -76,7 +72,6 @@ export interface DataFormsPublic {
   description: string
   templateId: string
   image: string
-  price: number
   totalFields: number
   totalResponses: number
   createdAt: string
@@ -108,8 +103,6 @@ export interface DataFormsDetail {
   templateId: string
   image: string
   meeting: string
-  qrisImage: string
-  price: number
   isPublished: boolean
   createdAt: string
   fields: DataFormsDetailField[]

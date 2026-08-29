@@ -33,10 +33,6 @@ describe('normalisasi payload form', () => {
     expect(result.error).toBeTruthy()
   })
 
-  it('TC-42i mengabaikan harga negatif', () => {
-    expect(getFormsInput(getBody({ price: -5000 })).data?.priceAmount).toBe(null)
-  })
-
   it('TC-42j menyimpan teks kosong sebagai null, bukan string kosong', () => {
     const { data } = getFormsInput(getBody({ description: '   ' }))
 

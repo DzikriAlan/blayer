@@ -27,8 +27,6 @@ const getDetail = (): DataFormsDetail => ({
   templateId: 'exam',
   image: '',
   meeting: '',
-  qrisImage: '',
-  price: 0,
   isPublished: true,
   createdAt: '2026-08-01T00:00:00.000Z',
   fields: [

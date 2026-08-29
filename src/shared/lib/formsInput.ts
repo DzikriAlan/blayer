@@ -17,8 +17,6 @@ export interface FormBodyInput {
   templateId?: string
   image?: string
   meeting?: string
-  qrisImage?: string
-  price?: number
   isPublished?: boolean
   fields?: FormFieldInput[]
 }
@@ -37,8 +35,6 @@ export const FIELD_TYPES = [
   'CHECKBOX',
   'RATING',
   'SCALE',
-  'MENU',
-  'PAYMENT',
 ] as const
 
 const MAX_FIELD = 100
@@ -136,13 +132,6 @@ export const getFormsInput = (body: FormBodyInput) => {
       templateId: getNullable(body.templateId),
       bannerUrl: getNullable(body.image),
       meetingUrl: getNullable(body.meeting),
-      qrisUrl: getNullable(body.qrisImage),
-      priceAmount:
-        typeof body.price === 'number' &&
-        Number.isFinite(body.price) &&
-        body.price > 0
-          ? Math.round(body.price)
-          : null,
       isPublished: body.isPublished ?? true,
       fields: fields.map((field, index) => ({
         id: getTrimmed(field.id) || undefined,

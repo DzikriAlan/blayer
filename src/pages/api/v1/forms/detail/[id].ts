@@ -70,8 +70,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       description: form.description ?? '',
       templateId: form.templateId ?? '',
       image: form.bannerUrl ?? '',
-      qrisImage: form.qrisUrl ?? '',
-      price: form.priceAmount ?? 0,
       isPublished: form.isPublished,
       createdAt: form.createdAt.toISOString(),
       fields: form.fields.map(getFieldPayload),

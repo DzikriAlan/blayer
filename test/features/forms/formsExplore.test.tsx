@@ -27,9 +27,8 @@ const getForm = (overrides: Record<string, unknown> = {}) => ({
   slug: 'form-satu',
   title: 'Form Satu',
   description: 'Penjelasan singkat',
-  templateId: 'exam',
+  templateId: 'csat',
   image: '',
-  price: 0,
   totalFields: 6,
   totalResponses: 3,
   createdAt: '2026-08-01T00:00:00.000Z',
@@ -52,18 +51,18 @@ beforeEach(() => {
 })
 
 describe('halaman kategori', () => {
-  it('TC-36a ujian disajikan sebagai daftar bernomor dengan satuan soal', () => {
-    setCatalogue([getForm({ templateId: 'exam', title: 'Ujian Matematika' })])
+  it('TC-36a survei disajikan sebagai daftar bernomor dengan satuan pertanyaan', () => {
+    setCatalogue([getForm({ templateId: 'csat', title: 'Survei Layanan' })])
 
-    render(<FormsExplore templateId="exam" />)
+    render(<FormsExplore templateId="csat" />)
 
     expect(
-      screen.getByRole('heading', { name: /Ujian Yang Sedang Dibuka/i, level: 1 })
+      screen.getByRole('heading', { name: /Survei Yang Bisa Kamu Isi/i, level: 1 })
     ).toBeInTheDocument()
-    expect(screen.queryByText(/Ujian Sekolah/)).not.toBeInTheDocument()
-    expect(screen.getByText(/06 SOAL/)).toBeInTheDocument()
-    expect(screen.getByText(/03 PESERTA/)).toBeInTheDocument()
-    expect(screen.getAllByText('Kerjakan Ujian').length).toBeGreaterThan(0)
+    expect(screen.queryByText(/Survei Kepuasan/)).not.toBeInTheDocument()
+    expect(screen.getByText(/06 PERTANYAAN/)).toBeInTheDocument()
+    expect(screen.getByText(/03 RESPONDEN/)).toBeInTheDocument()
+    expect(screen.getAllByText('Isi Survei').length).toBeGreaterThan(0)
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
@@ -83,23 +82,6 @@ describe('halaman kategori', () => {
     expect(screen.getByText(/01 ACARA TERBUKA/)).toBeInTheDocument()
     expect(screen.getAllByText('Daftar Acara').length).toBeGreaterThan(0)
   })
-
-
-  it('TC-36d menu restoran memakai satuan pilihan dan pesanan', () => {
-    setCatalogue([
-      getForm({ templateId: 'restaurant', title: 'Meja 04', totalFields: 5 }),
-    ])
-
-    render(<FormsExplore templateId="restaurant" />)
-
-    expect(screen.getByText(/05 PILIHAN/)).toBeInTheDocument()
-    expect(screen.getByText(/03 PESANAN/)).toBeInTheDocument()
-    expect(screen.getAllByText('Pesan Sekarang').length).toBeGreaterThan(0)
-  })
-
-
-
-
 
 
   it('TC-39 jumlah yang sudah ikut dipajang sebagai tumpukan wajah', () => {
@@ -128,15 +110,15 @@ describe('halaman kategori', () => {
 
   it('TC-36e hanya form dari kategori itu yang tampil', () => {
     setCatalogue([
-      getForm({ id: 'a', templateId: 'exam', title: 'Ujian Matematika' }),
+      getForm({ id: 'a', templateId: 'csat', title: 'Survei Layanan' }),
       getForm({ id: 'b', templateId: 'event', title: 'Webinar Produk' }),
     ])
 
-    render(<FormsExplore templateId="exam" />)
+    render(<FormsExplore templateId="csat" />)
 
-    expect(screen.getByText('Ujian Matematika')).toBeInTheDocument()
+    expect(screen.getByText('Survei Layanan')).toBeInTheDocument()
     expect(screen.queryByText('Webinar Produk')).not.toBeInTheDocument()
-    expect(screen.getByText(/01 UJIAN DIBUKA/)).toBeInTheDocument()
+    expect(screen.getByText(/01 SURVEI TERBUKA/)).toBeInTheDocument()
   })
 
   it('TC-36g halaman kategori tidak menawarkan pembuatan form', () => {

@@ -7,9 +7,7 @@ import {
   CalendarDays,
   Eye,
   FilePlus2,
-  GraduationCap,
   Star,
-  UtensilsCrossed,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -32,18 +30,11 @@ export interface FormsTemplateValues {
   description: string
   image: string
   meeting: string
-  qrisImage: string
-  price: string
   isPublished: boolean
   fields: FormsTemplateField[]
 }
 
-export type FormsTemplateView =
-  | 'scoring'
-  | 'exam'
-  | 'survey'
-  | 'event'
-  | 'order'
+export type FormsTemplateView = 'scoring' | 'survey' | 'event'
 
 export interface FormsViewCopy {
   heading: string
@@ -57,17 +48,6 @@ export interface FormsViewCopy {
 }
 
 export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
-  exam: {
-    heading: 'Ujian Yang Sedang Dibuka',
-    lead: 'Ujian yang sedang dibuka. Kerjakan langsung dari halaman ini, dan nilainya dihitung begitu jawabanmu dikirim.',
-    availabilityLabel: 'UJIAN DIBUKA',
-    countLabel: 'PESERTA',
-    fieldLabel: 'SOAL',
-    action: 'Kerjakan Ujian',
-    emptyTitle: 'Belum Ada Ujian Dibuka',
-    emptySubtitle:
-      'Belum ada ujian yang bisa dikerjakan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
-  },
   scoring: {
     heading: 'Form Yang Bisa Kamu Isi',
     lead: 'Form yang sedang menerima jawaban. Jawabanmu dinilai dan diperingkat otomatis untuk penyelenggaranya.',
@@ -100,17 +80,6 @@ export const FORMS_VIEW_COPY: Record<FormsTemplateView, FormsViewCopy> = {
     emptyTitle: 'Belum Ada Acara Dibuka',
     emptySubtitle:
       'Belum ada acara yang pendaftarannya dibuka sekarang. Lihat kategori lain, atau kembali lagi nanti.',
-  },
-  order: {
-    heading: 'Menu Yang Bisa Kamu Pesan',
-    lead: 'Menu yang sedang menerima pesanan. Pilih makananmu, kirim pesanannya, lalu selesaikan pembayarannya di tempat.',
-    availabilityLabel: 'MENU TERBUKA',
-    countLabel: 'PESANAN',
-    fieldLabel: 'PILIHAN',
-    action: 'Pesan Sekarang',
-    emptyTitle: 'Belum Ada Menu Dibuka',
-    emptySubtitle:
-      'Belum ada menu yang bisa dipesan sekarang. Lihat kategori lain, atau kembali lagi nanti.',
   },
 }
 
@@ -159,8 +128,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      qrisImage: '',
-      price: '',
       fields: [
         getField('Asal Instansi atau Perusahaan', 'SHORT_TEXT'),
         getField(
@@ -173,122 +140,12 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     },
   },
   {
-    id: 'exam',
-    name: 'Ujian Sekolah',
-    tagline: 'Buka ujianmu di daftar ujian yang bisa dikerjakan peserta, lalu terima nilai, peringkat, dan catatan pengerjaannya tanpa memeriksa sendiri.',
-    view: 'exam',
-    isVisible: true,
-    isFeatured: true,
-    icon: GraduationCap,
-    values: {
-      title: 'Ujian Tengah Semester — Sejarah Kelas XI',
-      description:
-        'Kerjakan seluruh soal dalam waktu 60 menit. Jawaban esai dinilai dari ketepatan argumen dan bukti yang kamu sebutkan.',
-      isPublished: true,
-      image: '',
-      meeting: '',
-      qrisImage: '',
-      price: '',
-      fields: [
-        getField(
-          'Kelas',
-          'SELECT',
-          true,
-          'XI IPA 1\nXI IPA 2\nXI IPA 3\nXI IPS 1\nXI IPS 2'
-        ),
-        getField('Nomor Absen', 'NUMBER', true),
-        getField(
-          'Siapa tokoh yang membacakan teks Proklamasi Kemerdekaan Indonesia?',
-          'RADIO',
-          true,
-          'Soekarno dan Mohammad Hatta\nJenderal Sudirman dan Tan Malaka\nSutan Syahrir dan Amir Syarifuddin\nPangeran Diponegoro dan Imam Bonjol'
-        ),
-        getField(
-          'Sebutkan dan jelaskan tiga faktor yang melatarbelakangi lahirnya pergerakan nasional.',
-          'LONG_TEXT',
-          true,
-          '',
-          'Sertakan contoh peristiwa untuk setiap faktor.'
-        ),
-        getField(
-          'Jelaskan dampak Politik Etis terhadap munculnya kaum terpelajar pribumi.',
-          'LONG_TEXT',
-          true
-        ),
-        getField(
-          'Seberapa yakin kamu dengan jawabanmu secara keseluruhan?',
-          'SCALE'
-        ),
-      ],
-    },
-  },
-  {
-    id: 'restaurant',
-    name: 'Menu Restoran',
-    tagline: 'Pajang menumu di daftar menu yang bisa dipesan langsung pengunjung, lalu terima pesanan beserta pembayarannya di tempat.',
-    view: 'order',
-    isVisible: true,
-    isFeatured: true,
-    icon: UtensilsCrossed,
-    values: {
-      title: 'Pesan Menu — Meja Restoran',
-      description:
-        'Pilih makanan dan minumanmu, lalu bayar lewat QRIS atau metode lain. Pesanan langsung masuk ke dapur setelah pembayaran dikonfirmasi.',
-      isPublished: true,
-      image: '',
-      meeting: '',
-      qrisImage: '',
-      price: '',
-      fields: [
-        getField(
-          'Nomor Meja',
-          'SELECT',
-          true,
-          'Meja 01\nMeja 02\nMeja 03\nMeja 04\nMeja 05\nMeja 06\nMeja 07\nMeja 08'
-        ),
-        getField(
-          'Pilih Menu',
-          'MENU',
-          true,
-          [
-            'Nasi Goreng Kampung|28000|/menu-nasi-goreng.svg',
-            'Ayam Bakar Madu|35000|/menu-ayam-bakar.svg',
-            'Sate Ayam Bumbu Kacang|32000|/menu-sate-ayam.svg',
-            'Mie Goreng Seafood|30000|/menu-mie-goreng.svg',
-            'Es Teh Manis|8000|/menu-es-teh.svg',
-            'Es Jeruk Peras|12000|/menu-es-jeruk.svg',
-          ].join('\n'),
-          'Ketuk gambar untuk menambah porsi. Total tagihan dihitung otomatis.'
-        ),
-        getField(
-          'Cara Penyajian',
-          'RADIO',
-          true,
-          'Makan di tempat\nBungkus dibawa pulang'
-        ),
-        getField('Catatan untuk Dapur', 'LONG_TEXT', false, '', '', 'Mis. tidak pedas, tanpa bawang'),
-        getField(
-          'Metode Pembayaran',
-          'PAYMENT',
-          true,
-          [
-            'QRIS|Pindai kode di layar pakai aplikasi bank atau e-wallet apa pun',
-            'Transfer Bank|Transfer ke rekening kasir, tunjukkan bukti ke pelayan',
-            'Kartu Debit/Kredit|Bayar di kasir memakai mesin EDC',
-            'Tunai|Bayar langsung di kasir setelah makan',
-          ].join('\n'),
-          'Tagihan dihitung dari menu yang kamu pilih di atas.'
-        ),
-      ],
-    },
-  },
-  {
     id: 'recruitment',
     name: 'Lamaran Kerja',
     tagline: 'Screening pelamar lengkap dengan ekspektasi gaji',
     view: 'scoring',
-    isVisible: false,
-    isFeatured: false,
+    isVisible: true,
+    isFeatured: true,
     icon: Briefcase,
     values: {
       title: 'Formulir Lamaran Kerja',
@@ -297,11 +154,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      qrisImage: '',
-      price: '',
       fields: [
-        getField('Nama Lengkap', 'SHORT_TEXT', true),
-        getField('Email', 'EMAIL', true),
         getField('Nomor WhatsApp', 'PHONE', true),
         getField(
           'Posisi yang Dilamar',
@@ -332,8 +185,8 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
     name: 'Survei Kepuasan',
     tagline: 'Rating, skala rekomendasi, dan masukan pelanggan',
     view: 'survey',
-    isVisible: false,
-    isFeatured: false,
+    isVisible: true,
+    isFeatured: true,
     icon: Star,
     values: {
       title: 'Survei Kepuasan Pelanggan',
@@ -342,11 +195,7 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      qrisImage: '',
-      price: '',
       fields: [
-        getField('Nama', 'SHORT_TEXT'),
-        getField('Email', 'EMAIL'),
         getField('Bagaimana penilaianmu secara keseluruhan?', 'RATING', true),
         getField(
           'Seberapa besar kemungkinan kamu merekomendasikan kami ke teman?',
@@ -384,8 +233,6 @@ export const FORMS_TEMPLATES: FormsTemplateItem[] = [
       isPublished: true,
       image: '',
       meeting: '',
-      qrisImage: '',
-      price: '',
       fields: [
         getField('', 'SHORT_TEXT'),
       ],

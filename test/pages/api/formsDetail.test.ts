@@ -36,8 +36,6 @@ const getForm = (patch: Record<string, unknown> = {}) => ({
   templateId: 'event',
   bannerUrl: 'https://cdn/banner.png',
   meetingUrl: 'https://meet.google.com/rahasia',
-  qrisUrl: 'https://cdn/qris.png',
-  price: 50000,
   isPublished: true,
   createdAt: new Date('2026-08-01T00:00:00.000Z'),
   fields: [
@@ -108,10 +106,7 @@ describe('detail form untuk pengisi', () => {
     const res = await call({ method: 'GET', headers: {}, query: { id: 'form-1' } })
 
     expect(res.statusCode).toBe(200)
-    expect(res.body.data).toMatchObject({
-      meeting: '',
-      qrisImage: 'https://cdn/qris.png',
-    })
+    expect(res.body.data).toMatchObject({ meeting: '' })
     expect(res.body.data).not.toHaveProperty('purpose')
   })
 

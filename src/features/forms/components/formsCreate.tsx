@@ -6,14 +6,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { getSlugError, getSlugged } from '@/shared/lib/formsSlug'
 import { z } from 'zod'
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarDays,
-  Loader2,
-  Plus,
-  Wallet,
-} from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, Loader2, Plus } from 'lucide-react'
 
 import type { FormsFieldType, PayloadPostForms } from '../types/formsTypes'
 import { useFormsStates } from '../states/formsStates'
@@ -34,15 +27,7 @@ import UploadsBanner from '@/features/uploads/components/uploadsBanner'
 
 export const FORMS_CREATE_FORM_ID = 'forms-create'
 
-const OPTION_TYPES: FormsFieldType[] = [
-  'SELECT',
-  'RADIO',
-  'CHECKBOX',
-  'MENU',
-  'PAYMENT',
-]
-
-const PAID_VIEWS = ['order']
+const OPTION_TYPES: FormsFieldType[] = ['SELECT', 'RADIO', 'CHECKBOX']
 
 const fieldSchema = z.object({
   id: z.string().optional(),
@@ -61,8 +46,6 @@ const schema = z
     description: z.string(),
     image: z.string(),
     meeting: z.string(),
-    qrisImage: z.string(),
-    price: z.string(),
     isPublished: z.boolean(),
     fields: z.array(fieldSchema).min(1, 'Tambahkan minimal satu field'),
   })
@@ -86,18 +69,6 @@ const schema = z
         message: 'Link acara harus diawali http:// atau https://',
       })
     }
-
-    if (
-      values.price.trim() &&
-      !(Number(values.price.trim()) > 0)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['price'],
-        message: 'Harga harus berupa angka lebih dari 0, mis. 350000',
-      })
-    }
-
   })
 
 type FormValues = z.infer<typeof schema>
@@ -138,8 +109,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       image: '',
       meeting: '',
       slug: '',
-      qrisImage: '',
-      price: '',
       isPublished: true,
       fields: [{ ...emptyField }],
     },
@@ -155,8 +124,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
   const watchedFields = form.watch('fields')
   const watchedPublished = form.watch('isPublished')
   const watchedBannerUrl = form.watch('image')
-  const watchedQrisUrl = form.watch('qrisImage')
-  const watchedFieldTypes = (form.watch('fields') ?? []).map((field) => field.type)
 
   const data = useMemo(() => {
     const getOptions = (optionText: string) =>
@@ -210,13 +177,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       activeTemplateId: filters.activeTemplateId,
       isPublished: watchedPublished,
       hasEventDetail: getView() === 'event',
-      hasPaymentDetail: PAID_VIEWS.includes(getView()),
-      hasBanner: ['event', 'order'].includes(getView()),
       image: watchedBannerUrl,
-      qrisImage: watchedQrisUrl,
-      hasFixedPrice:
-        PAID_VIEWS.includes(getView()) && !watchedFieldTypes.includes('MENU'),
-      priceAmountError: form.formState.errors.price?.message ?? '',
       meetingUrlError: form.formState.errors.meeting?.message ?? '',
       totalFields: mappedList.length,
     }
@@ -226,8 +187,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     watchedFields,
     watchedPublished,
     watchedBannerUrl,
-    watchedQrisUrl,
-    watchedFieldTypes,
     form.formState.errors,
     storeForms.isPending,
     updateForms.isPending,
@@ -296,10 +255,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
     form.setValue('image', url, { shouldDirty: true })
   }
 
-  const editQrisUrl = (url: string) => {
-    form.setValue('qrisImage', url, { shouldDirty: true })
-  }
-
   const submitFormsField = () => {
     append({ ...emptyField })
   }
@@ -325,22 +280,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       return
     }
 
-    const invalidMenuIndex = values.fields.findIndex(
-      (field) =>
-        field.type === 'MENU' &&
-        getOptions(field.optionText).some(
-          (option) => !Number(option.split('|')[1]?.trim())
-        )
-    )
-
-    if (invalidMenuIndex >= 0) {
-      setFilters((prev) => ({
-        ...prev,
-        optionError: `Field ${invalidMenuIndex + 1} butuh format Nama|Harga|URL Gambar dengan harga berupa angka.`,
-      }))
-      return
-    }
-
     setFilters((prev) => ({ ...prev, optionError: '' }))
 
     const payload: PayloadPostForms = {
@@ -348,10 +287,8 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       slug: getSlugged(values.slug),
       description: values.description,
       templateId: filters.activeTemplateId,
-      image: data.hasBanner ? values.image : '',
+      image: data.hasEventDetail ? values.image : '',
       meeting: data.hasEventDetail ? values.meeting.trim() : '',
-      qrisImage: data.hasPaymentDetail ? values.qrisImage : '',
-      price: data.hasFixedPrice ? Number(values.price.trim()) || 0 : 0,
       isPublished: values.isPublished,
       fields: values.fields.map((field) => ({
         id: field.id || undefined,
@@ -419,8 +356,6 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
       description: detail.description,
       image: detail.image,
       meeting: detail.meeting,
-      qrisImage: detail.qrisImage,
-      price: detail.price ? String(detail.price) : '',
       isPublished: detail.isPublished,
       fields: detail.fields.map((field) => ({
         id: field.id,
@@ -467,7 +402,7 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
             <Label htmlFor="form-title">Form Title</Label>
             <Input
               id="form-title"
-              placeholder="Ujian Tengah Semester — Sejarah Kelas XI"
+              placeholder="Pendaftaran Workshop Data Analyst"
               {...form.register('title')}
             />
             {data.titleError ? (
@@ -521,92 +456,42 @@ export default function FormsCreate({ formId = '', onEditFormsTitle }: Props) {
         </div>
       </div>
 
-      {data.hasBanner || data.hasPaymentDetail ? (
+      {data.hasEventDetail ? (
         <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
           <span className="brutal-index">
-            {data.hasPaymentDetail ? (
-              <Wallet className="h-5 w-5" />
-            ) : (
-              <CalendarDays className="h-5 w-5" />
-            )}
+            <CalendarDays className="h-5 w-5" />
           </span>
           <div className="grid min-w-0 flex-1 gap-5">
-            {data.hasBanner ? (
-              <div className="flex flex-col gap-3">
-                <Label>Banner</Label>
-                <UploadsBanner
-                  value={data.image}
-                  alt="Pratinjau banner form"
-                  emptyLabel="UNGGAH BANNER"
-                  onEditBanner={editBannerUrl}
-                />
-              </div>
-            ) : null}
+            <div className="flex flex-col gap-3">
+              <Label>Banner</Label>
+              <UploadsBanner
+                value={data.image}
+                alt="Pratinjau banner form"
+                emptyLabel="UNGGAH BANNER"
+                onEditBanner={editBannerUrl}
+              />
+            </div>
 
-            {data.hasEventDetail ? (
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="form-meeting-url">Link Google Meet</Label>
-                <Input
-                  id="form-meeting-url"
-                  placeholder="https://meet.google.com/abc-defg-hij"
-                  {...form.register('meeting')}
-                />
-                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                  Link baru ditampilkan ke peserta setelah mereka berhasil
-                  mendaftar, bukan di halaman pendaftaran.
+            <div className="flex flex-col gap-3">
+              <Label htmlFor="form-meeting-url">Link Google Meet</Label>
+              <Input
+                id="form-meeting-url"
+                placeholder="https://meet.google.com/abc-defg-hij"
+                {...form.register('meeting')}
+              />
+              <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                Link baru ditampilkan ke peserta setelah mereka berhasil
+                mendaftar, bukan di halaman pendaftaran.
+              </p>
+              {data.meetingUrlError ? (
+                <p className="brutal-eyebrow text-primary">
+                  {data.meetingUrlError}
                 </p>
-                {data.meetingUrlError ? (
-                  <p className="brutal-eyebrow text-primary">
-                    {data.meetingUrlError}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-
-
-
-            {data.hasFixedPrice ? (
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="form-price-amount">Harga (Rp)</Label>
-                <Input
-                  id="form-price-amount"
-                  inputMode="numeric"
-                  placeholder="350000"
-                  {...form.register('price')}
-                />
-                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                  Tulis angka polos tanpa titik. Inilah tagihan yang dilihat
-                  pengisi di field pembayaran.
-                </p>
-                {data.priceAmountError ? (
-                  <p className="brutal-eyebrow text-primary">
-                    {data.priceAmountError}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-
-            {data.hasPaymentDetail ? (
-              <div className="flex flex-col gap-3">
-                <Label>Gambar QRIS</Label>
-                <UploadsBanner
-                  value={data.qrisImage}
-                  alt="Pratinjau kode QRIS"
-                  emptyLabel="UNGGAH QRIS"
-                  onEditBanner={editQrisUrl}
-                />
-                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                  Unggah kode QRIS milikmu dari penyedia pembayaran. Kode ini
-                  yang dipindai pembayar saat memilih metode QRIS. Tanpa
-                  gambar ini, metode QRIS tetap bisa dipilih tapi hanya
-                  menampilkan petunjuknya.
-                </p>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         </div>
       ) : null}
-
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-foreground bg-muted px-5 py-4 sm:px-7">
         <p className="brutal-eyebrow">

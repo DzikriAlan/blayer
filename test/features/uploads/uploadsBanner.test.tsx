@@ -93,11 +93,11 @@ describe('unggah gambar', () => {
   })
 
   it('TC-10 gambar yang sudah terunggah tampil sebagai pratinjau', async () => {
-    await loadBanner({ value: '/menu-nasi-goreng.svg', alt: 'Pratinjau banner form' })
+    await loadBanner({ value: '/event-banner-demo.svg', alt: 'Pratinjau banner form' })
 
     expect(screen.getByAltText('Pratinjau banner form')).toHaveAttribute(
       'src',
-      '/menu-nasi-goreng.svg'
+      '/event-banner-demo.svg'
     )
     expect(screen.getByRole('button', { name: /Hapus/ })).toBeInTheDocument()
   })

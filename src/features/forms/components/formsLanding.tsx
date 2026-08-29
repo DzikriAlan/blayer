@@ -14,11 +14,10 @@ import { FORMS_TEMPLATES, FORMS_VIEW_COPY } from './formsTemplate'
 
 const MARQUEE_WORDS = [
   'PENDAFTARAN ACARA',
-  'UJIAN SEKOLAH',
-  'PESANAN RESTORAN',
+  'LAMARAN KERJA',
   'SURVEI KEPUASAN',
   'SKOR OTOMATIS',
-  'BAYAR QRIS',
+  'PERINGKAT SENDIRI',
 ]
 
 export default function FormsLanding() {
@@ -32,17 +31,13 @@ export default function FormsLanding() {
     const getViewLabel = (view: string) =>
       ({
         scoring: 'SKOR & PERINGKAT',
-        exam: 'UJIAN TERKUNCI',
         survey: 'RINGKASAN SURVEI',
         event: 'DAFTAR PESERTA',
-        order: 'PESANAN & BAYAR',
       })[view] ?? 'FORM'
 
     const getShortName = (view: string) =>
       ({
         event: 'Event',
-        exam: 'Ujian',
-        order: 'Pesanan',
         survey: 'Survei',
         scoring: 'Form',
       })[view] ?? 'Form'
@@ -54,9 +49,6 @@ export default function FormsLanding() {
         .map((part) => part.trim().toUpperCase())
         .filter((part) => part.length > 1 && part.length <= 24)
 
-    const getPriceText = (amount: number) =>
-      amount > 0 ? `Rp${new Intl.NumberFormat('id-ID').format(amount)}` : 'Gratis'
-
     const getCategoryForms = (templateId: string) =>
       formsPublic.data
         .filter((raw) => raw.templateId === templateId)
@@ -66,8 +58,6 @@ export default function FormsLanding() {
           title: raw.title,
           description: raw.description,
           image: raw.image,
-          priceText: getPriceText(raw.price),
-          isPaid: raw.price > 0,
           totalResponses: raw.totalResponses,
           totalFields: raw.totalFields,
           tooltip: raw.title,
@@ -97,7 +87,6 @@ export default function FormsLanding() {
       countLabel: FORMS_VIEW_COPY[template.view].countLabel,
       fieldLabel: FORMS_VIEW_COPY[template.view].fieldLabel,
       emptyText: FORMS_VIEW_COPY[template.view].emptySubtitle,
-      hasPriceBadge: template.view === 'order',
       forms: getCategoryForms(template.id),
     }))
 

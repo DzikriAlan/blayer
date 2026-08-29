@@ -15,20 +15,13 @@ import {
   FORMS_TEMPLATE_DEFAULT_VIEW,
 } from '@/features/forms/components/formsTemplate'
 
-import { cn } from '@/shared/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import SectionHead from '@/components/section-head'
 import { LoadData } from '@/shared/components/load-data'
 import ResponsesField from './responsesField'
-import ResponsesGuard from './responsesGuard'
 import ResponsesEvent from './responsesEvent'
-import ResponsesOrder from './responsesOrder'
-
-const NO_EMAIL_VIEWS = ['order']
-
-const MENU_QTY_PATTERN = / x(\d+)$/
 
 interface Props {
   formId: string
@@ -45,8 +38,6 @@ export default function ResponsesSubmit({ formId }: Props) {
     email: '',
     answers: {} as Record<string, string | string[]>,
     errors: {} as Record<string, string>,
-    startedAt: 0,
-    elapsedSeconds: 0,
   })
 
   const data = useMemo(() => {
@@ -81,54 +72,11 @@ export default function ResponsesSubmit({ formId }: Props) {
       })
     }
 
-    const getDurationText = (totalSecond: number) => {
-      const minute = Math.floor(totalSecond / 60)
-      const second = totalSecond % 60
-      return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
-    }
-
-    const getOrderItems = () =>
-      (formsDetail.data?.fields ?? [])
-        .filter((field) => field.type === 'MENU')
-        .flatMap((field) => {
-          const answer = filters.answers[field.id]
-          const picked = Array.isArray(answer) ? answer : []
-
-          return picked.map((entry) => {
-            const name = entry.replace(MENU_QTY_PATTERN, '')
-            const qty = Number(entry.match(MENU_QTY_PATTERN)?.[1] ?? 1)
-            const option = field.options.find(
-              (item) => item.split('|')[0]?.trim() === name
-            )
-            const price = Number(option?.split('|')[1]?.trim()) || 0
-
-            return { name, qty, price, subtotal: price * qty }
-          })
-        })
-
-    const orderItems = getOrderItems()
-    const orderAmount = orderItems.length
-      ? orderItems.reduce((total, item) => total + item.subtotal, 0)
-      : formsDetail.data?.price ?? 0
-
-    const getPaymentMethod = () => {
-      const field = (formsDetail.data?.fields ?? []).find(
-        (item) => item.type === 'PAYMENT'
-      )
-      if (!field) return ''
-      const answer = filters.answers[field.id]
-      return Array.isArray(answer) ? answer[0] ?? '' : String(answer ?? '')
-    }
-
-    const hasEmailInput = !NO_EMAIL_VIEWS.includes(getView())
-    const identityOffset = hasEmailInput ? 2 : 1
-
     const mappedList = (formsDetail.data?.fields ?? []).map((field, index) => ({
-      index: index + identityOffset,
+      index: index + 2,
       field,
       value: getAnswer(field.id),
       error: filters.errors[field.id] ?? '',
-      amount: orderAmount,
     }))
 
     return {
@@ -161,22 +109,13 @@ export default function ResponsesSubmit({ formId }: Props) {
       description:
         formsDetail.data?.description ||
         'This form is collecting responses.\nFill it out honestly and directly.\nNo nonsense.',
-      hasEmailInput,
-      isProctored: getView() === 'exam',
-      hasEventDetail: getView() === 'event',
       isEventDone: getView() === 'event',
-      isOrderDone: getView() === 'order',
-      hasBanner: ['event', 'order'].includes(getView()),
+      hasBanner: getView() === 'event',
       image: formsDetail.data?.image ?? '',
       meeting: responses.data?.meeting || formsDetail.data?.meeting || '',
-      qrisImage: formsDetail.data?.qrisImage ?? '',
-      orderItems,
-      orderAmount,
-      paymentMethod: getPaymentMethod(),
       eventDateText: getEventDateText(),
       eventSessionText: getFirstAnswerByType('SELECT'),
       totalAttendee: responses.data?.totalResponses ?? 0,
-      durationText: getDurationText(filters.elapsedSeconds),
       isSubmitting: storeResponses.isPending || responses.status === 'loading',
       isSubmitted: responses.status === 'success',
       submitError: responses.status === 'error' ? responses.statusSubtitle : '',
@@ -233,19 +172,6 @@ export default function ResponsesSubmit({ formId }: Props) {
         ? Math.max(Math.round((Date.now() - startedAtRef.current) / 1000), 0)
         : 0
 
-    const getPaidAnswers = () => {
-      const answers = { ...filters.answers }
-      ;(formsDetail.data?.fields ?? [])
-        .filter((field) => field.type === 'PAYMENT')
-        .forEach((field) => {
-          const method = answers[field.id]
-          if (!method || Array.isArray(method)) return
-          answers[field.id] =
-            `${method} — Rp${data.orderAmount.toLocaleString('id-ID')}`
-        })
-      return answers
-    }
-
     const getSubmitKey = () => {
       if (!submitKeyRef.current) {
         submitKeyRef.current =
@@ -260,7 +186,7 @@ export default function ResponsesSubmit({ formId }: Props) {
       formId,
       name: filters.name,
       email: filters.email,
-      answers: getPaidAnswers(),
+      answers: filters.answers,
       duration: getDurationSeconds(),
       idempotencyKey: getSubmitKey(),
     }
@@ -278,37 +204,10 @@ export default function ResponsesSubmit({ formId }: Props) {
   useEffect(() => {
     if (formsDetail.status !== 'success') return
     if (responses.status === 'success') return
+    if (startedAtRef.current) return
 
-    if (!startedAtRef.current) startedAtRef.current = Date.now()
-
-    const timer = window.setInterval(() => {
-      setFilters((prev) => ({
-        ...prev,
-        startedAt: startedAtRef.current,
-        elapsedSeconds: Math.max(
-          Math.round((Date.now() - startedAtRef.current) / 1000),
-          0
-        ),
-      }))
-    }, 1000)
-
-    return () => window.clearInterval(timer)
+    startedAtRef.current = Date.now()
   }, [formsDetail.status, responses.status])
-
-  if (data.isSubmitted && data.isOrderDone) {
-    return (
-      <ResponsesOrder
-        formId={formId}
-        title={data.title}
-        image={data.image}
-        name={filters.name}
-        items={data.orderItems}
-        amount={data.orderAmount}
-        paymentMethod={data.paymentMethod}
-      />
-    )
-  }
-
 
   if (data.isSubmitted && data.isEventDone) {
     return (
@@ -371,18 +270,7 @@ export default function ResponsesSubmit({ formId }: Props) {
   }
 
   return (
-    <form
-      onSubmit={submitResponses}
-      className={cn(
-        'border-2 border-foreground',
-        data.isProctored && 'select-none'
-      )}
-    >
-      <ResponsesGuard
-        isActive={data.isProctored}
-        durationText={data.durationText}
-      />
-
+    <form onSubmit={submitResponses} className="border-2 border-foreground">
       {data.hasBanner && data.image ? (
         <div className="border-b-2 border-foreground bg-muted">
           <Image
@@ -425,27 +313,23 @@ export default function ResponsesSubmit({ formId }: Props) {
         </div>
       </div>
 
-      {data.hasEmailInput ? (
-        <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
-          <span className="brutal-index">02</span>
-          <div className="min-w-0 flex-1">
-            <Label htmlFor="respondent-email" className="text-[13px]">
-              Email Address
-            </Label>
-            <div className="mt-4">
-              <Input
-                id="respondent-email"
-                type="email"
-                value={filters.email}
-                placeholder="Type your answer"
-                onChange={(event) =>
-                  editRespondent('email', event.target.value)
-                }
-              />
-            </div>
+      <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
+        <span className="brutal-index">02</span>
+        <div className="min-w-0 flex-1">
+          <Label htmlFor="respondent-email" className="text-[13px]">
+            Email Address
+          </Label>
+          <div className="mt-4">
+            <Input
+              id="respondent-email"
+              type="email"
+              value={filters.email}
+              placeholder="Type your answer"
+              onChange={(event) => editRespondent('email', event.target.value)}
+            />
           </div>
         </div>
-      ) : null}
+      </div>
 
       <LoadData
         response={data.questionState}
@@ -458,8 +342,6 @@ export default function ResponsesSubmit({ formId }: Props) {
             field={item.field}
             value={item.value}
             error={item.error}
-            amount={item.amount}
-            qrisImage={data.qrisImage}
             onEditAnswer={editAnswer}
           />
         ))}

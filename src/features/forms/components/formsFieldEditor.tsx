@@ -31,26 +31,7 @@ export const FORMS_FIELD_TYPES: { value: FormsFieldType; label: string }[] = [
   { value: 'CHECKBOX', label: 'Kotak Centang' },
   { value: 'RATING', label: 'Rating Bintang (1-5)' },
   { value: 'SCALE', label: 'Skala Linier (1-10)' },
-  { value: 'MENU', label: 'Menu Bergambar' },
-  { value: 'PAYMENT', label: 'Metode Pembayaran' },
 ]
-
-const OPTION_GUIDES: Partial<
-  Record<FormsFieldType, { label: string; placeholder: string; hint: string }>
-> = {
-  MENU: {
-    label: 'Item — satu per baris: Nama|Harga|URL Gambar',
-    placeholder:
-      'Nasi Goreng Kampung|28000|/menu-nasi-goreng.svg\nEs Teh Manis|8000|/menu-es-teh.svg',
-    hint: 'Harga ditulis angka polos tanpa titik. Gambar boleh berkas di folder public atau tautan penuh.',
-  },
-  PAYMENT: {
-    label: 'Metode — satu per baris: Metode|Petunjuk',
-    placeholder:
-      'QRIS|Pindai kode di layar pakai aplikasi bank apa pun\nTransfer Bank|Transfer ke rekening kasir',
-    hint: 'Tagihan diambil dari field Menu Bergambar di form yang sama. Kalau form ini tidak punya menu, tagihannya memakai Harga yang kamu isi di bagian atas builder.',
-  },
-}
 
 interface Props {
   index: number
@@ -85,15 +66,6 @@ export default function FormsFieldEditor({
   onLoadFieldsOrder,
   onClearFieldsItem,
 }: Props) {
-  const getOptionGuide = () =>
-    OPTION_GUIDES[type] ?? {
-      label: 'Options — one per line',
-      placeholder: 'Feedback\nCollaboration\nSupport\nOther',
-      hint: '',
-    }
-
-  const optionGuide = getOptionGuide()
-
   return (
     <div className="flex gap-4 border-b-2 border-foreground bg-paper px-5 py-6 sm:gap-6 sm:px-7">
       <span className="brutal-index">
@@ -218,21 +190,16 @@ export default function FormsFieldEditor({
         {isOptionVisible ? (
           <div className="flex flex-col gap-3 sm:col-span-2">
             <Label htmlFor={`field-options-${index}`}>
-              {optionGuide.label}
+              Options — one per line
             </Label>
             <Textarea
               id={`field-options-${index}`}
               value={optionText}
-              placeholder={optionGuide.placeholder}
+              placeholder={'Feedback\nCollaboration\nSupport\nOther'}
               onChange={(event) =>
                 onEditFieldsItem(index, { optionText: event.target.value })
               }
             />
-            {optionGuide.hint ? (
-              <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                {optionGuide.hint}
-              </p>
-            ) : null}
             {optionError ? (
               <p className="brutal-eyebrow text-primary">{optionError}</p>
             ) : null}

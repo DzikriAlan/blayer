@@ -35,9 +35,9 @@ vi.mock('@/features/forms/controllers/formsControllers', () => ({
 const getForm = (overrides: Partial<DataForms> = {}): DataForms => ({
   id: 'form-1',
   slug: 'form-satu',
-  title: 'Ujian Sejarah',
+  title: 'Survei Layanan',
   description: '',
-  templateId: 'exam',
+  templateId: 'csat',
   isPublished: true,
   totalFields: 6,
   totalResponses: 5,
@@ -62,7 +62,7 @@ beforeEach(() => {
     statusSubtitle: '',
     data: [
       getForm(),
-      getForm({ id: 'form-2', title: 'Pesan Menu', templateId: 'restaurant' }),
+      getForm({ id: 'form-2', title: 'Lowongan Backend', templateId: 'recruitment' }),
       getForm({ id: 'form-3', title: 'Webinar Produk', templateId: 'event' }),
     ],
   }
@@ -72,8 +72,8 @@ describe('riwayat form', () => {
   it('TC-13 semua form tampil sebelum filter dipakai', async () => {
     await loadList()
 
-    expect(screen.getByRole('heading', { name: 'Ujian Sejarah' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Pesan Menu' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Survei Layanan' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Lowongan Backend' })).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Webinar Produk' })
     ).toBeInTheDocument()
@@ -83,34 +83,34 @@ describe('riwayat form', () => {
     const user = userEvent.setup()
     await loadList()
 
-    const restaurantCard = screen
-      .getByRole('heading', { name: 'Menu Restoran' })
+    const recruitmentCard = screen
+      .getByRole('heading', { name: 'Lamaran Kerja' })
       .closest('div')?.parentElement as HTMLElement
 
-    await user.click(within(restaurantCard).getByRole('button', { name: /See/ }))
+    await user.click(within(recruitmentCard).getByRole('button', { name: /See/ }))
 
-    expect(screen.getByRole('heading', { name: 'Pesan Menu' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Lowongan Backend' })).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Ujian Sejarah' })
+      screen.queryByRole('heading', { name: 'Survei Layanan' })
     ).not.toBeInTheDocument()
-    expect(screen.getByText(/FILTER TEMPLATE — Menu Restoran/)).toBeInTheDocument()
+    expect(screen.getByText(/FILTER TEMPLATE — Lamaran Kerja/)).toBeInTheDocument()
   })
 
   it('TC-13 klik See sekali lagi melepas filternya', async () => {
     const user = userEvent.setup()
     await loadList()
 
-    const restaurantCard = screen
-      .getByRole('heading', { name: 'Menu Restoran' })
+    const recruitmentCard = screen
+      .getByRole('heading', { name: 'Lamaran Kerja' })
       .closest('div')?.parentElement as HTMLElement
-    const seeButton = within(restaurantCard).getByRole('button', { name: /See/ })
+    const seeButton = within(recruitmentCard).getByRole('button', { name: /See/ })
 
     await user.click(seeButton)
     await user.click(
-      within(restaurantCard).getByRole('button', { name: /Shown/ })
+      within(recruitmentCard).getByRole('button', { name: /Shown/ })
     )
 
-    expect(screen.getByRole('heading', { name: 'Ujian Sejarah' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Survei Layanan' })).toBeInTheDocument()
     expect(screen.queryByText(/FILTER TEMPLATE/)).not.toBeInTheDocument()
   })
 
@@ -118,14 +118,14 @@ describe('riwayat form', () => {
     const user = userEvent.setup()
     await loadList()
 
-    const restaurantCard = screen
-      .getByRole('heading', { name: 'Menu Restoran' })
+    const recruitmentCard = screen
+      .getByRole('heading', { name: 'Lamaran Kerja' })
       .closest('div')?.parentElement as HTMLElement
 
-    await user.click(within(restaurantCard).getByRole('button', { name: /See/ }))
+    await user.click(within(recruitmentCard).getByRole('button', { name: /See/ }))
     await user.click(screen.getByRole('button', { name: /Hapus Filter/ }))
 
-    expect(screen.getByRole('heading', { name: 'Ujian Sejarah' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Survei Layanan' })).toBeInTheDocument()
   })
 
   it('TC-13 template tanpa form memberi tahu cara membuat yang pertama', async () => {
@@ -133,16 +133,16 @@ describe('riwayat form', () => {
     state.forms.data = [getForm()]
     await loadList()
 
-    const restaurantCard = screen
-      .getByRole('heading', { name: 'Menu Restoran' })
+    const recruitmentCard = screen
+      .getByRole('heading', { name: 'Lamaran Kerja' })
       .closest('div')?.parentElement as HTMLElement
 
     await user.click(
-      within(restaurantCard).getByRole('button', { name: /See/ })
+      within(recruitmentCard).getByRole('button', { name: /See/ })
     )
 
     expect(
-      screen.getByText(/Belum ada form yang dibuat dari template Menu Restoran/)
+      screen.getByText(/Belum ada form yang dibuat dari template Lamaran Kerja/)
     ).toBeInTheDocument()
   })
 
@@ -150,13 +150,13 @@ describe('riwayat form', () => {
     const user = userEvent.setup()
     await loadList()
 
-    const examCard = screen
-      .getByRole('heading', { name: 'Ujian Sekolah' })
+    const surveyCard = screen
+      .getByRole('heading', { name: 'Survei Kepuasan' })
       .closest('div')?.parentElement as HTMLElement
 
-    await user.click(within(examCard).getByRole('button', { name: 'Use' }))
+    await user.click(within(surveyCard).getByRole('button', { name: 'Use' }))
 
-    expect(push).toHaveBeenCalledWith('/forms/create?template=exam')
+    expect(push).toHaveBeenCalledWith('/forms/create?template=csat')
   })
 
   it('TC-30 keadaan memuat ditangani LoadData, bukan daftar kosong', async () => {
@@ -165,7 +165,7 @@ describe('riwayat form', () => {
 
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Ujian Sejarah' })
+      screen.queryByRole('heading', { name: 'Survei Layanan' })
     ).not.toBeInTheDocument()
   })
 
@@ -194,7 +194,7 @@ describe('riwayat form', () => {
       screen.getByRole('heading', { name: 'Webinar Produk' })
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Ujian Sejarah' })
+      screen.queryByRole('heading', { name: 'Survei Layanan' })
     ).not.toBeInTheDocument()
   })
 })

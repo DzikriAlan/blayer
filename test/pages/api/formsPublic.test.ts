@@ -54,11 +54,10 @@ beforeEach(() => {
   prismaMock.form.findMany = vi.fn().mockResolvedValue([
     {
       id: 'form-1',
-      title: 'Ujian Matematika',
-      description: 'Ujian bab satu',
-      templateId: 'exam',
+      title: 'Survei Layanan',
+      description: 'Survei triwulan',
+      templateId: 'csat',
       image: null,
-      price: null,
       createdAt: new Date('2026-08-01T00:00:00.000Z'),
       _count: { fields: 5, responses: 12 },
     },
@@ -97,7 +96,6 @@ describe('katalog form publik', () => {
       'description',
       'id',
       'image',
-      'price',
       'slug',
       'templateId',
       'title',
@@ -107,8 +105,9 @@ describe('katalog form publik', () => {
 
     const select = prismaMock.form.findMany.mock.calls[0][0].select
     expect(select.purpose).toBeUndefined()
-    expect(select.qrisImage).toBeUndefined()
-    expect(select.meeting).toBeUndefined()
+    expect(select.priceAmount).toBeUndefined()
+    expect(select.qrisUrl).toBeUndefined()
+    expect(select.meetingUrl).toBeUndefined()
     expect(select.video).toBeUndefined()
     expect(select.userId).toBeUndefined()
   })

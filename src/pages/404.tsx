@@ -18,7 +18,7 @@ const NOT_FOUND_LINKS = [
   {
     href: '/#kategori',
     label: 'KATEGORI',
-    description: 'Ujian, pendaftaran acara, menu restoran, atau kelas berbayar.',
+    description: 'Pendaftaran acara, survei kepuasan, atau form berskor.',
   },
 ]
 

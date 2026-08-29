@@ -19,11 +19,8 @@ import {
   type FormsTemplateView,
 } from './formsTemplate'
 
-const getLayout = (view: FormsTemplateView) => {
-  if (view === 'event') return 'poster'
-  if (view === 'order') return 'menu'
-  return 'list'
-}
+const getLayout = (view: FormsTemplateView) =>
+  view === 'event' ? 'poster' : 'list'
 
 const getCardTags = (description: string) => {
   const parts = description
@@ -40,11 +37,6 @@ const getCardTags = (description: string) => {
     Boolean
   )
 }
-
-const getPriceText = (amount: number) =>
-  amount > 0
-    ? `Rp${new Intl.NumberFormat('id-ID').format(amount)}`
-    : 'Gratis'
 
 interface Props {
   templateId: string
@@ -65,8 +57,6 @@ export default function FormsExplore({ templateId }: Props) {
         title: item.title,
         description: item.description,
         image: item.image,
-        priceText: getPriceText(item.price),
-        isPaid: item.price > 0,
         tooltip: item.title,
         tags: getCardTags(item.description),
         totalFields: item.totalFields,
@@ -199,8 +189,7 @@ export default function FormsExplore({ templateId }: Props) {
                   actionLabel={data.actionLabel}
                   countLabel={data.countLabel}
                   fieldLabel={data.fieldLabel}
-                  hasBanner={data.layout === 'poster'}
-                  hasPriceBadge={data.layout === 'menu'}
+                  hasBanner
                 />
               ))}
             </div>

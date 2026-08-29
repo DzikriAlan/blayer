@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import FormsFacepile from './formsFacepile'
 
 export interface FormsPosterForm {
@@ -11,8 +10,6 @@ export interface FormsPosterForm {
   title: string
   description: string
   image: string
-  isPaid: boolean
-  priceText: string
   totalResponses: number
   totalFields: number
   tooltip: string
@@ -25,7 +22,6 @@ interface Props {
   countLabel: string
   fieldLabel: string
   hasBanner?: boolean
-  hasPriceBadge?: boolean
   isFixedBanner?: boolean
   className?: string
 }
@@ -36,7 +32,6 @@ export default function FormsPoster({
   countLabel,
   fieldLabel,
   hasBanner = true,
-  hasPriceBadge = false,
   isFixedBanner = false,
   className,
 }: Props) {
@@ -69,11 +64,6 @@ export default function FormsPoster({
               )}
             />
           ) : null}
-          {form.isPaid ? (
-            <span className="brutal-eyebrow absolute left-0 top-0 bg-foreground px-3 py-2 text-background">
-              {form.priceText}
-            </span>
-          ) : null}
         </div>
       ) : null}
 
@@ -99,12 +89,7 @@ export default function FormsPoster({
           </span>
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          {hasPriceBadge ? (
-            <Badge variant="outline">{form.priceText}</Badge>
-          ) : (
-            <span />
-          )}
+        <div className="flex items-center justify-end gap-3">
           <span className="brutal-eyebrow flex items-center gap-2 border-2 border-foreground px-3 py-2 transition-colors group-hover:bg-foreground group-hover:text-background">
             {actionLabel}
             <ArrowUpRight className="h-4 w-4" />
