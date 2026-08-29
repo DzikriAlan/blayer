@@ -8,8 +8,8 @@ harus dilakukan tangan.
 | --- | --- |
 | **Versi PRD yang diuji** | 1.9 |
 | **Terakhir diperbarui** | 29 Agustus 2026 |
-| **Kasus otomatis** | 231 |
-| **Berkas uji** | 36 |
+| **Kasus otomatis** | 202 |
+| **Berkas uji** | 35 |
 
 ---
 
@@ -38,11 +38,10 @@ test/
 │   │   ├── formsFieldEditor.test.tsx          # editor field di builder
 │   │   └── formsList.test.tsx                 # riwayat form + filter template
 │   ├── responses/
-│   │   ├── responsesField.test.tsx            # field menu, pembayaran, QRIS
-│   │   ├── responsesSubmit.test.tsx           # halaman isi form + pengiriman
-│   │   └── responsesOrder.test.tsx            # struk pesanan
+│   │   ├── responsesField.test.tsx            # field bawaan di halaman isi
+│   │   └── responsesSubmit.test.tsx           # halaman isi form + pengiriman
 │   └── uploads/
-│       └── uploadsBanner.test.tsx             # unggah banner dan kode QRIS
+│       └── uploadsBanner.test.tsx             # unggah banner form
 ├── pages/
 │   └── errorPages.test.tsx                    # halaman 404 dan 500
 └── shared/
@@ -61,7 +60,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-01a | F-01 | Membuka katalog template | Setiap template yang tampil punya judul dan minimal satu field | Otomatis | `formsTemplate.test.ts` |
 | TC-01b | F-01 | Menekan **Use** pada kartu template | Diarahkan ke `/forms/create?template=<id>` | Otomatis | `formsList.test.tsx` |
 | TC-01c | F-01 | Riwayat form masih kosong | Muncul ajakan membuat form pertama beserta tautan ke builder | Otomatis | `formsList.test.tsx` |
-| TC-02a | F-02 | Membuka pilihan tipe jawaban | Tersedia 15 tipe, termasuk `MENU` dan `PAYMENT`, tanpa duplikat | Otomatis | `formsFieldEditor.test.tsx` |
+| TC-02a | F-02 | Membuka pilihan tipe jawaban | Tersedia 13 tipe tanpa duplikat | Otomatis | `formsFieldEditor.test.tsx` |
 | TC-02b | F-02 | Memilih tipe field pilihan | Kolom opsi muncul dengan panduan bawaan "Options — one per line" | Otomatis | `formsFieldEditor.test.tsx` |
 | TC-02c | F-02 | Memilih tipe tanpa opsi (mis. jawaban singkat) | Kolom opsi tidak dirender sama sekali | Otomatis | `formsFieldEditor.test.tsx` |
 | TC-02d | F-02 | Memeriksa seluruh template | Setiap field pilihan membawa minimal dua opsi | Otomatis | `formsTemplate.test.ts` |
@@ -71,7 +70,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-34c | F-34 | Memakai template dari builder | Judul dari template ikut mengubah bilah atas | Otomatis | `formsCreate.test.tsx` |
 | TC-35a | F-01 | Datang lewat `?template=` lalu memilih template lain | Isian berpindah ke template baru dan tidak ditarik kembali ke yang lama | Otomatis | `formsCreate.test.tsx` |
 | TC-35b | F-01 | Memilih template di builder | `?template=` di URL ikut berubah mengikuti pilihan terakhir | Otomatis | `formsCreate.test.tsx` |
-| TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `exam`, `survey`, `event`, atau `order` | Otomatis | `formsTemplate.test.ts` |
+| TC-04 | F-04 | Memeriksa nilai `view` seluruh template | Hanya bernilai `scoring`, `survey`, atau `event` | Otomatis | `formsTemplate.test.ts` |
 | TC-13a | F-13 | Menekan **See** pada kartu template | Riwayat form hanya menampilkan form dari template itu, dan baris filter aktif muncul | Otomatis | `formsList.test.tsx` |
 | TC-13b | F-13 | Menekan **Shown** (klik kedua) | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
 | TC-13c | F-13 | Menekan **Hapus Filter** | Filter terlepas, seluruh riwayat kembali tampil | Otomatis | `formsList.test.tsx` |
@@ -87,56 +86,24 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-03a | F-03 | Menekan Submit dengan field wajib kosong | Pengiriman ditahan dan tiap field wajib diberi pesan kesalahan | Otomatis | `responsesSubmit.test.tsx` |
 | TC-03b | F-03 | Membuka tautan form yang sudah dihapus | Muncul "Form Not Found" beserta tombol **Coba Lagi** yang memuat ulang | Otomatis | `responsesSubmit.test.tsx` |
 | TC-03c | F-03 | Mengirim jawaban tanpa field wajib langsung ke API | Server menolak dengan pesan yang menyebut label fieldnya | Manual | — |
-| TC-21a | F-21 | Membuka form pesanan (`view: order`) | Hanya kolom **Full Name** yang tampil; kolom email tidak dirender | Otomatis | `responsesSubmit.test.tsx` |
 | TC-21b | F-21 | Membuka form acara (`view: event`) | Kolom **Full Name** dan **Email Address** dua-duanya tampil | Otomatis | `responsesSubmit.test.tsx` |
-| TC-21c | F-21 | Memeriksa penomoran pertanyaan pada form pesanan | Pertanyaan pertama bernomor 02, menyambung dari satu kolom identitas | Otomatis | `responsesSubmit.test.tsx` |
+| TC-21c | F-21 | Memeriksa penomoran pertanyaan | Pertanyaan pertama bernomor 02, menyambung dari dua kolom identitas | Otomatis | `responsesSubmit.test.tsx` |
 | TC-21d | F-21 | Memeriksa seluruh template yang tampil | Tidak ada satu pun field bernama nama/email atau bertipe `EMAIL` | Otomatis | `formsTemplate.test.ts` |
 | TC-07a | F-07 | Mengirim jawaban | Payload memuat `durationSeconds` bernilai tidak negatif | Otomatis | `responsesSubmit.test.tsx` |
 | TC-07b | F-07 | Melihat baris hasil di dashboard | Durasi tampil `MM:SS`; jawaban lama tanpa durasi ditandai `—` | Manual | — |
-| TC-05a | F-05 | Membuka form ujian (`view: exam`) | Formulir memakai penanda anti-seleksi teks | Otomatis | `responsesSubmit.test.tsx` |
-| TC-05b | F-05 | Menekan klik kanan, Ctrl+C, Ctrl+P, F12 di halaman ujian | Semua pintasan diabaikan | Manual | — |
-| TC-06 | F-06 | Berpindah tab lalu kembali ke halaman ujian | Hitungan pelanggaran bertambah dan terlihat oleh peserta | Manual | — |
 
 ---
 
-## 3 · Menu bergambar & pembayaran
+## 3 · Layar setelah kirim
 
 | ID | Kebutuhan | Skenario | Hasil yang diharapkan | Jenis | Berkas |
 | --- | --- | --- | --- | --- | --- |
-| TC-14a | F-14 | Membuka field menu | Tiap item menampilkan nama, harga rupiah, dan gambarnya | Otomatis | `responsesField.test.tsx` |
-| TC-14b | F-14 | Menekan tombol tambah pada item yang sudah dipilih | Jumlah porsi naik dan tersimpan sebagai `Nama x2` | Otomatis | `responsesField.test.tsx` |
-| TC-14c | F-14 | Menekan tombol kurang pada porsi terakhir | Item dikeluarkan dari daftar pesanan | Otomatis | `responsesField.test.tsx` |
-| TC-14d | F-14 | Memilih dua item dengan jumlah berbeda | Subtotal sama dengan jumlah harga × porsi | Otomatis | `responsesField.test.tsx` |
-| TC-14e | F-14 | Memeriksa opsi menu bawaan template restoran | Setiap baris punya nama, harga berupa angka > 0, dan URL gambar | Otomatis | `formsTemplate.test.ts` |
-| TC-14f | F-14 | Menyimpan form dengan baris menu tanpa harga | Builder menolak simpan dan menyebut nomor fieldnya | Manual | — |
-| TC-15a | F-15 | Membuka field pembayaran | Total tagihan tampil sesuai isi field menu | Otomatis | `responsesField.test.tsx` |
-| TC-15b | F-15 | Memilih salah satu metode | Nama metode dikirim ke pemanggilnya | Otomatis | `responsesField.test.tsx` |
-| TC-15c | F-15 | Mengirim form berisi menu dan pembayaran | Jawaban pembayaran tersimpan sebagai `QRIS — Rp28.000` | Otomatis | `responsesSubmit.test.tsx` |
-| TC-15d | F-15 | Memeriksa panduan field pembayaran di builder | Disebutkan tagihan datang dari field menu atau harga form | Otomatis | `formsFieldEditor.test.tsx` |
-| TC-16a | F-16 | Memilih metode QRIS pada form yang punya kode QRIS | Gambar QRIS milik pembuat form ditampilkan | Otomatis | `responsesField.test.tsx` |
-| TC-16b | F-16 | Memilih metode QRIS tanpa kode terunggah | Tidak ada gambar; pengisi diberi tahu harus menanyakan kodenya | Otomatis | `responsesField.test.tsx` |
-| TC-16c | F-16 | Membuka unggahan QRIS di builder | Tombol unggah berlabel "UNGGAH QRIS", bukan "UNGGAH BANNER" | Otomatis | `uploadsBanner.test.tsx` |
-| TC-20a | F-20 | Membuka form berharga tetap tanpa field menu | Total tagihan memakai `priceAmount` milik form | Otomatis | `responsesSubmit.test.tsx` |
-| TC-20c | F-20 | Mengisi harga dengan huruf atau angka negatif di builder | Simpan ditolak dengan pesan "Harga harus berupa angka lebih dari 0" | Manual | — |
-| TC-23a | F-23 | Memilih metode pembayaran apa pun | Halaman menyatakan pembayaran belum diverifikasi otomatis | Otomatis | `responsesField.test.tsx` |
-| TC-23b | F-23 | Membuka struk setelah kirim | Status tertulis menunggu konfirmasi petugas | Otomatis | `responsesOrder.test.tsx` |
-
----
-
-## 4 · Layar setelah kirim
-
-| ID | Kebutuhan | Skenario | Hasil yang diharapkan | Jenis | Berkas |
-| --- | --- | --- | --- | --- | --- |
-| TC-17a | F-17 | Mengirim pesanan restoran | Struk memuat nama pemesan dan judul formnya | Otomatis | `responsesOrder.test.tsx` |
-| TC-17b | F-17 | Memeriksa rincian struk | Tiap item tampil dengan jumlah dan subtotalnya | Otomatis | `responsesOrder.test.tsx` |
-| TC-17c | F-17 | Memeriksa penutup struk | Total tagihan dan metode pembayaran tercetak | Otomatis | `responsesOrder.test.tsx` |
-| TC-17d | F-17 | Mengirim pesanan tanpa item | Struk tetap terbaca dengan keterangan "Tidak Ada Item" | Otomatis | `responsesOrder.test.tsx` |
 | TC-11 | F-11 | Mendaftar acara lalu melihat tiket | Tiket memuat nama, sesi, lokasi, jumlah terdaftar, dan link Meet | Manual | — |
 | TC-12 | F-12 | Membuka halaman pendaftaran acara | Link Google Meet tidak tampil sebelum submit berhasil | Manual | — |
 
 ---
 
-## 5 · Unggahan berkas
+## 4 · Unggahan berkas
 
 | ID | Kebutuhan | Skenario | Hasil yang diharapkan | Jenis | Berkas |
 | --- | --- | --- | --- | --- | --- |
@@ -150,12 +117,12 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 
 ---
 
-## 6 · Hasil & ekspor
+## 5 · Hasil & ekspor
 
 | ID | Kebutuhan | Skenario | Hasil yang diharapkan | Jenis | Berkas |
 | --- | --- | --- | --- | --- | --- |
-| TC-08a | F-08 | Membuka hasil form ujian | Tampil skor dan peringkat responden | Manual | — |
-| TC-08b | F-08 | Membuka hasil form acara atau pesanan | Tampil daftar orang, bukan peringkat skor | Manual | — |
+| TC-08a | F-08 | Membuka hasil form berskor | Tampil skor dan peringkat responden | Manual | — |
+| TC-08b | F-08 | Membuka hasil form acara | Tampil daftar orang, bukan peringkat skor | Manual | — |
 | TC-08c | F-08 | Membuka baris responden | Seluruh jawaban responden itu terbuka | Manual | — |
 | TC-09a | F-09 | Menekan tombol CSV | Berkas berisi tepat tiga kolom: Nama, Nilai, Waktu Pengerjaan | Manual | — |
 | TC-09b | F-09 | Mengekspor saat hasil terbagi beberapa halaman | Seluruh data ikut, bukan hanya halaman aktif | Manual | — |
@@ -163,7 +130,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 
 ---
 
-## 7 · Antarmuka umum
+## 6 · Antarmuka umum
 
 | ID | Kebutuhan | Skenario | Hasil yang diharapkan | Jenis | Berkas |
 | --- | --- | --- | --- | --- | --- |
@@ -204,11 +171,10 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-26y | F-26 | Mengisi form lewat tautan publik setelah kepemilikan aktif | `GET /api/v1/forms/detail/[id]` dan pengiriman jawaban tetap jalan tanpa token | Manual | — |
 | TC-26z | F-26 | Membuka halaman depan tanpa login | Katalog form terisi — `GET /api/v1/forms/public` tidak menyentuh penjaga sesi sama sekali | Otomatis | `formsPublic.test.ts` |
 | TC-26aa | F-26 | Katalog publik dengan draf di database | Hanya form yang sudah dipublikasikan ikut terbaca; penyaringan ada di query | Otomatis | `formsPublic.test.ts` |
-| TC-26ab | F-26 | Isi kolom yang dikirim katalog publik | `purpose`, `qrisUrl`, dan `userId` tidak ikut diminta dari database maupun dikirim | Otomatis | `formsPublic.test.ts` |
+| TC-26ab | F-26 | Isi kolom yang dikirim katalog publik | `purpose`, `meetingUrl`, dan `userId` tidak ikut diminta dari database maupun dikirim | Otomatis | `formsPublic.test.ts` |
 | TC-26ac | F-26 | Halaman depan dibuka pengunjung yang belum masuk | Tidak ada request ke endpoint terkunci — daftar form milik sendiri ditahan sampai ada sesi | Manual | — |
-| TC-36a | F-36 | Membuka kategori ujian | Judulnya menyebut yang bisa dilakukan, bukan nama template; disajikan sebagai daftar bernomor dengan satuan soal dan peserta | Otomatis | `formsExplore.test.tsx` |
+| TC-36a | F-36 | Membuka kategori survei | Judulnya menyebut yang bisa dilakukan, bukan nama template; disajikan sebagai daftar bernomor dengan satuan pertanyaan dan responden | Otomatis | `formsExplore.test.tsx` |
 | TC-36b | F-36 | Membuka kategori acara | Poster dimuat utuh tanpa terpotong, dengan satuan terdaftar dan acara terbuka | Otomatis | `formsExplore.test.tsx` |
-| TC-36d | F-36 | Membuka kategori menu restoran | Disajikan berdampingan dengan satuan pilihan dan pesanan | Otomatis | `formsExplore.test.tsx` |
 | TC-36e | F-36 | Kategori berisi form dari template lain | Hanya form dari kategori itu yang tampil, dan jumlah tersedia mengikutinya | Otomatis | `formsExplore.test.tsx` |
 | TC-36f | F-36 | Kategori yang tidak dikenal | Dijelaskan alasannya dan tidak menawarkan template yang tidak ada | Otomatis | `formsExplore.test.tsx` |
 | TC-36g | F-36 | Memeriksa halaman kategori | Tidak ada ajakan membuat form — permukaan ini untuk yang datang ikut | Otomatis | `formsExplore.test.tsx` |
@@ -231,7 +197,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 
 ---
 
-## 8 · Mengelola, merahasiakan, dan menahan penyalahgunaan
+## 7 · Mengelola, merahasiakan, dan menahan penyalahgunaan
 
 | ID | Kebutuhan | Langkah | Hasil yang diharapkan | Jenis | Berkas |
 | --- | --- | --- | --- | --- | --- |
@@ -248,7 +214,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-39k | F-39 | Membuka halaman sunting | Judul, deskripsi, dan pertanyaan tersimpan termuat ke builder | Otomatis | `formsEdit.test.tsx` |
 | TC-39l | F-39 | Menyimpan dari halaman sunting | Yang terkirim PUT ke form itu, bukan pembuatan form baru | Otomatis | `formsEdit.test.tsx` |
 | TC-39m | F-39 | Menyimpan suntingan pertanyaan lama | Id field lama ikut terkirim supaya jawaban lama tetap punya pertanyaannya | Otomatis | `formsEdit.test.tsx` |
-| TC-40a | F-40 | Membuka detail form tanpa sesi | `purpose` dan `meetingUrl` kosong; `qrisUrl` tetap ikut | Otomatis | `formsDetail.test.ts` |
+| TC-40a | F-40 | Membuka detail form tanpa sesi | `purpose` dan `meetingUrl` tidak ikut terkirim | Otomatis | `formsDetail.test.ts` |
 | TC-40b | F-40 | Membuka detail form milik akun lain | Ketiga kolom rahasia tetap kosong walau pemanggilnya sudah masuk | Otomatis | `formsDetail.test.ts` |
 | TC-40c | F-40 | Pemilik membuka detail formnya | Seluruh kolom terkirim utuh | Otomatis | `formsDetail.test.ts` |
 | TC-40d | F-40 | Menebak tautan form yang masih draf | Dibalas 404, bukan 403 yang membocorkan keberadaannya | Otomatis | `formsDetail.test.ts` |
@@ -268,7 +234,6 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 | TC-42f | F-42 | Mengirim form tanpa field | Ditolak | Otomatis | `formsInput.test.ts` |
 | TC-42g | F-42 | Mengirim jenis field yang tidak dikenal | Ditolak dengan menyebut jenis yang salah | Otomatis | `formsInput.test.ts` |
 | TC-42h | F-42 | Mengirim field tanpa label | Ditolak | Otomatis | `formsInput.test.ts` |
-| TC-42i | F-42 | Mengirim harga negatif | Disimpan sebagai kosong, bukan tagihan negatif | Otomatis | `formsInput.test.ts` |
 | TC-42j | F-42 | Mengirim teks kosong pada kolom opsional | Disimpan sebagai null, bukan string kosong | Otomatis | `formsInput.test.ts` |
 | TC-42k | F-42 | Mengirim beberapa field sekaligus | Urutannya mengikuti urutan kirim | Otomatis | `formsInput.test.ts` |
 | TC-42l | F-42 | Mengirim field melampaui batas wajar | Ditolak | Otomatis | `formsInput.test.ts` |
@@ -277,7 +242,7 @@ berjalan tanpa basis data, tanpa jaringan, dan tanpa server yang hidup.
 
 ---
 
-## 9 · Belum diuji karena fiturnya belum ada
+## 8 · Belum diuji karena fiturnya belum ada
 
 Kasus berikut sengaja belum ditulis. Kebutuhannya masih berstatus **Belum** di
 PRD, jadi menuliskan ujinya sekarang hanya akan menghasilkan uji yang selalu
@@ -285,10 +250,7 @@ merah.
 
 | Kebutuhan | Yang perlu diuji setelah fiturnya jadi |
 | --- | --- |
-| F-23 Verifikasi pembayaran otomatis | Status pembayaran berubah karena notifikasi gateway, bukan klaim pengisi |
-| F-24 Penilaian ujian berbasis kunci jawaban | Skor dihitung dari ketepatan jawaban terhadap kunci |
 | F-25 Detail acara oleh penyelenggara | Tanggal dan jam acara diambil dari builder, bukan jawaban pendaftar |
-| F-27 Rekap pendapatan | Total pemasukan dan rinciannya per metode pembayaran |
 
 ---
 
@@ -300,4 +262,4 @@ merah.
   mengecilkan jendela peramban — jendela desktop punya lebar minimum yang
   membuat hasil di bawah ±500 px menyesatkan.
 - Setiap kebutuhan baru di PRD harus menambah baris di sini pada saat yang sama —
-  ID kasus mengikuti nomor kebutuhannya (`F-14` → `TC-14a`, `TC-14b`, …).
+  ID kasus mengikuti nomor kebutuhannya (`F-13` → `TC-13a`, `TC-13b`, …).
