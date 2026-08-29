@@ -11,9 +11,7 @@ import FormsPoster, { type FormsPosterForm } from './formsPoster'
 export interface FormsCategoryItem {
   id: string
   name: string
-  description: string
   icon: LucideIcon
-  availabilityText: string
   actionLabel: string
   countLabel: string
   fieldLabel: string
@@ -68,12 +66,6 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
     return {
       buttons,
       activeId: filters.activeId,
-      description: active
-        ? active.description
-        : 'Semua kategori acara yang pendaftarannya sedang dibuka. Pilih salah satu kategori untuk mempersempit daftarnya.',
-      availabilityText: active
-        ? active.availabilityText
-        : `${String(totalForm).padStart(2, '0')} ACARA TERBUKA`,
       hasExplore: !!active,
       listState: {
         data: listedForms,
@@ -97,41 +89,34 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
 
   return (
     <div>
-      <div className="brutal-scroll-hidden -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-        {category.buttons.map((item) => {
-          const Icon = item.icon
-          const isActive = item.id === category.activeId
+      <div className="flex items-center gap-3">
+        <div className="brutal-scroll-hidden -mx-1 flex min-w-0 flex-1 gap-2 overflow-x-auto px-1 pb-1">
+          {category.buttons.map((item) => {
+            const Icon = item.icon
+            const isActive = item.id === category.activeId
 
-          return (
-            <button
-              key={item.id || 'all'}
-              type="button"
-              onClick={() => editCategory(item.id)}
-              className={cn(
-                'brutal-eyebrow flex shrink-0 items-center gap-2 border-2 border-foreground px-3 py-2.5 transition-colors',
-                isActive
-                  ? 'bg-foreground text-background'
-                  : 'bg-paper hover:bg-muted'
-              )}
-            >
-              {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
-              {item.name}
-              <span className={isActive ? 'opacity-70' : 'text-muted-foreground'}>
-                {String(item.total).padStart(2, '0')}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="mt-7 flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="brutal-eyebrow text-muted-foreground">
-            {category.availabilityText}
-          </p>
-          <p className="mt-3 max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground">
-            {category.description}
-          </p>
+            return (
+              <button
+                key={item.id || 'all'}
+                type="button"
+                onClick={() => editCategory(item.id)}
+                className={cn(
+                  'brutal-eyebrow flex shrink-0 items-center gap-2 border-2 border-foreground px-3 py-2.5 transition-colors',
+                  isActive
+                    ? 'bg-foreground text-background'
+                    : 'bg-paper hover:bg-muted'
+                )}
+              >
+                {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
+                {item.name}
+                <span
+                  className={isActive ? 'opacity-70' : 'text-muted-foreground'}
+                >
+                  {String(item.total).padStart(2, '0')}
+                </span>
+              </button>
+            )
+          })}
         </div>
 
         {category.hasExplore ? (

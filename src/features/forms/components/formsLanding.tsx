@@ -42,9 +42,6 @@ export default function FormsLanding() {
           tooltip: raw.title,
         }))
 
-    const getTotalForm = (templateId: string) =>
-      formsPublic.data.filter((raw) => raw.templateId === templateId).length
-
     const visibleTemplates = FORMS_TEMPLATES.filter(
       (template) => template.isFeatured
     )
@@ -55,12 +52,7 @@ export default function FormsLanding() {
       return {
         id: template.id,
         name: template.name,
-        description: copy.lead,
         icon: template.icon,
-        availabilityText: `${String(getTotalForm(template.id)).padStart(
-          2,
-          '0'
-        )} ${copy.availabilityLabel}`,
         actionLabel: copy.action,
         countLabel: copy.countLabel,
         fieldLabel: copy.fieldLabel,
