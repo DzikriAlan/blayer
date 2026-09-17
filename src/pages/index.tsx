@@ -1,16 +1,17 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import LandingHero from '@/features/landing/components/LandingHero'
 
 const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Next Starter</title>
-        <meta name="description" content="Next Starter" />
+        <title>Chaplin — Your knowledge, always ready</title>
+        <meta name="description" content="Turn your team's knowledge into AI agents that answer questions, handle support, and automate workflows — 24/7" />
       </Head>
-      <main className="flex min-h-screen items-center justify-center">
-        <h1 className="text-4xl font-bold">Next Starter</h1>
-      </main>
+      <div className="min-h-screen bg-background">
+        <LandingHero />
+      </div>
     </>
   );
 };
