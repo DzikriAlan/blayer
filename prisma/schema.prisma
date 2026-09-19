@@ -110,3 +110,162 @@ model RateLimitHit {
   @@index([stamp])
   @@map("rate_limit_hits")
 }
+
+// ---------------------------------------------------------------------------
+// AI Agent Platform — Phase 1 (lihat PRD.md §5)
+//
+// Blayer menyimpan konfigurasi agent dan catatan eksekusinya. Data bisnis milik
+// project consumer tidak pernah masuk ke sini; yang tersimpan hanya prompt,
+// pilihan model, kredensial provider terenkripsi, dan jejak pemakaian.
+// ---------------------------------------------------------------------------
+
+enum AgentProvider {
+  ANTHROPIC
+  OPENAI
+}
+
+enum AgentEnvironment {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+}
+
+enum AgentVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AgentEffort {
+  LOW
+  MEDIUM
+  HIGH
+  XHIGH
+  MAX
+}
+
+enum AgentRunStatus {
+  SUCCEEDED
+  FAILED
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  apiKeys      ProjectApiKey[]
+  providerKeys ProviderCredential[]
+  agents       Agent[]
+  runs         AgentRun[]
+
+  @@map("projects")
+}
+
+model ProjectApiKey {
+  id          String           @id @default(cuid())
+  projectId   String
+  name        String
+  environment AgentEnvironment @default(DEVELOPMENT)
+  prefix      String
+  hash        String           @unique
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime         @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_api_keys")
+}
+
+model ProviderCredential {
+  id          String           @id @default(cuid())
+  projectId   String
+  provider    AgentProvider
+  environment AgentEnvironment
+  secret      String           @db.Text
+  hint        String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, provider, environment])
+  @@map("provider_credentials")
+}
+
+model Agent {
+  id                  String   @id @default(cuid())
+  projectId           String
+  slug                String
+  name                String
+  description         String?  @db.Text
+  productionVersionId String?  @unique
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  project           Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  productionVersion AgentVersion?  @relation("AgentProduction", fields: [productionVersionId], references: [id], onDelete: SetNull)
+  versions          AgentVersion[] @relation("AgentVersions")
+  runs              AgentRun[]
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+  @@map("agents")
+}
+
+model AgentVersion {
+  id           String             @id @default(cuid())
+  agentId      String
+  version      Int
+  status       AgentVersionStatus @default(DRAFT)
+  instructions String             @db.Text
+  provider     AgentProvider
+  model        String
+  effort       AgentEffort        @default(HIGH)
+  maxTokens    Int                @default(16000)
+  temperature  Float?
+  publishedAt  DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  agent         Agent      @relation("AgentVersions", fields: [agentId], references: [id], onDelete: Cascade)
+  productionFor Agent?     @relation("AgentProduction")
+  runs          AgentRun[]
+
+  @@unique([agentId, version])
+  @@index([agentId])
+  @@map("agent_versions")
+}
+
+model AgentRun {
+  id             String           @id @default(cuid())
+  projectId      String
+  agentId        String
+  agentVersionId String
+  environment    AgentEnvironment
+  status         AgentRunStatus
+  provider       AgentProvider
+  model          String
+  input          String           @db.Text
+  output         String?          @db.Text
+  errorCode      String?
+  errorMessage   String?          @db.Text
+  inputTokens    Int              @default(0)
+  outputTokens   Int              @default(0)
+  costUsd        Float?
+  latencyMs      Int
+  createdAt      DateTime         @default(now())
+
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  agent        Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentVersion AgentVersion @relation(fields: [agentVersionId], references: [id], onDelete: Cascade)
+
+  @@index([agentId, createdAt, id])
+  @@index([projectId, createdAt, id])
+  @@map("agent_runs")
+}
