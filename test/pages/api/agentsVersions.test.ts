@@ -3,6 +3,7 @@ import { AgentEffort, AgentProvider } from '@prisma/client'
 
 import versionsHandler from '@/pages/api/v1/agents/[agentId]/versions'
 import publishHandler from '@/pages/api/v1/agents/[agentId]/publish'
+import { createAdminSession } from '@/shared/lib/adminSession'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
@@ -75,13 +76,11 @@ beforeEach(() => {
 })
 
 describe('gerbang rute pengelolaan', () => {
-  it('TC-62a menolak melayani saat token pengelolaan belum disetel', async () => {
-    delete process.env.BLAYER_ADMIN_TOKEN
+  it('TC-62a menolak permintaan tanpa kredensial apa pun', async () => {
+    const res = await call(versionsHandler, { token: '', body: VALID_CONFIG })
 
-    const res = await call(versionsHandler, { body: VALID_CONFIG })
-
-    expect(res.statusCode).toBe(503)
-    expect(res.body.errors?.[0].code).toBe('CONFIG_MISSING')
+    expect(res.statusCode).toBe(401)
+    expect(res.body.errors?.[0].code).toBe('UNAUTHORIZED')
     expect(prismaMock.agentVersion.create).not.toHaveBeenCalled()
   })
 
@@ -92,6 +91,17 @@ describe('gerbang rute pengelolaan', () => {
     })
 
     expect(res.statusCode).toBe(401)
+  })
+
+  it('TC-62d menerima sesi hasil login, bukan hanya token mentah', async () => {
+    delete process.env.BLAYER_ADMIN_TOKEN
+
+    const res = await call(versionsHandler, {
+      token: createAdminSession('admin').token,
+      body: VALID_CONFIG,
+    })
+
+    expect(res.statusCode).toBe(201)
   })
 
   it('TC-62c menolak agent yang tidak ada', async () => {
