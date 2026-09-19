@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import loginHandler from '@/pages/api/v1/auth/login'
 import agentsHandler from '@/pages/api/v1/agents'
-import { resetRateLimit } from '@/shared/lib/rateLimit'
+import { resetRateLimit } from '@/server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: { agent: { findMany: vi.fn() } },
 }))
 
-vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
+vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const login = async (body: unknown, method = 'POST') => {
   const res = getTestResponse()
@@ -53,14 +53,14 @@ describe('login pengelolaan', () => {
     const res = await login({ username: 'admin', password: 'salah' })
 
     expect(res.statusCode).toBe(401)
-    expect(res.body.errors?.[0].code).toBe('INVALID_CREDENTIALS')
-    expect(res.body.message).toBe('Username atau kata sandi salah.')
+    expect(res.body.error?.code).toBe('INVALID_CREDENTIALS')
+    expect(res.body.error?.message).toBe('Username atau kata sandi salah.')
   })
 
   it('TC-72c menolak username salah dengan pesan yang sama persis', async () => {
     const res = await login({ username: 'bukan-admin', password: 'admin123' })
 
-    expect(res.body.message).toBe('Username atau kata sandi salah.')
+    expect(res.body.error?.message).toBe('Username atau kata sandi salah.')
   })
 
   it('TC-72d berhenti menerima bawaan begitu kredensialnya disetel', async () => {
@@ -78,8 +78,8 @@ describe('login pengelolaan', () => {
   it('TC-72e menolak badan permintaan yang tidak lengkap', async () => {
     const res = await login({ username: 'admin' })
 
-    expect(res.statusCode).toBe(400)
-    expect(res.body.errors?.[0].field).toBe('password')
+    expect(res.statusCode).toBe(422)
+    expect(Object.keys(res.body.error?.details ?? {})).toContain('password')
   })
 
   it('TC-72f membatasi tebakan beruntun dari satu sumber', async () => {
@@ -90,7 +90,7 @@ describe('login pengelolaan', () => {
     }
 
     expect(attempts[10].statusCode).toBe(429)
-    expect(attempts[10].body.errors?.[0].code).toBe('RATE_LIMITED')
+    expect(attempts[10].body.error?.code).toBe('RATE_LIMITED')
   })
 
   it('TC-72g menolak method selain POST', async () => {
@@ -125,7 +125,7 @@ describe('sesi hasil login', () => {
     )
 
     expect(res.statusCode).toBe(401)
-    expect(res.body.errors?.[0].code).toBe('UNAUTHORIZED')
+    expect(res.body.error?.code).toBe('UNAUTHORIZED')
     expect(prismaMock.agent.findMany).not.toHaveBeenCalled()
   })
 

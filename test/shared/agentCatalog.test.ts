@@ -9,7 +9,7 @@ import {
   getProviderModels,
   getRunCostUsd,
   isKnownModel,
-} from '@/shared/lib/agentCatalog'
+} from '@/server/shared/utils/catalog.util'
 
 describe('katalog model', () => {
   it('TC-52a model bawaan ada di katalog', () => {

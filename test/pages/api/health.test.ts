@@ -6,14 +6,14 @@ const { prismaMock } = vi.hoisted(() => ({
   prismaMock: { $queryRaw: vi.fn() },
 }))
 
-vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
+vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const getResponse = () => {
   const res = {
     statusCode: 0,
     body: null as unknown as {
       data: { isReady: boolean; databaseMs: number }
-      errors: { code: string }[]
+      error?: { code: string; message: string }
     },
     headersSent: false,
     headers: {} as Record<string, string>,
@@ -64,7 +64,7 @@ describe('healthcheck', () => {
     const res = await call()
 
     expect(res.statusCode).toBe(503)
-    expect(res.body.errors[0].code).toBe('DATABASE_UNAVAILABLE')
+    expect(res.body.error?.code).toBe('DATABASE_UNAVAILABLE')
   })
 
   it('TC-48c tidak membocorkan sebab teknis kegagalan ke pemanggil', async () => {

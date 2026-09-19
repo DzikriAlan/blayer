@@ -108,14 +108,12 @@ describe('klien SDK', () => {
     fetchMock.mockResolvedValue(
       getEnvelope(409, {
         success: false,
-        message: 'Agent ini belum punya versi yang dipublikasikan.',
-        meta: { request_id: 'req-1' },
-        errors: [
-          {
-            code: 'AGENT_NOT_PUBLISHED',
-            message: 'Agent ini belum punya versi yang dipublikasikan.',
-          },
-        ],
+        error: {
+          code: 'AGENT_NOT_PUBLISHED',
+          message: 'Agent ini belum punya versi yang dipublikasikan.',
+          details: null,
+        },
+        meta: { requestId: 'req-1' },
       })
     )
 

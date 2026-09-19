@@ -3,7 +3,7 @@ import { AgentEnvironment, AgentProvider } from '@prisma/client'
 
 import keysHandler from '@/pages/api/v1/projects/[projectId]/keys'
 import credentialsHandler from '@/pages/api/v1/projects/[projectId]/credentials'
-import { decryptSecret, hashToken } from '@/shared/lib/agentCrypto'
+import { decryptSecret, hashToken } from '@/server/shared/utils/crypto.util'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
@@ -14,7 +14,7 @@ const { prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
+vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const ADMIN_TOKEN = 'token-pengelolaan-uji'
 
@@ -107,7 +107,7 @@ describe('API key project', () => {
     const res = await call(keysHandler, { body: { name: 'server produksi' } })
 
     expect(res.statusCode).toBe(404)
-    expect(res.body.errors?.[0].code).toBe('PROJECT_NOT_FOUND')
+    expect(res.body.error?.code).toBe('PROJECT_NOT_FOUND')
   })
 
   it('TC-65d menolak permintaan tanpa token pengelolaan', async () => {
@@ -150,7 +150,7 @@ describe('kredensial provider project', () => {
     })
 
     expect(res.statusCode).toBe(503)
-    expect(res.body.errors?.[0].code).toBe('CONFIG_MISSING')
+    expect(res.body.error?.code).toBe('CONFIG_MISSING')
     expect(prismaMock.providerCredential.upsert).not.toHaveBeenCalled()
   })
 

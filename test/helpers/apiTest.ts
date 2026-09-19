@@ -6,7 +6,17 @@ export interface TestApiResponse {
     success?: boolean
     message?: string
     data?: unknown
-    errors?: { code: string; field: string; message: string }[] | null
+    pagination?: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+    error?: {
+      code: string
+      message: string
+      details: Record<string, string[]> | null
+    } | null
   }
   headersSent: boolean
   headers: Record<string, string | string[]>

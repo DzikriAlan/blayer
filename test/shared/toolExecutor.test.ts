@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { IntegrationAuth, ToolMethod, ToolPermission } from '@prisma/client'
 
-import { encryptSecret } from '@/shared/lib/agentCrypto'
-import { executeTool } from '@/shared/lib/toolExecutor'
+import { encryptSecret } from '@/server/shared/utils/crypto.util'
+import { fetchToolCall } from '@/server/shared/services/toolExecutor.service'
 
 const fetchMock = vi.fn()
 
@@ -59,7 +59,7 @@ describe('pemanggilan endpoint tool', () => {
   it('TC-76a mengirim sisa masukan sebagai query untuk method GET', async () => {
     fetchMock.mockResolvedValue(getResponse(200, '{"laba":12}'))
 
-    const result = await executeTool({
+    const result = await fetchToolCall({
       integration: getIntegration(),
       definition: getDefinition(),
       input: { month: '2026-08' },
@@ -75,7 +75,7 @@ describe('pemanggilan endpoint tool', () => {
   it('TC-76b menaruh nilai path ke dalam path dan tidak mengirimnya dua kali', async () => {
     fetchMock.mockResolvedValue(getResponse(200, 'ok'))
 
-    await executeTool({
+    await fetchToolCall({
       integration: getIntegration(),
       definition: getDefinition({ path: '/invoices/{invoiceId}' }),
       input: { invoiceId: 'inv 12', note: 'x' },
@@ -89,7 +89,7 @@ describe('pemanggilan endpoint tool', () => {
   it('TC-76c mengirim masukan sebagai body JSON untuk method yang mengubah data', async () => {
     fetchMock.mockResolvedValue(getResponse(200, 'ok'))
 
-    await executeTool({
+    await fetchToolCall({
       integration: getIntegration(),
       definition: getDefinition({
         method: ToolMethod.POST,
@@ -110,7 +110,7 @@ describe('pemanggilan endpoint tool', () => {
   it('TC-76d memasang kredensial integration sesuai caranya', async () => {
     fetchMock.mockResolvedValue(getResponse(200, 'ok'))
 
-    await executeTool({
+    await fetchToolCall({
       integration: getIntegration({
         auth: IntegrationAuth.BEARER,
         secret: encryptSecret('token-project'),
@@ -125,7 +125,7 @@ describe('pemanggilan endpoint tool', () => {
 
     fetchMock.mockClear()
 
-    await executeTool({
+    await fetchToolCall({
       integration: getIntegration({
         auth: IntegrationAuth.HEADER,
         authHeader: 'X-Internal-Key',
@@ -148,7 +148,7 @@ describe('pemanggilan endpoint tool', () => {
 
     process.env.BLAYER_ENCRYPTION_KEY = Buffer.alloc(32, 9).toString('base64')
 
-    const result = await executeTool({
+    const result = await fetchToolCall({
       integration,
       definition: getDefinition(),
       input: {},
@@ -162,7 +162,7 @@ describe('pemanggilan endpoint tool', () => {
   it('TC-76f mengembalikan kegagalan endpoint apa adanya, bukan melemparnya', async () => {
     fetchMock.mockResolvedValue(getResponse(422, '{"message":"periode salah"}'))
 
-    const result = await executeTool({
+    const result = await fetchToolCall({
       integration: getIntegration(),
       definition: getDefinition(),
       input: {},
@@ -178,7 +178,7 @@ describe('pemanggilan endpoint tool', () => {
     timeout.name = 'TimeoutError'
     fetchMock.mockRejectedValue(timeout)
 
-    const result = await executeTool({
+    const result = await fetchToolCall({
       integration: getIntegration(),
       definition: getDefinition(),
       input: {},
@@ -191,7 +191,7 @@ describe('pemanggilan endpoint tool', () => {
   it('TC-76h memotong jawaban raksasa supaya tidak menelan jendela konteks', async () => {
     fetchMock.mockResolvedValue(getResponse(200, 'x'.repeat(20_000)))
 
-    const result = await executeTool({
+    const result = await fetchToolCall({
       integration: getIntegration(),
       definition: getDefinition(),
       input: {},

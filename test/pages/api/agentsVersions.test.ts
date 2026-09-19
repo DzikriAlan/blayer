@@ -3,7 +3,7 @@ import { AgentEffort, AgentProvider } from '@prisma/client'
 
 import versionsHandler from '@/pages/api/v1/agents/[agentId]/versions'
 import publishHandler from '@/pages/api/v1/agents/[agentId]/publish'
-import { createAdminSession } from '@/shared/lib/adminSession'
+import { createAdminSession } from '@/server/shared/utils/session.util'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
@@ -20,7 +20,7 @@ const { prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
+vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const ADMIN_TOKEN = 'token-pengelolaan-uji'
 
@@ -80,7 +80,7 @@ describe('gerbang rute pengelolaan', () => {
     const res = await call(versionsHandler, { token: '', body: VALID_CONFIG })
 
     expect(res.statusCode).toBe(401)
-    expect(res.body.errors?.[0].code).toBe('UNAUTHORIZED')
+    expect(res.body.error?.code).toBe('UNAUTHORIZED')
     expect(prismaMock.agentVersion.create).not.toHaveBeenCalled()
   })
 
@@ -110,7 +110,7 @@ describe('gerbang rute pengelolaan', () => {
     const res = await call(versionsHandler, { body: VALID_CONFIG })
 
     expect(res.statusCode).toBe(404)
-    expect(res.body.errors?.[0].code).toBe('AGENT_NOT_FOUND')
+    expect(res.body.error?.code).toBe('AGENT_NOT_FOUND')
   })
 })
 
@@ -150,8 +150,8 @@ describe('versi agent', () => {
       body: { ...VALID_CONFIG, model: 'claude-tidak-ada' },
     })
 
-    expect(res.statusCode).toBe(400)
-    expect(res.body.errors?.[0].field).toBe('model')
+    expect(res.statusCode).toBe(422)
+    expect(Object.keys(res.body.error?.details ?? {})).toContain('model')
     expect(prismaMock.agentVersion.create).not.toHaveBeenCalled()
   })
 
@@ -215,14 +215,14 @@ describe('publikasi versi', () => {
     const res = await call(publishHandler, { body: { versionId: 'version-asing' } })
 
     expect(res.statusCode).toBe(404)
-    expect(res.body.errors?.[0].code).toBe('VERSION_NOT_FOUND')
+    expect(res.body.error?.code).toBe('VERSION_NOT_FOUND')
     expect(prismaMock.$transaction).not.toHaveBeenCalled()
   })
 
   it('TC-64c menolak permintaan tanpa versi', async () => {
     const res = await call(publishHandler, { body: {} })
 
-    expect(res.statusCode).toBe(400)
-    expect(res.body.errors?.[0].field).toBe('versionId')
+    expect(res.statusCode).toBe(422)
+    expect(Object.keys(res.body.error?.details ?? {})).toContain('versionId')
   })
 })

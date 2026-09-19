@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { runAnthropic } from '@/shared/lib/providers/providerAnthropic'
-import { ProviderError } from '@/shared/lib/providers/providerTypes'
+import { runAnthropic } from '@/server/shared/services/providers/anthropic.provider'
+import { ProviderError } from '@/server/shared/services/providers/provider.types'
 
 const { createMock } = vi.hoisted(() => ({ createMock: vi.fn() }))
 

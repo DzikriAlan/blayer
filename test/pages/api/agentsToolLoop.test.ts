@@ -10,8 +10,8 @@ import {
 
 import runHandler from '@/pages/api/v1/agents/[agentId]/run'
 import confirmHandler from '@/pages/api/v1/runs/[runId]/confirm'
-import { encryptSecret } from '@/shared/lib/agentCrypto'
-import { resetRateLimit } from '@/shared/lib/rateLimit'
+import { encryptSecret } from '@/server/shared/utils/crypto.util'
+import { resetRateLimit } from '@/server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { adapterMock, executeToolMock, prismaMock } = vi.hoisted(() => ({
@@ -29,11 +29,13 @@ const { adapterMock, executeToolMock, prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
-vi.mock('@/shared/lib/providers', () => ({
+vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@/server/shared/services/providers', () => ({
   getProviderAdapter: () => adapterMock,
 }))
-vi.mock('@/shared/lib/toolExecutor', () => ({ executeTool: executeToolMock }))
+vi.mock('@/server/shared/services/toolExecutor.service', () => ({
+  fetchToolCall: executeToolMock,
+}))
 
 const ADMIN_TOKEN = 'token-pengelolaan-uji'
 
@@ -422,15 +424,15 @@ describe('konfirmasi tool tulis', () => {
     const res = await confirm('CONFIRM')
 
     expect(res.statusCode).toBe(409)
-    expect(res.body.errors?.[0].code).toBe('TOOL_CALL_RESOLVED')
+    expect(res.body.error?.code).toBe('TOOL_CALL_RESOLVED')
     expect(executeToolMock).not.toHaveBeenCalled()
   })
 
   it('TC-79d menolak keputusan yang tidak dikenal', async () => {
     const res = await confirm('MUNGKIN')
 
-    expect(res.statusCode).toBe(400)
-    expect(res.body.errors?.[0].field).toBe('decision')
+    expect(res.statusCode).toBe(422)
+    expect(Object.keys(res.body.error?.details ?? {})).toContain('decision')
   })
 
   it('TC-79e menyamarkan konfirmasi milik project lain sebagai tidak ada', async () => {
@@ -453,6 +455,6 @@ describe('konfirmasi tool tulis', () => {
     )
 
     expect(res.statusCode).toBe(404)
-    expect(res.body.errors?.[0].code).toBe('TOOL_CALL_NOT_FOUND')
+    expect(res.body.error?.code).toBe('TOOL_CALL_NOT_FOUND')
   })
 })

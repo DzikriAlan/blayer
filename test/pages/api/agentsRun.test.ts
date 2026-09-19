@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AgentEffort, AgentEnvironment, AgentProvider } from '@prisma/client'
 
 import handler from '@/pages/api/v1/agents/[agentId]/run'
-import { encryptSecret } from '@/shared/lib/agentCrypto'
-import { ProviderError } from '@/shared/lib/providers/providerTypes'
-import { resetRateLimit } from '@/shared/lib/rateLimit'
+import { encryptSecret } from '@/server/shared/utils/crypto.util'
+import { ProviderError } from '@/server/shared/services/providers/provider.types'
+import { resetRateLimit } from '@/server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { adapterMock, prismaMock } = vi.hoisted(() => ({
@@ -21,8 +21,8 @@ const { adapterMock, prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/shared/lib/prisma', () => ({ prisma: prismaMock }))
-vi.mock('@/shared/lib/providers', () => ({
+vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@/server/shared/services/providers', () => ({
   getProviderAdapter: () => adapterMock,
 }))
 
@@ -124,7 +124,7 @@ describe('kepemilikan rute eksekusi agent', () => {
     const res = await call({})
 
     expect(res.statusCode).toBe(401)
-    expect(res.body.errors?.[0].code).toBe('UNAUTHORIZED')
+    expect(res.body.error?.code).toBe('UNAUTHORIZED')
   })
 
   it('TC-60b menolak API key yang tidak dikenal', async () => {
@@ -158,7 +158,7 @@ describe('kepemilikan rute eksekusi agent', () => {
     const res = await call({ token: PROJECT_TOKEN, body: { input: 'halo' } })
 
     expect(res.statusCode).toBe(404)
-    expect(res.body.errors?.[0].code).toBe('AGENT_NOT_FOUND')
+    expect(res.body.error?.code).toBe('AGENT_NOT_FOUND')
   })
 
   it('TC-60e melarang kunci project memilih versi sendiri', async () => {
@@ -168,7 +168,7 @@ describe('kepemilikan rute eksekusi agent', () => {
     })
 
     expect(res.statusCode).toBe(403)
-    expect(res.body.errors?.[0].code).toBe('VERSION_NOT_ALLOWED')
+    expect(res.body.error?.code).toBe('VERSION_NOT_ALLOWED')
     expect(adapterMock).not.toHaveBeenCalled()
   })
 
@@ -264,7 +264,7 @@ describe('eksekusi agent', () => {
     const res = await call({ token: PROJECT_TOKEN, body: { input: 'halo' } })
 
     expect(res.statusCode).toBe(409)
-    expect(res.body.errors?.[0].code).toBe('AGENT_NOT_PUBLISHED')
+    expect(res.body.error?.code).toBe('AGENT_NOT_PUBLISHED')
     expect(prismaMock.agentRun.create).not.toHaveBeenCalled()
   })
 
@@ -274,7 +274,7 @@ describe('eksekusi agent', () => {
     const res = await call({ token: PROJECT_TOKEN, body: { input: 'halo' } })
 
     expect(res.statusCode).toBe(409)
-    expect(res.body.errors?.[0].code).toBe('PROVIDER_KEY_MISSING')
+    expect(res.body.error?.code).toBe('PROVIDER_KEY_MISSING')
   })
 
   it('TC-61g menolak melanjutkan kalau kunci enkripsinya sudah berganti', async () => {
@@ -283,7 +283,7 @@ describe('eksekusi agent', () => {
     const res = await call({ token: PROJECT_TOKEN, body: { input: 'halo' } })
 
     expect(res.statusCode).toBe(503)
-    expect(res.body.errors?.[0].code).toBe('CONFIG_MISSING')
+    expect(res.body.error?.code).toBe('CONFIG_MISSING')
   })
 
   it('TC-61h mencatat eksekusi yang gagal, bukan hanya yang berhasil', async () => {
@@ -294,7 +294,7 @@ describe('eksekusi agent', () => {
     const res = await call({ token: PROJECT_TOKEN, body: { input: 'halo' } })
 
     expect(res.statusCode).toBe(422)
-    expect(res.body.errors?.[0].code).toBe('AGENT_REFUSED')
+    expect(res.body.error?.code).toBe('AGENT_REFUSED')
     expect(prismaMock.agentRun.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -308,7 +308,7 @@ describe('eksekusi agent', () => {
   it('TC-61i menolak masukan kosong sebelum memanggil provider', async () => {
     const res = await call({ token: PROJECT_TOKEN, body: { input: '   ' } })
 
-    expect(res.statusCode).toBe(400)
+    expect(res.statusCode).toBe(422)
     expect(adapterMock).not.toHaveBeenCalled()
   })
 })
