@@ -159,7 +159,7 @@ npm install
 cp .env.example .env
 ```
 
-Dua variabel yang wajib terisi:
+Dua hal yang wajib terisi: alamat basis data dan kunci enkripsi.
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/blayer"
@@ -167,6 +167,21 @@ DATABASE_URL="postgresql://user:password@localhost:5432/blayer"
 # Kunci enkripsi kredensial provider — 32 byte acak dalam base64
 BLAYER_ENCRYPTION_KEY="$(openssl rand -base64 32)"
 ```
+
+Kalau basis datanya Supabase, nama variabel dari dashboard-nya bisa dipakai apa
+adanya — tidak perlu disalin ulang ke `DATABASE_URL`:
+
+```env
+SUPABASE_DIRECT_CONNECTION_STRING="postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres"
+SUPABASE_PASSWORD="kata-sandi-basis-data"
+```
+
+Penanda `[YOUR-PASSWORD]` yang ikut tersalin dari dashboard sengaja dibiarkan:
+nilainya diisi dari `SUPABASE_PASSWORD` dan di-encode, jadi kata sandi dengan
+karakter seperti `@` tidak memotong URL. Sebagai cara ketiga, `SUPABASE_PROJECT`
++ `SUPABASE_PASSWORD` + `SUPABASE_REGION` cukup untuk menyusun URL pooler
+sendiri. Urutan pembacaannya: `DATABASE_URL` → `SUPABASE_DIRECT_CONNECTION_STRING`
+→ pooler; yang ditulis sendiri selalu menang.
 
 `BLAYER_ENCRYPTION_KEY` membuka kunci provider yang sudah tersimpan. Menggantinya
 membuat kredensial lama tidak bisa dibaca lagi dan eksekusi agent menjawab
@@ -195,18 +210,25 @@ Opsional, semuanya punya nilai bawaan yang aman:
 | `BLAYER_ADMIN_TOKEN` | Token mentah untuk skrip, CI, dan curl — dipakai langsung sebagai Bearer tanpa perlu login. Tanpa ini, akses pengelolaan hanya lewat login. |
 | `NEXT_PUBLIC_API_BASE_URL` | Base URL API kalau front-end dan API dipisah. |
 | `OPENAI_BASE_URL` | Endpoint sebentuk Chat Completions selain OpenAI (gateway, proxy, model lokal). Bawaannya `https://api.openai.com/v1`. |
+| `DIRECT_URL` | Koneksi langsung khusus migrasi kalau `DATABASE_URL` menunjuk pooler. |
+| `SUPABASE_URL` | Hanya dipakai `next.config.js` untuk melonggarkan CSP ke domain Supabase. |
 
-> `.env.example` belum memuat variabel `BLAYER_*` di atas, dan masih memuat
-> variabel Supabase dan Resend dari produk sebelumnya. Variabel lama itu tidak
-> lagi dibaca kode, kecuali `NEXT_PUBLIC_SUPABASE_URL` yang hanya dipakai
-> `next.config.js` untuk melonggarkan CSP.
+> Semua nama di atas dibaca lewat satu tempat, [`server/config/env.ts`](server/config/env.ts),
+> yang juga membaca berkas `.env` sebagai cadangan kalau runtime-nya tidak
+> menyalurkan environment ke proses server. Di platform deploy berkasnya memang
+> tidak ada dan nilai dari environment tetap yang dipakai.
 
 ### 3. Siapkan basis data
 
 ```bash
-npx prisma generate
+npm run db:generate
 npm run db:migrate
 ```
+
+Keduanya membungkus Prisma CLI lewat [`scripts/prisma.mjs`](scripts/prisma.mjs)
+supaya alamat basis data dibaca dengan aturan yang sama seperti aplikasi —
+termasuk nama-nama variabel Supabase. `npm run db:status` menampilkan migrasi
+yang sudah dan belum diterapkan.
 
 `db:push` sengaja diblokir — perubahan skema harus lewat migrasi supaya punya
 jejak dan bisa diputar balik.
@@ -223,8 +245,8 @@ Aplikasi berjalan di **http://localhost:3002**. Periksa kesiapannya:
 curl http://localhost:3002/api/health
 ```
 
-Jawaban `503` dengan kode `DATABASE_UNAVAILABLE` berarti `DATABASE_URL` belum
-menunjuk basis data yang hidup.
+Jawaban `503` dengan kode `DATABASE_UNAVAILABLE` berarti alamat basis datanya
+belum menunjuk basis data yang hidup.
 
 ### 5. Agent pertama
 

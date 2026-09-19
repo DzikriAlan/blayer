@@ -41,6 +41,13 @@ Butuh Node.js 20.9+ dan PostgreSQL 14+.
 | `DATABASE_URL` | Koneksi PostgreSQL |
 | `BLAYER_ENCRYPTION_KEY` | 32 byte acak base64; membuka kredensial provider dan integration |
 
+Di Supabase, `DATABASE_URL` boleh diganti nama variabel dari dashboard-nya:
+`SUPABASE_DIRECT_CONNECTION_STRING` + `SUPABASE_PASSWORD` (penanda
+`[YOUR-PASSWORD]` di connection string diisikan sendiri), atau
+`SUPABASE_PROJECT` + `SUPABASE_PASSWORD` + `SUPABASE_REGION` untuk menyusun URL
+pooler. Aturannya ada di satu tempat, `server/config/env.ts`, dan Prisma CLI
+memakai aturan yang sama lewat `npm run db:deploy`.
+
 `BLAYER_ENCRYPTION_KEY` tidak boleh berganti setelah ada kredensial tersimpan —
 kredensial lama akan gagal dibuka dan eksekusi agent menjawab
 `503 CONFIG_MISSING`. Simpan seperti rahasia produksi lain.
