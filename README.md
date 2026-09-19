@@ -19,6 +19,7 @@ sendiri — belum bisa memanggil tool milik project. Belum diuji di produksi.
 
 | Bagian | Status |
 |---|---|
+| Login operator (username + kata sandi) dengan sesi bertanda tangan | ✅ ada |
 | Project workspace + API key per project & environment | ✅ ada |
 | Agent CRUD + versioning (draf → production, rollback) | ✅ ada |
 | Model provider key per project & environment, tersimpan terenkripsi | ✅ ada |
@@ -152,13 +153,10 @@ npm install
 cp .env.example .env
 ```
 
-Tiga variabel yang wajib terisi:
+Dua variabel yang wajib terisi:
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/blayer"
-
-# Token pengelolaan: membuka Console dan seluruh rute konfigurasi
-BLAYER_ADMIN_TOKEN="$(openssl rand -base64 32)"
 
 # Kunci enkripsi kredensial provider — 32 byte acak dalam base64
 BLAYER_ENCRYPTION_KEY="$(openssl rand -base64 32)"
@@ -169,6 +167,16 @@ membuat kredensial lama tidak bisa dibaca lagi dan eksekusi agent menjawab
 `503 CONFIG_MISSING` — simpan seperti rahasia produksi lain, jangan dibangkitkan
 ulang tiap deploy.
 
+**Masuk ke Console dengan `admin` / `admin123`.** Itu kredensial bawaan supaya
+instance baru langsung bisa dibuka; Console memasang spanduk peringatan selama
+masih dipakai. Gantilah sebelum instance dijangkau siapa pun selain kamu:
+
+```env
+BLAYER_ADMIN_USERNAME="operator"
+BLAYER_ADMIN_PASSWORD="kata-sandi-yang-panjang"
+BLAYER_SESSION_SECRET="$(openssl rand -base64 32)"   # opsional, membatalkan semua sesi saat diganti
+```
+
 Opsional, semuanya punya nilai bawaan yang aman:
 
 | Variabel | Gunanya |
@@ -178,13 +186,14 @@ Opsional, semuanya punya nilai bawaan yang aman:
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Penyimpanan rate limit di Redis (bisa juga `RATE_LIMIT_REDIS_REST_URL` / `RATE_LIMIT_REDIS_REST_TOKEN`). |
 | `SLOW_REQUEST_MS` | Ambang batas permintaan lambat yang dicatat di log (bawaan 1000). |
 | `ALERT_WEBHOOK_URL` | Tujuan kiriman log level error. |
+| `BLAYER_ADMIN_TOKEN` | Token mentah untuk skrip, CI, dan curl — dipakai langsung sebagai Bearer tanpa perlu login. Tanpa ini, akses pengelolaan hanya lewat login. |
 | `NEXT_PUBLIC_API_BASE_URL` | Base URL API kalau front-end dan API dipisah. |
 | `OPENAI_BASE_URL` | Endpoint sebentuk Chat Completions selain OpenAI (gateway, proxy, model lokal). Bawaannya `https://api.openai.com/v1`. |
 
-> `.env.example` belum memuat `BLAYER_ADMIN_TOKEN` dan `BLAYER_ENCRYPTION_KEY`,
-> dan masih memuat variabel Supabase dan Resend dari produk sebelumnya. Variabel
-> lama itu tidak lagi dibaca kode, kecuali `NEXT_PUBLIC_SUPABASE_URL` yang hanya
-> dipakai `next.config.js` untuk melonggarkan CSP.
+> `.env.example` belum memuat variabel `BLAYER_*` di atas, dan masih memuat
+> variabel Supabase dan Resend dari produk sebelumnya. Variabel lama itu tidak
+> lagi dibaca kode, kecuali `NEXT_PUBLIC_SUPABASE_URL` yang hanya dipakai
+> `next.config.js` untuk melonggarkan CSP.
 
 ### 3. Siapkan basis data
 
@@ -213,9 +222,10 @@ menunjuk basis data yang hidup.
 
 ### 5. Agent pertama
 
-Buka **http://localhost:3002/console** dan isi token pengelolaan yang tadi
-disetel. Tokennya disimpan di browser itu saja dan dikirim sebagai header
-`Authorization` — tidak ada sesi di server.
+Buka **http://localhost:3002/console** dan masuk dengan `admin` / `admin123`
+(atau kredensial yang kamu setel sendiri). Sesinya berlaku 12 jam, disimpan di
+browser itu saja, dan dikirim sebagai header `Authorization` — tidak ada sesi
+yang disimpan di server.
 
 1. **Buat project.** Wadah agent, API key, dan kredensial provider.
 2. **Simpan kunci provider** untuk environment yang akan dipakai. Tanpa itu
@@ -297,6 +307,7 @@ Rincian tiap rute, kredensial, dan kode kesalahannya ada di
 | Endpoint | Kredensial | Gunanya |
 |---|---|---|
 | `GET /api/health` | — | Kesiapan aplikasi, basis data, dan penyimpanan rate limit |
+| `POST /api/v1/auth/login` | — | Menukar username + kata sandi dengan token sesi 12 jam |
 | `/api/v1/projects…` | token pengelolaan | Project, API key, kredensial provider |
 | `/api/v1/agents…` | token pengelolaan | Agent, versi, publikasi, riwayat eksekusi |
 | `POST /api/v1/agents/{id}/run` | API key project | Menjalankan agent |

@@ -7,13 +7,44 @@ di [API_RESPONSE.md](./API_RESPONSE.md).
 
 | Kredensial | Dipakai siapa | Cara mengirim |
 |---|---|---|
-| **Token pengelolaan** — isi `BLAYER_ADMIN_TOKEN` | Operator instance (Console) | `Authorization: Bearer <token>` |
+| **Sesi pengelolaan** — hasil login, berawalan `blas_` | Operator instance (Console) | `Authorization: Bearer blas_…` |
+| **Token pengelolaan mentah** — isi `BLAYER_ADMIN_TOKEN`, opsional | Skrip, CI, curl | `Authorization: Bearer <token>` |
 | **API key project** — diterbitkan per project, berawalan `blr_` | Project consumer | `Authorization: Bearer blr_…` |
 
-Token pengelolaan membuka seluruh rute konfigurasi. API key project hanya boleh
-menjalankan agent, selalu pada versi production dan pada environment yang melekat
-di kuncinya. Rute pengelolaan menjawab `503 CONFIG_MISSING` selama
-`BLAYER_ADMIN_TOKEN` belum disetel — bukan terbuka tanpa penjagaan.
+Kredensial pengelolaan membuka seluruh rute konfigurasi. API key project hanya
+boleh menjalankan agent, selalu pada versi production dan pada environment yang
+melekat di kuncinya.
+
+### Masuk
+
+```bash
+curl -X POST http://localhost:3002/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"admin123"}'
+```
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "message": "Berhasil masuk",
+  "data": {
+    "token": "blas_…",
+    "username": "admin",
+    "expiresAt": "2026-09-20T00:53:35.499Z",
+    "isDefaultCredentials": true
+  }
+}
+```
+
+Kredensialnya dibaca dari `BLAYER_ADMIN_USERNAME` dan `BLAYER_ADMIN_PASSWORD`,
+dengan bawaan `admin` / `admin123` supaya instance baru langsung bisa dibuka —
+`isDefaultCredentials: true` menandai instance yang masih memakainya.
+
+Token sesi ditandatangani (HMAC-SHA256) dan berlaku 12 jam; tidak ada sesi yang
+disimpan di basis data, dan mengganti `BLAYER_SESSION_SECRET` membatalkan semua
+sesi yang beredar. Rute login dibatasi 10 percobaan per menit per sumber, dan
+jawabannya tidak membedakan username salah dari kata sandi salah.
 
 Token API key hanya utuh sekali, pada jawaban pembuatannya. Yang tersimpan di
 basis data adalah hash SHA-256 dan dua belas karakter awalnya.
@@ -22,6 +53,7 @@ basis data adalah hash SHA-256 dan dua belas karakter awalnya.
 
 | Rute | Method | Kredensial | Gunanya |
 |---|---|---|---|
+| `/api/v1/auth/login` | POST | — | Menukar username + kata sandi dengan token sesi |
 | `/api/v1/projects` | GET, POST | pengelolaan | Daftar & pembuatan project |
 | `/api/v1/projects/{projectId}` | GET | pengelolaan | Project beserta agent, key, dan kredensialnya |
 | `/api/v1/projects/{projectId}/keys` | GET, POST | pengelolaan | API key project |
@@ -147,7 +179,8 @@ terlihat sempurna.
 
 | Kode | Status | Artinya |
 |---|---|---|
-| `UNAUTHORIZED` | 401 | Kredensial tidak dikirim atau tidak dikenal |
+| `UNAUTHORIZED` | 401 | Kredensial tidak dikirim, tidak dikenal, atau sesinya kedaluwarsa |
+| `INVALID_CREDENTIALS` | 401 | Username atau kata sandi salah |
 | `VERSION_NOT_ALLOWED` | 403 | API key project mencoba memilih versi |
 | `AGENT_NOT_FOUND` | 404 | Agent tidak ada, atau milik project lain |
 | `PROJECT_NOT_FOUND` | 404 | Project tidak ada |
@@ -162,4 +195,4 @@ terlihat sempurna.
 | `PROVIDER_FAILED` | 502 | Provider menjawab gagal atau jawabannya tidak terbaca |
 | `PROVIDER_UNREACHABLE` | 502 | Provider tidak bisa dihubungi |
 | `PROVIDER_RATE_LIMITED` | 503 | Provider sedang membatasi permintaan |
-| `CONFIG_MISSING` | 503 | Instance belum disetel (`BLAYER_ADMIN_TOKEN`/`BLAYER_ENCRYPTION_KEY`) |
+| `CONFIG_MISSING` | 503 | Instance belum disetel (`BLAYER_ENCRYPTION_KEY`) |
