@@ -1,14 +1,13 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ArrowUpRight, type LucideIcon } from 'lucide-react'
+import { type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
-import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
-import FormsPoster, { type FormsPosterForm } from './formsPoster'
+import LandingPoster, { type LandingEvent } from './landingPoster'
 
-export interface FormsCategoryItem {
+export interface LandingCategoryItem {
   id: string
   name: string
   icon: LucideIcon
@@ -17,48 +16,50 @@ export interface FormsCategoryItem {
   fieldLabel: string
   emptyTitle: string
   emptySubtitle: string
-  forms: FormsPosterForm[]
+  events: LandingEvent[]
 }
 
 interface Props {
-  data: FormsCategoryItem[]
-  onLoadFormsExplore: (templateId: string) => void
+  data: LandingCategoryItem[]
 }
 
 const ALL_ID = ''
 
-export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
+export default function LandingCategory({ data }: Props) {
   const [filters, setFilters] = useState({ activeId: ALL_ID })
 
   const category = useMemo(() => {
     const active = data.find((item) => item.id === filters.activeId)
 
-    const getListedForms = (item: FormsCategoryItem) =>
-      item.forms.map((form) => ({
-        form,
+    const getListedEvents = (item: LandingCategoryItem) =>
+      item.events.map((event) => ({
+        event,
         categoryId: item.id,
         actionLabel: item.actionLabel,
         countLabel: item.countLabel,
         fieldLabel: item.fieldLabel,
       }))
 
-    const totalForm = data.reduce((total, item) => total + item.forms.length, 0)
+    const totalEvent = data.reduce(
+      (total, item) => total + item.events.length,
+      0
+    )
 
-    const listedForms = active
-      ? getListedForms(active)
-      : data.flatMap((item) => getListedForms(item))
+    const listedEvents = active
+      ? getListedEvents(active)
+      : data.flatMap((item) => getListedEvents(item))
 
     const buttons = [
       {
         id: ALL_ID,
         name: 'Semua',
-        total: totalForm,
+        total: totalEvent,
         icon: null as LucideIcon | null,
       },
       ...data.map((item) => ({
         id: item.id,
         name: item.name,
-        total: item.forms.length,
+        total: item.events.length,
         icon: item.icon,
       })),
     ]
@@ -66,17 +67,16 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
     return {
       buttons,
       activeId: filters.activeId,
-      hasExplore: !!active,
       listState: {
-        data: listedForms,
-        isEmpty: !listedForms.length,
+        data: listedEvents,
+        isEmpty: !listedEvents.length,
         emptyTitle: active ? active.emptyTitle : 'Belum Ada Acara Dibuka',
         emptySubtitle: active
           ? active.emptySubtitle
           : 'Belum ada acara yang pendaftarannya dibuka sekarang. Kembali lagi nanti.',
         emptyImage: '/no-data.svg',
       },
-      listedForms,
+      listedEvents,
     }
   }, [data, filters.activeId])
 
@@ -118,18 +118,6 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
             )
           })}
         </div>
-
-        {category.hasExplore ? (
-          <Button
-            size="sm"
-            variant="outline"
-            className="shrink-0"
-            onClick={() => onLoadFormsExplore(category.activeId)}
-          >
-            <span className="hidden sm:inline">Lihat Semua</span>
-            <ArrowUpRight />
-          </Button>
-        ) : null}
       </div>
 
       {/* Tinggi minimumnya disamakan dengan satu kartu acara supaya kategori
@@ -141,10 +129,10 @@ export default function FormsCategory({ data, onLoadFormsExplore }: Props) {
         {/* Di ponsel kartunya digulir menyamping dengan jari — tanpa bilah
             gulir — lalu kembali jadi kisi begitu ruangnya cukup. */}
         <div className="brutal-scroll-hidden -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
-          {category.listedForms.map((item) => (
-            <FormsPoster
-              key={item.form.id}
-              form={item.form}
+          {category.listedEvents.map((item) => (
+            <LandingPoster
+              key={item.event.id}
+              event={item.event}
               actionLabel={item.actionLabel}
               countLabel={item.countLabel}
               fieldLabel={item.fieldLabel}

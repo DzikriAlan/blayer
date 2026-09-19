@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 
 import LandingShell from '@/components/landing-shell'
-import FormsLanding from '@/features/forms/components/formsLanding'
+import LandingContent from '@/features/landing/components/landingContent'
 
 const Home: NextPage = () => {
   return (
@@ -15,7 +15,7 @@ const Home: NextPage = () => {
         />
       </Head>
       <LandingShell>
-        <FormsLanding />
+        <LandingContent />
       </LandingShell>
     </>
   )

@@ -15,7 +15,7 @@ const FACE_COLORS = [
 
 const MAX_FACE = 4
 
-export default function FormsFacepile({ total, seed, label }: Props) {
+export default function LandingFacepile({ total, seed, label }: Props) {
   const getSeedNumber = (index: number) => {
     const text = `${seed}-${index}`
     let sum = 0

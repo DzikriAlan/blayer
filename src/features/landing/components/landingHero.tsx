@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import {
   ArrowUpRight,
   Copy,
@@ -17,9 +16,8 @@ const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
 const CHAMFER =
   'polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 26px 100%, 0 calc(100% - 26px))'
 
-export interface FormsHeroEvent {
+export interface LandingHeroEvent {
   id: string
-  href: string
   title: string
   categoryName: string
   icon: LucideIcon
@@ -27,16 +25,16 @@ export interface FormsHeroEvent {
 }
 
 interface Props {
-  events: FormsHeroEvent[]
+  events: LandingHeroEvent[]
   totalCategory: number
-  totalForm: number
+  totalEvent: number
   totalResponses: number
 }
 
-export default function FormsHero({
+export default function LandingHero({
   events,
   totalCategory,
-  totalForm,
+  totalEvent,
   totalResponses,
 }: Props) {
   const eventState = {
@@ -50,7 +48,7 @@ export default function FormsHero({
 
   const stats = [
     { key: 'kategori', label: 'KATEGORI', value: totalCategory, icon: Copy },
-    { key: 'form', label: 'FORM AKTIF', value: totalForm, icon: FileText },
+    { key: 'event', label: 'FORM AKTIF', value: totalEvent, icon: FileText },
     {
       key: 'response',
       label: 'JAWABAN MASUK',
@@ -132,10 +130,7 @@ export default function FormsHero({
                         key={event.id}
                         className="border-b-2 border-foreground last:border-b-0"
                       >
-                        <Link
-                          href={event.href}
-                          className="group flex w-full items-center gap-2.5 px-3.5 py-3 text-left transition-colors hover:bg-primary hover:text-primary-foreground sm:gap-4 sm:px-5 sm:py-3.5"
-                        >
+                        <div className="group flex w-full items-center gap-2.5 px-3.5 py-3 text-left transition-colors hover:bg-primary hover:text-primary-foreground sm:gap-4 sm:px-5 sm:py-3.5">
                           <span className="brutal-index h-8 w-8 shrink-0 transition-colors group-hover:bg-background group-hover:text-foreground sm:h-10 sm:w-10">
                             <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </span>
@@ -151,7 +146,7 @@ export default function FormsHero({
                           </span>
 
                           <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary-foreground sm:h-5 sm:w-5" />
-                        </Link>
+                        </div>
                       </li>
                     )
                   })}

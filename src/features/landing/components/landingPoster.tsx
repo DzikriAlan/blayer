@@ -1,12 +1,10 @@
-import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
-import FormsFacepile from './formsFacepile'
+import LandingFacepile from './landingFacepile'
 
-export interface FormsPosterForm {
+export interface LandingEvent {
   id: string
-  slug: string
   title: string
   description: string
   image: string
@@ -16,7 +14,7 @@ export interface FormsPosterForm {
 }
 
 interface Props {
-  form: FormsPosterForm
+  event: LandingEvent
   actionLabel: string
   countLabel: string
   fieldLabel: string
@@ -25,8 +23,8 @@ interface Props {
   className?: string
 }
 
-export default function FormsPoster({
-  form,
+export default function LandingPoster({
+  event,
   actionLabel,
   countLabel,
   fieldLabel,
@@ -35,8 +33,7 @@ export default function FormsPoster({
   className,
 }: Props) {
   return (
-    <Link
-      href={form.slug ? `/f/${form.slug}` : `/forms/${form.id}`}
+    <article
       className={cn(
         'group flex flex-col border-2 border-foreground bg-paper transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]',
         className
@@ -50,11 +47,11 @@ export default function FormsPoster({
           )}
         >
           <span aria-hidden className="brutal-hatch absolute inset-0 opacity-20" />
-          {form.image ? (
+          {event.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={form.image}
-              alt={`Banner ${form.title}`}
+              src={event.image}
+              alt={`Banner ${event.title}`}
               loading="lazy"
               className={cn(
                 isFixedBanner
@@ -68,23 +65,23 @@ export default function FormsPoster({
 
       <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
         <h2
-          title={form.tooltip}
+          title={event.tooltip}
           className="line-clamp-2 min-h-[2.5em] break-words font-display text-lg font-black uppercase leading-tight tracking-tight sm:text-xl"
         >
-          {form.title}
+          {event.title}
         </h2>
         <p className="line-clamp-3 min-h-[4.875em] font-mono text-xs leading-relaxed text-muted-foreground">
-          {form.description}
+          {event.description}
         </p>
 
         <div className="mt-auto flex min-w-0 items-center gap-x-2 overflow-hidden whitespace-nowrap">
-          <FormsFacepile
-            total={form.totalResponses}
-            seed={form.id}
+          <LandingFacepile
+            total={event.totalResponses}
+            seed={event.id}
             label={countLabel}
           />
           <span className="brutal-eyebrow shrink-0 text-muted-foreground">
-            · {String(form.totalFields).padStart(2, '0')} {fieldLabel}
+            · {String(event.totalFields).padStart(2, '0')} {fieldLabel}
           </span>
         </div>
 
@@ -95,6 +92,6 @@ export default function FormsPoster({
           </span>
         </div>
       </div>
-    </Link>
+    </article>
   )
 }
