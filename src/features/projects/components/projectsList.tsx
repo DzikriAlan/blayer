@@ -59,7 +59,7 @@ export default function ProjectsList() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1600px] px-3 py-12 sm:px-5 sm:py-16">
+    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
       <div className="mesh-soft relative overflow-hidden rounded-2xl border border-border px-6 py-10 sm:px-10">
         <span aria-hidden className="noise pointer-events-none absolute inset-0 opacity-40" />
         <div className="relative">

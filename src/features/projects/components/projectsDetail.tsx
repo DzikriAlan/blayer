@@ -84,7 +84,7 @@ export default function ProjectsDetail({ children }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1600px] px-3 py-12 sm:px-5 sm:py-16">
+    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
       <LoadData response={state} minHeight="40vh">
         {project ? (
           <div className="flex flex-col gap-12">

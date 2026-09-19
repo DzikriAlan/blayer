@@ -34,7 +34,7 @@ export default function LandingShell({ className, children }: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-border/80 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center gap-4 px-3 py-3 sm:px-5">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-3 sm:px-8">
           <Link href="/" className="flex items-center gap-2">
             <Image src={logo} alt="Blayer" priority className="h-8 w-auto shrink-0" />
           </Link>
@@ -59,7 +59,7 @@ export default function LandingShell({ className, children }: Props) {
       <main className={cn('flex-1', className)}>{children}</main>
 
       <footer className="border-t border-border bg-card/40">
-        <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-3 py-14 sm:grid-cols-3 sm:px-5">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 sm:grid-cols-3 sm:px-8">
           <div>
             <Image src={logo} alt="Blayer" className="h-8 w-auto" />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted-foreground">
@@ -87,8 +87,8 @@ export default function LandingShell({ className, children }: Props) {
           ))}
         </div>
 
-        <div className="border-t border-border px-3 py-5 sm:px-5">
-          <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-x-6 gap-y-2">
+        <div className="border-t border-border px-5 py-5 sm:px-8">
+          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2">
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} Blayer
             </p>

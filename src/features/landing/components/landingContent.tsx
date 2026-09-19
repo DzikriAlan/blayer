@@ -20,7 +20,7 @@ export default function LandingContent() {
     <>
       <LandingHero />
 
-      <section className="mx-auto w-full max-w-4xl px-3 py-20 text-center sm:px-5 sm:py-24">
+      <section className="mx-auto w-full max-w-4xl px-5 py-20 text-center sm:px-8 sm:py-24">
         <p className="text-balance text-xl leading-relaxed text-muted-foreground sm:text-2xl">
           Blayer adalah <span className="text-foreground">AI Agent Platform</span>{' '}
           yang kamu jalankan sendiri. Ia mengatur{' '}
@@ -48,18 +48,18 @@ export default function LandingContent() {
         </div>
       </div>
 
-      <section className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+      <section className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
         <LandingBento />
       </section>
 
       <section id="cara-kerja" className="scroll-mt-20 border-t border-border">
-        <div className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
           <LandingFlow />
         </div>
       </section>
 
       <section id="fitur" className="scroll-mt-20 border-t border-border">
-        <div className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <span className="pixel-label text-primary">Yang sudah jalan</span>
@@ -80,7 +80,7 @@ export default function LandingContent() {
       </section>
 
       <section className="border-t border-border">
-        <div className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
           <div className="flex flex-col items-center text-center">
             <span className="pixel-label text-primary">Open source selamanya</span>
             <h2 className="mt-4 max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
@@ -109,7 +109,7 @@ docker compose exec app npx prisma migrate deploy`}</code>
               {PROMISES.map((promise) => (
                 <li
                   key={promise}
-                  className="flex items-start gap-3 rounded-xl border border-border bg-card px-3 py-4"
+                  className="flex items-start gap-3 rounded-xl border border-border bg-card px-5 py-4"
                 >
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span className="text-sm leading-relaxed text-muted-foreground">

@@ -5,7 +5,7 @@ import LandingShowcase from './landingShowcase'
 
 export default function LandingHero() {
   return (
-    <section className="mx-auto w-full max-w-[1600px] px-3 pt-8 sm:px-5 sm:pt-12">
+    <section className="mx-auto w-full max-w-6xl px-5 pt-8 sm:px-8 sm:pt-12">
       <div className="mesh relative overflow-hidden rounded-2xl border border-border">
         <span aria-hidden className="noise pointer-events-none absolute inset-0 opacity-50" />
         <span

@@ -109,7 +109,7 @@ export default function IntegrationsDetail() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1600px] px-3 py-12 sm:px-5 sm:py-16">
+    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
       <LoadData response={state} minHeight="40vh">
         {integration ? (
           <div className="flex flex-col gap-10">
