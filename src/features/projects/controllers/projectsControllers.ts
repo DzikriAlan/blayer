@@ -8,7 +8,7 @@ import {
   getProjectsDetail,
   postProjects,
   postProjectsKey,
-  putProjectsCredential,
+  updateProjectsCredential,
 } from '../services/projectsServices'
 import type {
   PayloadPostProjects,
@@ -53,9 +53,9 @@ export const useProjectsControllers = () => {
     },
   })
 
-  const updateProjectsCredential = useMutation({
+  const modifyProjectsCredential = useMutation({
     mutationFn: (payload: PayloadPutProjectsCredential) =>
-      putProjectsCredential(payload),
+      updateProjectsCredential(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projectsDetail'] })
     },
@@ -110,6 +110,6 @@ export const useProjectsControllers = () => {
     fetchProjectsDetail,
     storeProjects,
     storeProjectsKey,
-    updateProjectsCredential,
+    modifyProjectsCredential,
   }
 }

@@ -80,8 +80,8 @@ interface ApiEnvelope<T> {
   success?: boolean
   message?: string
   data?: T
-  meta?: { request_id?: string }
-  errors?: { code?: string; message?: string }[] | null
+  meta?: { requestId?: string }
+  error?: { code?: string; message?: string; details?: unknown } | null
 }
 
 export class BlayerClient {
@@ -152,13 +152,13 @@ export class BlayerClient {
     }
 
     if (!response.ok || !payload.success) {
-      const first = payload.errors?.[0]
-
       throw new BlayerError(
-        first?.code ?? 'REQUEST_FAILED',
-        first?.message ?? payload.message ?? `Permintaan gagal (${response.status}).`,
+        payload.error?.code ?? 'REQUEST_FAILED',
+        payload.error?.message ??
+          payload.message ??
+          `Permintaan gagal (${response.status}).`,
         response.status,
-        payload.meta?.request_id ?? ''
+        payload.meta?.requestId ?? ''
       )
     }
 

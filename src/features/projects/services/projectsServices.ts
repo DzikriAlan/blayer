@@ -29,7 +29,7 @@ export const postProjectsKey = ({
     body: JSON.stringify(payload),
   })
 
-export const putProjectsCredential = ({
+export const updateProjectsCredential = ({
   projectId,
   ...payload
 }: PayloadPutProjectsCredential) =>

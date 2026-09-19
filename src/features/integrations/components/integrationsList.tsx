@@ -147,7 +147,7 @@ export default function IntegrationsList({ projectId }: Props) {
             onChange={(event) =>
               editForm({
                 name: event.target.value,
-                slug: form.slug ? form.slug : getSlug(event.target.value),
+                slug: getSlug(event.target.value),
               })
             }
             placeholder="EasyAccounting"

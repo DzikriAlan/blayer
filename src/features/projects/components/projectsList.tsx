@@ -23,6 +23,9 @@ export default function ProjectsList() {
   const { projects } = useProjectsStates()
   const { storeProjects } = useProjectsControllers()
   const [form, setForm] = useState({ name: '', slug: '', description: '' })
+  // Slug ikut nama selama belum pernah disunting sendiri. Tanpa penanda ini,
+  // slug terkunci pada huruf pertama yang diketik dan berakhir terlalu pendek.
+  const [isSlugEdited, setSlugEdited] = useState(false)
 
   const data = useMemo(
     () => ({
@@ -43,7 +46,12 @@ export default function ProjectsList() {
     setForm((prev) => ({ ...prev, ...next }))
 
   const editName = (name: string) =>
-    editForm({ name, slug: form.slug ? form.slug : getSlug(name) })
+    editForm({ name, ...(isSlugEdited ? {} : { slug: getSlug(name) }) })
+
+  const editSlug = (slug: string) => {
+    setSlugEdited(true)
+    editForm({ slug })
+  }
 
   const saveProjects = (event: React.FormEvent) => {
     event.preventDefault()
@@ -54,7 +62,12 @@ export default function ProjectsList() {
         slug: (form.slug || getSlug(form.name)).trim(),
         description: form.description.trim(),
       },
-      { onSuccess: () => setForm({ name: '', slug: '', description: '' }) }
+      {
+        onSuccess: () => {
+          setForm({ name: '', slug: '', description: '' })
+          setSlugEdited(false)
+        },
+      }
     )
   }
 
@@ -122,7 +135,7 @@ export default function ProjectsList() {
             <Input
               id="project-slug"
               value={form.slug}
-              onChange={(event) => editForm({ slug: event.target.value })}
+              onChange={(event) => editSlug(event.target.value)}
               placeholder="easyaccounting"
             />
           </div>

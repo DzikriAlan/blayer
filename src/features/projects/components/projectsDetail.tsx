@@ -29,7 +29,7 @@ interface Props {
 
 export default function ProjectsDetail({ children }: Props) {
   const { projectsDetail, createdKey } = useProjectsStates()
-  const { storeProjectsKey, updateProjectsCredential } = useProjectsControllers()
+  const { storeProjectsKey, modifyProjectsCredential } = useProjectsControllers()
 
   const [keyForm, setKeyForm] = useState<{
     name: string
@@ -77,7 +77,7 @@ export default function ProjectsDetail({ children }: Props) {
     event.preventDefault()
     if (!project) return
 
-    updateProjectsCredential.mutate(
+    modifyProjectsCredential.mutate(
       { projectId: project.id, ...credentialForm, secret: credentialForm.secret.trim() },
       { onSuccess: () => setCredentialForm((prev) => ({ ...prev, secret: '' })) }
     )
@@ -305,20 +305,20 @@ export default function ProjectsDetail({ children }: Props) {
                   />
                 </div>
 
-                {updateProjectsCredential.isError ? (
+                {modifyProjectsCredential.isError ? (
                   <p className="text-sm leading-relaxed text-destructive">
-                    {updateProjectsCredential.error.message}
+                    {modifyProjectsCredential.error.message}
                   </p>
                 ) : null}
 
                 <Button
                   type="submit"
                   disabled={
-                    updateProjectsCredential.isPending ||
+                    modifyProjectsCredential.isPending ||
                     credentialForm.secret.trim().length < 8
                   }
                 >
-                  {updateProjectsCredential.isPending ? 'Menyimpan…' : 'Simpan Kunci'}
+                  {modifyProjectsCredential.isPending ? 'Menyimpan…' : 'Simpan Kunci'}
                 </Button>
               </form>
             </section>

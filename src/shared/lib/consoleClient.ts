@@ -49,13 +49,21 @@ interface ApiEnvelope<T> {
   success?: boolean
   message?: string
   data?: T
-  errors?: { code?: string; field?: string; message?: string }[] | null
+  error?: { code?: string; message?: string; details?: unknown } | null
 }
 
+// Pesan yang ditampilkan mengambil pesan error dulu; details per field dipakai
+// kalau errornya memang validasi.
 const getErrorMessage = <T>(payload: ApiEnvelope<T>, status: number) => {
-  const first = payload.errors?.[0]
+  const details = payload.error?.details
 
-  return first?.message || payload.message || `Permintaan gagal (${status}).`
+  if (details && typeof details === 'object') {
+    const first = Object.values(details as Record<string, string[]>)[0]?.[0]
+
+    if (first) return first
+  }
+
+  return payload.error?.message || payload.message || `Permintaan gagal (${status}).`
 }
 
 interface ConsoleFetchOptions extends RequestInit {

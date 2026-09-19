@@ -36,6 +36,8 @@ export default function AgentsCreate({ projectId }: Props) {
   const router = useRouter()
   const { storeAgents, fetchAgentsModels } = useAgentsControllers()
   const [form, setForm] = useState({ name: '', slug: '' })
+  // Slug ikut nama selama belum pernah disunting sendiri.
+  const [isSlugEdited, setSlugEdited] = useState(false)
   const [config, setConfig] = useState<AgentsConfigValue>(DEFAULT_CONFIG)
 
   const editConfig = (next: Partial<AgentsConfigValue>) =>
@@ -75,7 +77,7 @@ export default function AgentsCreate({ projectId }: Props) {
             setForm((prev) => ({
               ...prev,
               name: event.target.value,
-              slug: prev.slug ? prev.slug : getSlug(event.target.value),
+              ...(isSlugEdited ? {} : { slug: getSlug(event.target.value) }),
             }))
           }
           placeholder="Accounting Assistant"
@@ -87,9 +89,10 @@ export default function AgentsCreate({ projectId }: Props) {
         <Input
           id="agent-slug"
           value={form.slug}
-          onChange={(event) =>
+          onChange={(event) => {
+            setSlugEdited(true)
             setForm((prev) => ({ ...prev, slug: event.target.value }))
-          }
+          }}
           placeholder="accounting-assistant"
         />
       </div>
