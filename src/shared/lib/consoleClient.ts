@@ -1,27 +1,45 @@
-const TOKEN_KEY = 'blayer.console.token'
+const SESSION_KEY = 'blayer.console.session'
 
-// Token pengelolaan hanya hidup di browser operator. Tidak ada sesi server,
-// tidak ada cookie — instance self-hosted tidak perlu menyimpan siapa pun.
-export const getConsoleToken = () => {
+export interface ConsoleSession {
+  token: string
+  username: string
+  expiresAt: string
+}
+
+// Sesi hanya hidup di browser operator. Tidak ada cookie dan tidak ada sesi yang
+// disimpan server — tokennya sudah bertanda tangan dan berbatas waktu sendiri.
+export const getConsoleSession = (): ConsoleSession | null => {
   try {
-    return window.localStorage.getItem(TOKEN_KEY) ?? ''
+    const raw = window.localStorage.getItem(SESSION_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as Partial<ConsoleSession>
+
+    if (!parsed.token || !parsed.expiresAt) return null
+    if (Date.parse(parsed.expiresAt) <= Date.now()) return null
+
+    return {
+      token: parsed.token,
+      username: parsed.username ?? '',
+      expiresAt: parsed.expiresAt,
+    }
   } catch {
-    return ''
+    return null
   }
 }
 
-export const setConsoleToken = (token: string) => {
+export const setConsoleSession = (session: ConsoleSession) => {
   try {
-    window.localStorage.setItem(TOKEN_KEY, token)
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify(session))
   } catch {
-    // Penyimpanan browser bisa ditolak (mode privat). Token tetap dipakai
-    // selama tab ini hidup lewat state di memori.
+    // Penyimpanan browser bisa ditolak (mode privat). Sesi tetap dipakai selama
+    // tab ini hidup lewat state di memori.
   }
 }
 
-export const clearConsoleToken = () => {
+export const clearConsoleSession = () => {
   try {
-    window.localStorage.removeItem(TOKEN_KEY)
+    window.localStorage.removeItem(SESSION_KEY)
   } catch {
     // sama seperti di atas: kegagalan menghapus tidak boleh menjatuhkan UI
   }
@@ -40,15 +58,23 @@ const getErrorMessage = <T>(payload: ApiEnvelope<T>, status: number) => {
   return first?.message || payload.message || `Permintaan gagal (${status}).`
 }
 
+interface ConsoleFetchOptions extends RequestInit {
+  // Rute login dipanggil justru saat belum ada sesi, jadi header Authorization
+  // tidak perlu ikut.
+  isPublic?: boolean
+}
+
 export const consoleFetch = async <T>(
   path: string,
-  init: RequestInit = {}
+  { isPublic = false, ...init }: ConsoleFetchOptions = {}
 ): Promise<T> => {
+  const session = isPublic ? null : getConsoleSession()
+
   const response = await fetch(`/api/v1${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${getConsoleToken()}`,
+      ...(session ? { Authorization: `Bearer ${session.token}` } : {}),
       ...(init.headers ?? {}),
     },
   })

@@ -1,93 +1,64 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  clearConsoleToken,
-  getConsoleToken,
-  setConsoleToken,
-} from '@/shared/lib/consoleClient'
+import { getConsoleSession } from '@/shared/lib/consoleClient'
 import { useConsoleStates } from '../states/consoleStates'
+import { useConsoleControllers } from '../controllers/consoleControllers'
+import ConsoleLogin from './consoleLogin'
 
 interface Props {
   children: React.ReactNode
 }
 
-// Rute pengelolaan diperiksa di server lewat BLAYER_ADMIN_TOKEN. Gerbang ini
-// hanya menahan tampilan sampai tokennya ada, bukan pengganti pemeriksaan itu.
+// Gerbang ini hanya menahan tampilan sampai ada sesi. Pemeriksaan sebenarnya
+// tetap di server: tiap rute pengelolaan memeriksa tanda tangan dan masa berlaku
+// tokennya sendiri.
 export default function ConsoleGate({ children }: Props) {
-  const { token, isReady, setToken, setReady } = useConsoleStates()
-  const [draft, setDraft] = useState('')
+  const { token, username, isReady, isDefaultCredentials, setSession, setReady } =
+    useConsoleStates()
+  const { removeConsoleSession } = useConsoleControllers()
 
   useEffect(() => {
-    setToken(getConsoleToken())
+    const session = getConsoleSession()
+
+    if (session) setSession({ token: session.token, username: session.username })
     setReady(true)
-  }, [setToken, setReady])
-
-  const saveToken = (event: React.FormEvent) => {
-    event.preventDefault()
-    const next = draft.trim()
-    if (!next) return
-
-    setConsoleToken(next)
-    setToken(next)
-    setDraft('')
-  }
-
-  const removeToken = () => {
-    clearConsoleToken()
-    setToken('')
-  }
+  }, [setSession, setReady])
 
   if (!isReady) return null
 
-  if (!token) {
-    return (
-      <div className="mx-auto w-full max-w-md px-5 py-20 sm:px-8">
-        <div className="border-2 border-foreground bg-paper p-6">
-          <h1 className="font-display text-2xl font-black uppercase leading-none tracking-tight">
-            Token Pengelolaan
-          </h1>
-          <p className="mt-4 font-mono text-xs leading-relaxed text-muted-foreground">
-            Console ini memakai <code>BLAYER_ADMIN_TOKEN</code> milik instance
-            kamu sendiri. Tokennya disimpan di browser ini saja dan dikirim
-            sebagai header Authorization ke tiap permintaan.
-          </p>
-
-          <form onSubmit={saveToken} className="mt-6 flex flex-col gap-3">
-            <Label htmlFor="console-token">Token</Label>
-            <Input
-              id="console-token"
-              type="password"
-              autoComplete="off"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="isi BLAYER_ADMIN_TOKEN"
-            />
-            <Button type="submit" disabled={!draft.trim()}>
-              Masuk Console
-            </Button>
-          </form>
-        </div>
-      </div>
-    )
-  }
+  if (!token) return <ConsoleLogin />
 
   return (
     <>
       <div className="border-b-2 border-foreground bg-muted">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-2 sm:px-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-2 sm:px-8">
           <span className="brutal-eyebrow text-muted-foreground">
-            TOKEN PENGELOLAAN AKTIF
+            MASUK SEBAGAI {username.toUpperCase() || 'OPERATOR'}
           </span>
-          <Button type="button" variant="outline" size="sm" onClick={removeToken}>
-            Lupakan Token
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={removeConsoleSession}
+          >
+            Keluar
           </Button>
         </div>
       </div>
+
+      {isDefaultCredentials ? (
+        <div className="border-b-2 border-foreground bg-primary text-primary-foreground">
+          <div className="mx-auto w-full max-w-6xl px-5 py-2 sm:px-8">
+            <p className="brutal-eyebrow">
+              KREDENSIAL MASIH BAWAAN — GANTI SEBELUM INSTANCE INI DIBUKA KE LUAR
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {children}
     </>
   )
