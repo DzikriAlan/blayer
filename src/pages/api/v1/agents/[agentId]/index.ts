@@ -1,3 +1,3 @@
-import { agentsModule } from '@/server/features/agents/module'
+import { agentsModule } from '@server/features/agents/module'
 
 export default agentsModule.detail

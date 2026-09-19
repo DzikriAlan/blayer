@@ -6,7 +6,7 @@ const { prismaMock } = vi.hoisted(() => ({
   prismaMock: { $queryRaw: vi.fn() },
 }))
 
-vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const getResponse = () => {
   const res = {

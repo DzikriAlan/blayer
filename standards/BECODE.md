@@ -5,7 +5,7 @@
 Architecture mempertahankan separation of concerns dari starter sebelumnya. Framework berpindah dari NestJS ke Express.js, tetapi boundary antar-layer tetap tegas.
 
 ```txt
-server/api/features/{folder-name}/
+server/features/{folder-name}/
 ├── dto/{filename}.dto.ts
 ├── entities/{filename}.entity.ts
 ├── repositories/{filename}.repository.ts
@@ -245,8 +245,7 @@ server/
 ├── app.ts                 # configure Express app + global middleware
 ├── server.ts              # start HTTP server
 ├── config/
-├── api/
-│   └── features/
+├── features/
 ├── shared/
 └── routes/
     └── index.ts           # mount feature routers
@@ -891,7 +890,7 @@ Global route mounting mengikuti folder feature.
 
 ```typescript
 import { Router } from 'express'
-import { createUsersModule } from '../api/features/users/module'
+import { createUsersModule } from '../features/users/module'
 import { createSharedServices } from '../shared/shared-services'
 
 export const routes = Router()
@@ -1091,7 +1090,7 @@ Error middleware menjadi satu-satunya pintu terakhir untuk response error HTTP.
 ### Struktur Test
 
 ```txt
-server/api/features/{folder-name}/
+server/features/{folder-name}/
 ├── services/{filename}.service.spec.ts
 ├── repositories/{filename}.repository.spec.ts
 └── controllers/{filename}.controller.spec.ts
@@ -1361,21 +1360,20 @@ server/
 │   └── env.ts
 ├── routes/
 │   └── index.ts
-├── api/
-│   └── features/
-│       ├── users/
-│       │   ├── dto/
-│       │   │   └── users.dto.ts
-│       │   ├── entities/
-│       │   │   └── users.entity.ts
-│       │   ├── repositories/
-│       │   │   └── users.repository.ts
-│       │   ├── services/
-│       │   │   └── users.service.ts
-│       │   ├── controllers/
-│       │   │   └── users.controller.ts
-│       │   └── module.ts
-│       └── ...
+├── features/
+│   ├── users/
+│   │   ├── dto/
+│   │   │   └── users.dto.ts
+│   │   ├── entities/
+│   │   │   └── users.entity.ts
+│   │   ├── repositories/
+│   │   │   └── users.repository.ts
+│   │   ├── services/
+│   │   │   └── users.service.ts
+│   │   ├── controllers/
+│   │   │   └── users.controller.ts
+│   │   └── module.ts
+│   └── ...
 └── shared/
     ├── prisma/
     ├── middlewares/

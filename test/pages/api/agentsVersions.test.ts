@@ -3,7 +3,7 @@ import { AgentEffort, AgentProvider } from '@prisma/client'
 
 import versionsHandler from '@/pages/api/v1/agents/[agentId]/versions'
 import publishHandler from '@/pages/api/v1/agents/[agentId]/publish'
-import { createAdminSession } from '@/server/shared/utils/session.util'
+import { createAdminSession } from '@server/shared/utils/session.util'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
@@ -20,7 +20,7 @@ const { prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const ADMIN_TOKEN = 'token-pengelolaan-uji'
 

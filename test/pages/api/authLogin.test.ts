@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import loginHandler from '@/pages/api/v1/auth/login'
 import agentsHandler from '@/pages/api/v1/agents'
-import { resetRateLimit } from '@/server/shared/services/rateLimit.service'
+import { resetRateLimit } from '@server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: { agent: { findMany: vi.fn() } },
 }))
 
-vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const login = async (body: unknown, method = 'POST') => {
   const res = getTestResponse()

@@ -5,7 +5,7 @@ import {
   createUpstashStore,
   getRateLimitStore,
   setRateLimitStore,
-} from '@/server/shared/services/rateLimitStore.service'
+} from '@server/shared/services/rateLimitStore.service'
 
 const originalFetch = globalThis.fetch
 

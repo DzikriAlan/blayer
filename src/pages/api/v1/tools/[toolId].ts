@@ -1,3 +1,3 @@
-import { toolsModule } from '@/server/features/tools/module'
+import { toolsModule } from '@server/features/tools/module'
 
 export default toolsModule.detail

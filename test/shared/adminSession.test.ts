@@ -9,7 +9,7 @@ import {
   isAdminToken,
   isValidAdminSession,
   verifyAdminCredentials,
-} from '@/server/shared/utils/session.util'
+} from '@server/shared/utils/session.util'
 
 beforeEach(() => {
   delete process.env.BLAYER_ADMIN_USERNAME

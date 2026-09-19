@@ -1,3 +1,3 @@
-import { projectsModule } from '@/server/features/projects/module'
+import { projectsModule } from '@server/features/projects/module'
 
 export default projectsModule.detail

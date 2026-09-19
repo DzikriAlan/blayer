@@ -8,7 +8,7 @@ import {
   getSecretHint,
   hashToken,
   isSameToken,
-} from '@/server/shared/utils/crypto.util'
+} from '@server/shared/utils/crypto.util'
 
 const KEY = Buffer.alloc(32, 7).toString('base64')
 const OTHER_KEY = Buffer.alloc(32, 9).toString('base64')

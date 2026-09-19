@@ -255,17 +255,18 @@ Rincian tiap rute ada di [docs/AGENT_API.md](./docs/AGENT_API.md).
 ## Struktur proyek
 
 ```
+server/                    # Backend berlapis (standards/BECODE.md)
+├── features/<fitur>/
+│   ├── dto/               # Skema validasi + kontrak masukan/keluaran
+│   ├── entities/          # Bentuk data domain, tanpa logic
+│   ├── repositories/      # Satu-satunya tempat query Prisma
+│   ├── services/          # Business logic
+│   ├── controllers/       # Lapis HTTP: baca req, tulis res
+│   └── module.ts          # Wiring controller ke rutenya
+└── shared/                # Lintas feature: route, response, error, auth,
+                           # logger, runtime agent, tool executor, provider
+
 src/
-├── server/                # Backend berlapis (standards/BECODE.md)
-│   ├── features/<fitur>/
-│   │   ├── dto/           # Skema validasi + kontrak masukan/keluaran
-│   │   ├── entities/      # Bentuk data domain, tanpa logic
-│   │   ├── repositories/  # Satu-satunya tempat query Prisma
-│   │   ├── services/      # Business logic
-│   │   ├── controllers/   # Lapis HTTP: baca req, tulis res
-│   │   └── module.ts      # Wiring controller ke rutenya
-│   └── shared/            # Lintas feature: route, response, error, auth,
-│                          # runtime agent, tool executor, provider
 ├── pages/                 # Rute halaman & mount API (Pages Router)
 │   ├── index.tsx          # Landing page
 │   ├── console/           # Console operator (project, agent, playground)
@@ -285,9 +286,7 @@ src/
 ├── components/ui/         # Komponen dasar (Shadcn/UI)
 └── shared/
     ├── components/        # LoadData, ErrorBoundary
-    ├── lib/               # apiHandler, apiResponse, logger, rateLimit, prisma
-    │                      # agentRuntime, toolExecutor, agentCatalog,
-    │                      # agentCrypto, adminSession, providers/
+    ├── lib/               # consoleClient (klien API Console), utils
     └── styles/            # Tailwind + token desain
 ```
 

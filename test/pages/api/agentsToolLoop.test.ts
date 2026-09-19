@@ -10,8 +10,8 @@ import {
 
 import runHandler from '@/pages/api/v1/agents/[agentId]/run'
 import confirmHandler from '@/pages/api/v1/runs/[runId]/confirm'
-import { encryptSecret } from '@/server/shared/utils/crypto.util'
-import { resetRateLimit } from '@/server/shared/services/rateLimit.service'
+import { encryptSecret } from '@server/shared/utils/crypto.util'
+import { resetRateLimit } from '@server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { adapterMock, executeToolMock, prismaMock } = vi.hoisted(() => ({
@@ -29,11 +29,11 @@ const { adapterMock, executeToolMock, prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
-vi.mock('@/server/shared/services/providers', () => ({
+vi.mock('@server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@server/shared/services/providers', () => ({
   getProviderAdapter: () => adapterMock,
 }))
-vi.mock('@/server/shared/services/toolExecutor.service', () => ({
+vi.mock('@server/shared/services/toolExecutor.service', () => ({
   fetchToolCall: executeToolMock,
 }))
 

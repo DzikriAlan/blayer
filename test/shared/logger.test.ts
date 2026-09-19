@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { logger, resetAlertSilence } from '@/shared/lib/logger'
+import { logger, resetAlertSilence } from '@server/shared/utils/logger.util'
 
 const originalFetch = globalThis.fetch
 const sent: { body: string }[] = []

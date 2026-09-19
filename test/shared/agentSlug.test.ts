@@ -4,7 +4,7 @@ import {
   getFreeSlug,
   getSlugCandidates,
   getSlugFromName,
-} from '@/server/shared/utils/slug.util'
+} from '@server/shared/utils/slug.util'
 
 describe('penurunan slug dari nama', () => {
   it('TC-81a mengubah nama biasa menjadi slug yang aman di URL', () => {

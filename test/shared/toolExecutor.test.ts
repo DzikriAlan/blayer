@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { IntegrationAuth, ToolMethod, ToolPermission } from '@prisma/client'
 
-import { encryptSecret } from '@/server/shared/utils/crypto.util'
-import { fetchToolCall } from '@/server/shared/services/toolExecutor.service'
+import { encryptSecret } from '@server/shared/utils/crypto.util'
+import { fetchToolCall } from '@server/shared/services/toolExecutor.service'
 
 const fetchMock = vi.fn()
 

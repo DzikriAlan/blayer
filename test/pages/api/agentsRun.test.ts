@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AgentEffort, AgentEnvironment, AgentProvider } from '@prisma/client'
 
 import handler from '@/pages/api/v1/agents/[agentId]/run'
-import { encryptSecret } from '@/server/shared/utils/crypto.util'
-import { ProviderError } from '@/server/shared/services/providers/provider.types'
-import { resetRateLimit } from '@/server/shared/services/rateLimit.service'
+import { encryptSecret } from '@server/shared/utils/crypto.util'
+import { ProviderError } from '@server/shared/services/providers/provider.types'
+import { resetRateLimit } from '@server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { adapterMock, prismaMock } = vi.hoisted(() => ({
@@ -21,8 +21,8 @@ const { adapterMock, prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
-vi.mock('@/server/shared/services/providers', () => ({
+vi.mock('@server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@server/shared/services/providers', () => ({
   getProviderAdapter: () => adapterMock,
 }))
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { runOpenai } from '@/server/shared/services/providers/openai.provider'
+import { runOpenai } from '@server/shared/services/providers/openai.provider'
 
 const fetchMock = vi.fn()
 

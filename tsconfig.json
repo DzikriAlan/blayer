@@ -27,6 +27,9 @@
       ],
       "@blayer/sdk": [
         "./sdk/src/index.ts"
+      ],
+      "@server/*": [
+        "./server/*"
       ]
     },
     "target": "ES2017"

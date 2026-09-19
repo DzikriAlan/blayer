@@ -3,7 +3,7 @@ import { AgentEnvironment, AgentProvider } from '@prisma/client'
 
 import keysHandler from '@/pages/api/v1/projects/[projectId]/keys'
 import credentialsHandler from '@/pages/api/v1/projects/[projectId]/credentials'
-import { decryptSecret, hashToken } from '@/server/shared/utils/crypto.util'
+import { decryptSecret, hashToken } from '@server/shared/utils/crypto.util'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
@@ -14,7 +14,7 @@ const { prismaMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/server/shared/prisma.service', () => ({ prismaService: prismaMock }))
+vi.mock('@server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
 const ADMIN_TOKEN = 'token-pengelolaan-uji'
 
