@@ -291,3 +291,4 @@ terlihat sempurna.
 | `PROVIDER_UNREACHABLE` | 502 | Provider tidak bisa dihubungi |
 | `PROVIDER_RATE_LIMITED` | 503 | Provider sedang membatasi permintaan |
 | `CONFIG_MISSING` | 503 | Instance belum disetel (`BLAYER_ENCRYPTION_KEY`) |
+| `DATABASE_UNAVAILABLE` | 503 | Basis data tidak bisa dihubungi; periksa `DATABASE_URL` |

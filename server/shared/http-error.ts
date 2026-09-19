@@ -58,10 +58,32 @@ export const serviceUnavailableError = (code: string, message: string) =>
 export const internalError = (message = 'Terjadi kesalahan di server.') =>
   new HttpError(500, 'INTERNAL_SERVER_ERROR', message)
 
+// Basis data yang tidak bisa dihubungi bukan kesalahan pemanggil dan bukan bug
+// aplikasi; menyamarkannya sebagai 500 membuat operator menebak-nebak. Kode
+// koneksi Prisma dipetakan ke 503 dengan sebab yang jelas.
+const CONNECTION_CODES = new Set(['P1000', 'P1001', 'P1002', 'P1008', 'P1010', 'P1017'])
+
+const DATABASE_UNAVAILABLE_MESSAGE =
+  'Basis data tidak bisa dihubungi. Periksa DATABASE_URL dan pastikan basis datanya hidup.'
+
 // Prisma error diterjemahkan di repository supaya pesan mentahnya tidak pernah
 // sampai ke pemanggil.
 export const handlePrismaError = (error: unknown, resource: string) => {
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return serviceUnavailableError(
+      'DATABASE_UNAVAILABLE',
+      DATABASE_UNAVAILABLE_MESSAGE
+    )
+  }
+
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (CONNECTION_CODES.has(error.code)) {
+      return serviceUnavailableError(
+        'DATABASE_UNAVAILABLE',
+        DATABASE_UNAVAILABLE_MESSAGE
+      )
+    }
+
     if (error.code === 'P2025') {
       return notFoundError(
         `${resource.toUpperCase()}_NOT_FOUND`,
