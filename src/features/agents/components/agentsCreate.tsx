@@ -24,6 +24,8 @@ const DEFAULT_CONFIG: AgentsConfigValue = {
   maxTokens: 16000,
   temperature: null,
   instructions: '',
+  toolIds: [],
+  documentIds: [],
 }
 
 interface Props {

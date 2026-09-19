@@ -10,20 +10,32 @@ import AgentsPlayground from '@/features/agents/components/agentsPlayground'
 import AgentsRuns from '@/features/agents/components/agentsRuns'
 import { useAgentsStates } from '@/features/agents/states/agentsStates'
 import { useAgentsControllers } from '@/features/agents/controllers/agentsControllers'
+import { useProjectsStates } from '@/features/projects/states/projectsStates'
+import { useIntegrationsControllers } from '@/features/integrations/controllers/integrationsControllers'
+import { useKnowledgeControllers } from '@/features/knowledge/controllers/knowledgeControllers'
 
 const AgentDetailPage: NextPage = () => {
   const router = useRouter()
   const agentId = typeof router.query.agentId === 'string' ? router.query.agentId : ''
 
   const { agentsDetail, setGetAgentsDetail } = useAgentsStates()
+  const { setGetProjectsDetail } = useProjectsStates()
 
   useAgentsControllers()
+  useIntegrationsControllers()
+  useKnowledgeControllers()
 
   useEffect(() => {
     if (agentId) setGetAgentsDetail({ id: agentId })
   }, [agentId, setGetAgentsDetail])
 
   const agent = agentsDetail.data
+
+  // Builder butuh daftar tool dan dokumen milik project agent ini; keduanya
+  // diambil lewat project yang sedang dipilih.
+  useEffect(() => {
+    if (agent?.projectId) setGetProjectsDetail({ id: agent.projectId })
+  }, [agent?.projectId, setGetProjectsDetail])
 
   return (
     <>

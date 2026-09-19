@@ -62,6 +62,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       agentId: getQueryId(req.query.agentId),
       environment,
       input: data.input,
+      sessionId: data.sessionId ?? null,
       versionId: actor.kind === 'admin' ? (data.versionId ?? null) : null,
       scopedProjectId: actor.kind === 'project' ? actor.projectId : null,
     })

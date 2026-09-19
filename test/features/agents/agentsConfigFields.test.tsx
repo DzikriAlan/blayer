@@ -40,6 +40,8 @@ const getValue = (overrides: Partial<AgentsConfigValue> = {}): AgentsConfigValue
   maxTokens: 16_000,
   temperature: null,
   instructions: 'Jawab hanya dari hasil tool.',
+  toolIds: [],
+  documentIds: [],
   ...overrides,
 })
 

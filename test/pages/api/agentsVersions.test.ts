@@ -157,8 +157,26 @@ describe('versi agent', () => {
 
   it('TC-63e menandai versi yang sedang production saat daftarnya dibaca', async () => {
     prismaMock.agentVersion.findMany = vi.fn().mockResolvedValue([
-      { ...VALID_CONFIG, id: 'version-2', version: 2, status: 'DRAFT', publishedAt: null, createdAt: new Date() },
-      { ...VALID_CONFIG, id: 'version-1', version: 1, status: 'PUBLISHED', publishedAt: new Date(), createdAt: new Date() },
+      {
+        ...VALID_CONFIG,
+        id: 'version-2',
+        version: 2,
+        status: 'DRAFT',
+        publishedAt: null,
+        createdAt: new Date(),
+        tools: [],
+        documents: [],
+      },
+      {
+        ...VALID_CONFIG,
+        id: 'version-1',
+        version: 1,
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        createdAt: new Date(),
+        tools: [{ toolDefinitionId: 'tool-1' }],
+        documents: [],
+      },
     ])
 
     const res = await call(versionsHandler, { method: 'GET' })

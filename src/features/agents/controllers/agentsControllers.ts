@@ -8,12 +8,14 @@ import {
   getAgentsModels,
   getAgentsRuns,
   postAgents,
+  postAgentsConfirm,
   postAgentsPublish,
   postAgentsRun,
   postAgentsVersion,
 } from '../services/agentsServices'
 import type {
   PayloadPostAgents,
+  PayloadPostAgentsConfirm,
   PayloadPostAgentsPublish,
   PayloadPostAgentsRun,
   PayloadPostAgentsVersion,
@@ -129,7 +131,16 @@ export const useAgentsControllers = () => {
     setAgentsRuns,
   ])
 
+  const storeAgentsConfirm = useMutation({
+    mutationFn: (payload: PayloadPostAgentsConfirm) => postAgentsConfirm(payload),
+    onSuccess: (data) => {
+      setPlaygroundResult(data)
+      queryClient.invalidateQueries({ queryKey: ['agentsRuns'] })
+    },
+  })
+
   return {
+    storeAgentsConfirm,
     fetchAgentsDetail,
     fetchAgentsRuns,
     fetchAgentsModels,

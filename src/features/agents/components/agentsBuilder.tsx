@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { LoadData } from '@/shared/components/load-data'
 import AgentsConfigFields from './agentsConfigFields'
+import AgentsAttachments from './agentsAttachments'
 import { useAgentsStates } from '../states/agentsStates'
 import { useAgentsControllers } from '../controllers/agentsControllers'
 import type { AgentsConfigValue, DataAgentsVersion } from '../types/agentsTypes'
@@ -16,6 +17,8 @@ const getConfig = (version: DataAgentsVersion): AgentsConfigValue => ({
   maxTokens: version.maxTokens,
   temperature: version.temperature,
   instructions: version.instructions,
+  toolIds: version.toolIds ?? [],
+  documentIds: version.documentIds ?? [],
 })
 
 export default function AgentsBuilder() {
@@ -95,6 +98,14 @@ export default function AgentsBuilder() {
               idPrefix="agent-builder"
               value={config}
               models={fetchAgentsModels.data?.models ?? []}
+              onChange={(next) =>
+                setConfig((prev) => (prev ? { ...prev, ...next } : prev))
+              }
+            />
+
+            <AgentsAttachments
+              toolIds={config.toolIds}
+              documentIds={config.documentIds}
               onChange={(next) =>
                 setConfig((prev) => (prev ? { ...prev, ...next } : prev))
               }

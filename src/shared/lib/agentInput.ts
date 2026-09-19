@@ -1,5 +1,12 @@
 import { z } from 'zod'
-import { AgentEffort, AgentEnvironment, AgentProvider } from '@prisma/client'
+import {
+  AgentEffort,
+  AgentEnvironment,
+  AgentProvider,
+  IntegrationAuth,
+  ToolMethod,
+  ToolPermission,
+} from '@prisma/client'
 
 import {
   DEFAULT_AGENT_MODEL,
@@ -122,7 +129,14 @@ export const agentInputSchema = withKnownModel(
 
 export const agentUpdateInputSchema = agentBaseSchema.omit({ projectId: true })
 
-export const agentVersionInputSchema = withKnownModel(modelConfigBaseSchema)
+const attachmentSchema = z.object({
+  toolIds: z.array(z.string().trim().min(1)).max(40).optional().default([]),
+  documentIds: z.array(z.string().trim().min(1)).max(20).optional().default([]),
+})
+
+export const agentVersionInputSchema = withKnownModel(
+  modelConfigBaseSchema.merge(attachmentSchema)
+)
 
 export const agentPublishInputSchema = z.object({
   versionId: z.string().trim().min(1, 'Versi wajib dipilih.'),
@@ -135,6 +149,75 @@ export const agentRunInputSchema = z.object({
     .min(1, 'Masukan wajib diisi.')
     .max(20_000, 'Masukan maksimal 20.000 karakter.'),
   versionId: z.string().trim().min(1).optional(),
+  environment: z.nativeEnum(AgentEnvironment).optional(),
+  sessionId: z.string().trim().min(1).optional(),
+})
+
+export const agentConfirmInputSchema = z.object({
+  toolCallId: z.string().trim().min(1, 'Id permintaan konfirmasi wajib diisi.'),
+  decision: z.enum(['CONFIRM', 'REJECT'], {
+    errorMap: () => ({ message: 'Keputusan hanya boleh CONFIRM atau REJECT.' }),
+  }),
+})
+
+const jsonSchemaValue = z
+  .record(z.unknown())
+  .refine((value) => value.type === 'object', {
+    message: 'Skema masukan tool harus objek JSON Schema bertipe object.',
+  })
+
+export const integrationInputSchema = z.object({
+  name: nameSchema,
+  slug: slugSchema,
+  description: descriptionSchema,
+  baseUrl: z
+    .string()
+    .trim()
+    .url('Base URL harus URL yang sah, lengkap dengan http atau https.'),
+  auth: z.nativeEnum(IntegrationAuth).default(IntegrationAuth.NONE),
+  authHeader: z.string().trim().max(80).optional().default(''),
+  secret: z.string().trim().max(500).optional().default(''),
+})
+
+export const toolInputSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, 'Nama tool minimal 3 karakter.')
+    .max(64, 'Nama tool maksimal 64 karakter.')
+    .regex(
+      /^[a-z][a-z0-9_]*$/,
+      'Nama tool hanya boleh huruf kecil, angka, dan garis bawah.'
+    ),
+  description: z
+    .string()
+    .trim()
+    .min(10, 'Deskripsi tool minimal 10 karakter — model membacanya untuk tahu kapan tool ini dipakai.')
+    .max(500, 'Deskripsi tool maksimal 500 karakter.'),
+  method: z.nativeEnum(ToolMethod).default(ToolMethod.GET),
+  path: z
+    .string()
+    .trim()
+    .min(1, 'Path wajib diisi.')
+    .max(200, 'Path maksimal 200 karakter.'),
+  permission: z.nativeEnum(ToolPermission).default(ToolPermission.READ),
+  inputSchema: jsonSchemaValue,
+})
+
+export const knowledgeInputSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(3, 'Judul minimal 3 karakter.')
+    .max(120, 'Judul maksimal 120 karakter.'),
+  content: z
+    .string()
+    .trim()
+    .min(10, 'Isi dokumen minimal 10 karakter.')
+    .max(200_000, 'Isi dokumen maksimal 200.000 karakter.'),
+})
+
+export const sessionInputSchema = z.object({
   environment: z.nativeEnum(AgentEnvironment).optional(),
 })
 

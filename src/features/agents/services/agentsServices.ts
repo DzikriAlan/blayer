@@ -1,6 +1,7 @@
 import { consoleFetch } from '@/shared/lib/consoleClient'
 import type {
   DataAgentsDetail,
+  PayloadPostAgentsConfirm,
   DataAgentsModel,
   DataAgentsRunHistory,
   DataAgentsRunResult,
@@ -46,6 +47,12 @@ export const postAgentsPublish = ({
 
 export const postAgentsRun = ({ agentId, ...payload }: PayloadPostAgentsRun) =>
   consoleFetch<DataAgentsRunResult>(`/agents/${agentId}/run`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+
+export const postAgentsConfirm = ({ runId, ...payload }: PayloadPostAgentsConfirm) =>
+  consoleFetch<DataAgentsRunResult>(`/runs/${runId}/confirm`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })

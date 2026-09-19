@@ -40,6 +40,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const versions = await prisma.agentVersion.findMany({
       where: { agentId },
       orderBy: { version: 'desc' },
+      include: {
+        tools: { select: { toolDefinitionId: true } },
+        documents: { select: { documentId: true } },
+      },
     })
 
     return sendSuccess(res, {
@@ -54,6 +58,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         effort: version.effort,
         maxTokens: version.maxTokens,
         temperature: version.temperature,
+        toolIds: version.tools.map((item) => item.toolDefinitionId),
+        documentIds: version.documents.map((item) => item.documentId),
         isProduction: version.id === agent.productionVersionId,
         publishedAt: version.publishedAt?.toISOString() ?? '',
         createdAt: version.createdAt.toISOString(),
@@ -87,6 +93,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         effort: data.effort,
         maxTokens: data.maxTokens,
         temperature: data.temperature,
+        // Tool dan dokumen menempel pada versi, bukan pada agent. Versi lama
+        // tetap memakai daftar yang berlaku saat ia dipublikasikan.
+        tools: { create: data.toolIds.map((toolDefinitionId) => ({ toolDefinitionId })) },
+        documents: { create: data.documentIds.map((documentId) => ({ documentId })) },
       },
       select: { id: true, version: true, status: true },
     })

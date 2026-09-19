@@ -1,10 +1,33 @@
 export type ProviderEffort = 'low' | 'medium' | 'high' | 'xhigh' | 'max'
 
+export interface ProviderTool {
+  name: string
+  description: string
+  inputSchema: Record<string, unknown>
+}
+
+export interface ProviderToolCall {
+  id: string
+  name: string
+  input: Record<string, unknown>
+}
+
+// Satu bentuk percakapan untuk semua provider. Adaptor yang menerjemahkannya ke
+// bentuk masing-masing vendor, sehingga runtime tidak perlu tahu bedanya.
+export interface ProviderMessage {
+  role: 'user' | 'assistant' | 'tool'
+  content: string
+  toolCalls?: ProviderToolCall[]
+  toolCallId?: string
+  isError?: boolean
+}
+
 export interface ProviderRunInput {
   apiKey: string
   model: string
   instructions: string
-  input: string
+  messages: ProviderMessage[]
+  tools: ProviderTool[]
   maxTokens: number
   effort: ProviderEffort
   temperature: number | null
@@ -12,6 +35,7 @@ export interface ProviderRunInput {
 
 export interface ProviderRunResult {
   text: string
+  toolCalls: ProviderToolCall[]
   inputTokens: number
   outputTokens: number
   stopReason: string

@@ -147,6 +147,7 @@ enum AgentEffort {
 enum AgentRunStatus {
   SUCCEEDED
   FAILED
+  PENDING_CONFIRMATION
 }
 
 model Project {
@@ -161,6 +162,9 @@ model Project {
   providerKeys ProviderCredential[]
   agents       Agent[]
   runs         AgentRun[]
+  integrations Integration[]
+  documents    KnowledgeDocument[]
+  sessions     AgentSession[]
 
   @@map("projects")
 }
@@ -233,9 +237,11 @@ model AgentVersion {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
-  agent         Agent      @relation("AgentVersions", fields: [agentId], references: [id], onDelete: Cascade)
-  productionFor Agent?     @relation("AgentProduction")
+  agent         Agent                  @relation("AgentVersions", fields: [agentId], references: [id], onDelete: Cascade)
+  productionFor Agent?                 @relation("AgentProduction")
   runs          AgentRun[]
+  tools         AgentVersionTool[]
+  documents     AgentVersionDocument[]
 
   @@unique([agentId, version])
   @@index([agentId])
@@ -259,13 +265,193 @@ model AgentRun {
   outputTokens   Int              @default(0)
   costUsd        Float?
   latencyMs      Int
+  sessionId      String?
   createdAt      DateTime         @default(now())
 
-  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  agent        Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  agentVersion AgentVersion @relation(fields: [agentVersionId], references: [id], onDelete: Cascade)
+  project      Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  agent        Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentVersion AgentVersion    @relation(fields: [agentVersionId], references: [id], onDelete: Cascade)
+  session      AgentSession?   @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  toolCalls    AgentToolCall[]
 
   @@index([agentId, createdAt, id])
   @@index([projectId, createdAt, id])
   @@map("agent_runs")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Tool, Knowledge, Memory (lihat PRD.md §4 dan §5)
+//
+// Blayer hanya menyimpan KONTRAK tool: nama, deskripsi, skema masukan, method,
+// dan potongan endpointnya. Yang menjalankan tetap endpoint milik project, dan
+// isinya tidak pernah ikut tersimpan di sini.
+// ---------------------------------------------------------------------------
+
+enum IntegrationAuth {
+  NONE
+  BEARER
+  HEADER
+}
+
+enum ToolMethod {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
+}
+
+enum ToolPermission {
+  READ
+  WRITE
+}
+
+enum ToolCallStatus {
+  SUCCEEDED
+  FAILED
+  PENDING_CONFIRMATION
+  REJECTED
+}
+
+enum AgentMessageRole {
+  USER
+  ASSISTANT
+}
+
+model Integration {
+  id          String          @id @default(cuid())
+  projectId   String
+  slug        String
+  name        String
+  description String?         @db.Text
+  baseUrl     String
+  auth        IntegrationAuth @default(NONE)
+  authHeader  String?
+  secret      String?         @db.Text
+  hint        String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tools   ToolDefinition[]
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+  @@map("integrations")
+}
+
+model ToolDefinition {
+  id            String         @id @default(cuid())
+  integrationId String
+  name          String
+  description   String         @db.Text
+  method        ToolMethod     @default(GET)
+  path          String
+  permission    ToolPermission @default(READ)
+  inputSchema   Json
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  integration Integration        @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  versions    AgentVersionTool[]
+  calls       AgentToolCall[]
+
+  @@unique([integrationId, name])
+  @@index([integrationId])
+  @@map("tool_definitions")
+}
+
+model AgentVersionTool {
+  id               String @id @default(cuid())
+  agentVersionId   String
+  toolDefinitionId String
+
+  agentVersion   AgentVersion   @relation(fields: [agentVersionId], references: [id], onDelete: Cascade)
+  toolDefinition ToolDefinition @relation(fields: [toolDefinitionId], references: [id], onDelete: Cascade)
+
+  @@unique([agentVersionId, toolDefinitionId])
+  @@index([agentVersionId])
+  @@map("agent_version_tools")
+}
+
+model KnowledgeDocument {
+  id        String   @id @default(cuid())
+  projectId String
+  title     String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project  Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions AgentVersionDocument[]
+
+  @@index([projectId])
+  @@map("knowledge_documents")
+}
+
+model AgentVersionDocument {
+  id             String @id @default(cuid())
+  agentVersionId String
+  documentId     String
+
+  agentVersion AgentVersion      @relation(fields: [agentVersionId], references: [id], onDelete: Cascade)
+  document     KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentVersionId, documentId])
+  @@index([agentVersionId])
+  @@map("agent_version_documents")
+}
+
+model AgentSession {
+  id          String           @id @default(cuid())
+  projectId   String
+  agentId     String
+  environment AgentEnvironment
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  project  Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messages AgentMessage[]
+  runs     AgentRun[]
+
+  @@index([projectId, agentId])
+  @@map("agent_sessions")
+}
+
+model AgentMessage {
+  id        String           @id @default(cuid())
+  sessionId String
+  role      AgentMessageRole
+  content   String           @db.Text
+  createdAt DateTime         @default(now())
+
+  session AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("agent_messages")
+}
+
+model AgentToolCall {
+  id               String         @id @default(cuid())
+  runId            String
+  toolDefinitionId String
+  name             String
+  permission       ToolPermission
+  status           ToolCallStatus
+  input            Json
+  output           String?        @db.Text
+  errorMessage     String?        @db.Text
+  latencyMs        Int            @default(0)
+  // Percakapan sampai titik tool ini dipanggil, supaya eksekusi bisa dilanjutkan
+  // setelah operator mengonfirmasi tool yang mengubah data.
+  state            Json?
+  providerCallId   String?
+  resolvedAt       DateTime?
+  createdAt        DateTime       @default(now())
+
+  run            AgentRun       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  toolDefinition ToolDefinition @relation(fields: [toolDefinitionId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@map("agent_tool_calls")
 }

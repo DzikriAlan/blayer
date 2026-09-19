@@ -7,6 +7,10 @@ import ConsoleShell from '@/components/console-shell'
 import ConsoleGate from '@/features/console/components/consoleGate'
 import ProjectsDetail from '@/features/projects/components/projectsDetail'
 import AgentsCreate from '@/features/agents/components/agentsCreate'
+import IntegrationsList from '@/features/integrations/components/integrationsList'
+import KnowledgeList from '@/features/knowledge/components/knowledgeList'
+import { useIntegrationsControllers } from '@/features/integrations/controllers/integrationsControllers'
+import { useKnowledgeControllers } from '@/features/knowledge/controllers/knowledgeControllers'
 import { useProjectsStates } from '@/features/projects/states/projectsStates'
 import { useProjectsControllers } from '@/features/projects/controllers/projectsControllers'
 import { useAgentsControllers } from '@/features/agents/controllers/agentsControllers'
@@ -19,6 +23,8 @@ const ProjectDetailPage: NextPage = () => {
 
   useProjectsControllers()
   useAgentsControllers()
+  useIntegrationsControllers()
+  useKnowledgeControllers()
 
   useEffect(() => {
     if (projectId) setGetProjectsDetail({ id: projectId })
@@ -35,6 +41,13 @@ const ProjectDetailPage: NextPage = () => {
           <ProjectsDetail>
             {projectId ? <AgentsCreate projectId={projectId} /> : null}
           </ProjectsDetail>
+
+          {projectId ? (
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 pb-16 sm:px-8">
+              <IntegrationsList projectId={projectId} />
+              <KnowledgeList projectId={projectId} />
+            </div>
+          ) : null}
         </ConsoleGate>
       </ConsoleShell>
     </>

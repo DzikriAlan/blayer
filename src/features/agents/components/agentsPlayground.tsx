@@ -18,7 +18,7 @@ const ENVIRONMENTS: AgentsEnvironment[] = [
 
 export default function AgentsPlayground() {
   const { agentsDetail, playgroundResult } = useAgentsStates()
-  const { storeAgentsRun } = useAgentsControllers()
+  const { storeAgentsRun, storeAgentsConfirm } = useAgentsControllers()
 
   const agent = agentsDetail.data
   const [form, setForm] = useState<{
@@ -131,6 +131,64 @@ export default function AgentsPlayground() {
         <h2 className="text-lg font-medium tracking-tight">
           Jawaban
         </h2>
+
+        {playgroundResult?.status === 'PENDING_CONFIRMATION' &&
+        playgroundResult.pendingToolCall ? (
+          <div className="rounded-lg border border-primary/40 bg-primary/10 p-4">
+            <p className="text-sm font-medium text-primary">
+              Menunggu konfirmasi tool yang mengubah data
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Agent ingin menjalankan{' '}
+              <span className="font-mono text-foreground">
+                {playgroundResult.pendingToolCall.name}
+              </span>{' '}
+              dengan masukan berikut. Tool ini tidak akan berjalan sebelum kamu
+              menyetujuinya.
+            </p>
+            <pre className="mt-3 overflow-x-auto rounded-lg border border-border bg-background p-3 font-mono text-xs">
+              {JSON.stringify(playgroundResult.pendingToolCall.input, null, 2)}
+            </pre>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Button
+                type="button"
+                size="sm"
+                disabled={storeAgentsConfirm.isPending}
+                onClick={() =>
+                  storeAgentsConfirm.mutate({
+                    runId: playgroundResult.runId,
+                    toolCallId: playgroundResult.pendingToolCall?.id ?? '',
+                    decision: 'CONFIRM',
+                  })
+                }
+              >
+                {storeAgentsConfirm.isPending ? 'Menjalankan…' : 'Jalankan tool'}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={storeAgentsConfirm.isPending}
+                onClick={() =>
+                  storeAgentsConfirm.mutate({
+                    runId: playgroundResult.runId,
+                    toolCallId: playgroundResult.pendingToolCall?.id ?? '',
+                    decision: 'REJECT',
+                  })
+                }
+              >
+                Tolak
+              </Button>
+            </div>
+
+            {storeAgentsConfirm.isError ? (
+              <p className="mt-3 text-sm leading-relaxed text-destructive">
+                {storeAgentsConfirm.error.message}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         {playgroundResult ? (
           <>

@@ -40,7 +40,8 @@ const getInput = (overrides: Record<string, unknown> = {}) => ({
   apiKey: 'sk-ant-uji',
   model: 'claude-opus-5',
   instructions: 'Jadilah asisten akuntansi.',
-  input: 'Berapa laba bulan lalu?',
+  messages: [{ role: 'user' as const, content: 'Berapa laba bulan lalu?' }],
+  tools: [],
   maxTokens: 16_000,
   effort: 'high' as const,
   temperature: null,
@@ -58,6 +59,7 @@ describe('adaptor Anthropic', () => {
 
     expect(result).toMatchObject({
       text: 'jawaban agent',
+      toolCalls: [],
       inputTokens: 120,
       outputTokens: 45,
       stopReason: 'end_turn',
@@ -156,5 +158,96 @@ describe('adaptor Anthropic', () => {
     const failure = await runAnthropic(getInput()).catch((error) => error)
     expect(failure).toBeInstanceOf(ProviderError)
     expect(failure.code).toBe('PROVIDER_UNREACHABLE')
+  })
+})
+
+describe('tool pada adaptor Anthropic', () => {
+  it('TC-74a mengirim kontrak tool apa adanya ke provider', async () => {
+    await runAnthropic(
+      getInput({
+        tools: [
+          {
+            name: 'get_profit_loss',
+            description: 'Ambil laporan laba rugi.',
+            inputSchema: { type: 'object', properties: { month: { type: 'string' } } },
+          },
+        ],
+      })
+    )
+
+    expect(createMock.mock.calls[0][0].tools).toEqual([
+      {
+        name: 'get_profit_loss',
+        description: 'Ambil laporan laba rugi.',
+        input_schema: { type: 'object', properties: { month: { type: 'string' } } },
+      },
+    ])
+  })
+
+  it('TC-74b tidak mengirim daftar tool saat agentnya memang tidak punya', async () => {
+    await runAnthropic(getInput())
+
+    expect(createMock.mock.calls[0][0]).not.toHaveProperty('tools')
+  })
+
+  it('TC-74c membaca permintaan tool beserta masukannya', async () => {
+    createMock.mockResolvedValue(
+      getMessage({
+        content: [
+          { type: 'text', text: 'sebentar' },
+          {
+            type: 'tool_use',
+            id: 'toolu_1',
+            name: 'get_profit_loss',
+            input: { month: '2026-08' },
+          },
+        ],
+        stop_reason: 'tool_use',
+      })
+    )
+
+    const result = await runAnthropic(getInput())
+
+    expect(result.toolCalls).toEqual([
+      { id: 'toolu_1', name: 'get_profit_loss', input: { month: '2026-08' } },
+    ])
+    expect(result.text).toBe('sebentar')
+  })
+
+  it('TC-74d mengumpulkan semua hasil tool dalam satu pesan user', async () => {
+    await runAnthropic(
+      getInput({
+        messages: [
+          { role: 'user', content: 'berapa laba?' },
+          {
+            role: 'assistant',
+            content: 'sebentar',
+            toolCalls: [
+              { id: 'toolu_1', name: 'a', input: {} },
+              { id: 'toolu_2', name: 'b', input: {} },
+            ],
+          },
+          { role: 'tool', toolCallId: 'toolu_1', content: '{"laba":12}' },
+          { role: 'tool', toolCallId: 'toolu_2', content: 'gagal', isError: true },
+        ],
+      })
+    )
+
+    const messages = createMock.mock.calls[0][0].messages
+
+    expect(messages).toHaveLength(3)
+    expect(messages[1]).toMatchObject({ role: 'assistant' })
+    expect(messages[2]).toEqual({
+      role: 'user',
+      content: [
+        { type: 'tool_result', tool_use_id: 'toolu_1', content: '{"laba":12}' },
+        {
+          type: 'tool_result',
+          tool_use_id: 'toolu_2',
+          content: 'gagal',
+          is_error: true,
+        },
+      ],
+    })
   })
 })

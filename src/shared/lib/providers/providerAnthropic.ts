@@ -4,9 +4,72 @@ import { getAgentModel } from '../agentCatalog'
 import {
   PROVIDER_TIMEOUT_MS,
   ProviderError,
+  type ProviderMessage,
   type ProviderRunInput,
   type ProviderRunResult,
+  type ProviderTool,
 } from './providerTypes'
+
+// Hasil tool harus tiba sebagai satu pesan user berisi semua tool_result
+// sekaligus. Memecahnya jadi beberapa pesan membuat model berhenti memanggil
+// tool secara paralel.
+const getMessages = (messages: ProviderMessage[]) => {
+  const result: Anthropic.MessageParam[] = []
+  let toolResults: Anthropic.ToolResultBlockParam[] = []
+
+  const flushToolResults = () => {
+    if (!toolResults.length) return
+
+    result.push({ role: 'user', content: toolResults })
+    toolResults = []
+  }
+
+  messages.forEach((message) => {
+    if (message.role === 'tool') {
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: message.toolCallId ?? '',
+        content: message.content,
+        ...(message.isError ? { is_error: true } : {}),
+      })
+
+      return
+    }
+
+    flushToolResults()
+
+    if (message.role === 'user') {
+      result.push({ role: 'user', content: message.content })
+      return
+    }
+
+    const content: Anthropic.ContentBlockParam[] = []
+
+    if (message.content) content.push({ type: 'text', text: message.content })
+
+    message.toolCalls?.forEach((toolCall) =>
+      content.push({
+        type: 'tool_use',
+        id: toolCall.id,
+        name: toolCall.name,
+        input: toolCall.input,
+      })
+    )
+
+    if (content.length) result.push({ role: 'assistant', content })
+  })
+
+  flushToolResults()
+
+  return result
+}
+
+const getTools = (tools: ProviderTool[]): Anthropic.Tool[] =>
+  tools.map((tool) => ({
+    name: tool.name,
+    description: tool.description,
+    input_schema: tool.inputSchema as Anthropic.Tool.InputSchema,
+  }))
 
 // Penolakan model sengaja tidak dialihkan ke model cadangan. Agent dijalankan
 // pada versi yang sudah dipublikasikan, dan mengganti modelnya diam-diam akan
@@ -28,7 +91,8 @@ export const runAnthropic = async (
       model: input.model,
       max_tokens: input.maxTokens,
       system: input.instructions,
-      messages: [{ role: 'user', content: input.input }],
+      messages: getMessages(input.messages),
+      ...(input.tools.length ? { tools: getTools(input.tools) } : {}),
       ...(capability?.supportsAdaptiveThinking
         ? { thinking: { type: 'adaptive' as const } }
         : {}),
@@ -54,8 +118,17 @@ export const runAnthropic = async (
       .join('\n')
       .trim()
 
+    const toolCalls = response.content
+      .filter((block): block is Anthropic.ToolUseBlock => block.type === 'tool_use')
+      .map((block) => ({
+        id: block.id,
+        name: block.name,
+        input: (block.input ?? {}) as Record<string, unknown>,
+      }))
+
     return {
       text,
+      toolCalls,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
       stopReason: response.stop_reason ?? 'end_turn',

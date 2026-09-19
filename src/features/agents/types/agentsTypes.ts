@@ -31,6 +31,8 @@ export interface DataAgentsVersion {
   effort: AgentsEffort
   maxTokens: number
   temperature: number | null
+  toolIds: string[]
+  documentIds: string[]
   isProduction: boolean
   publishedAt: string
   createdAt: string
@@ -88,12 +90,20 @@ export interface DataAgentsRunResult {
   environment: AgentsEnvironment
   provider: AgentsProvider
   model: string
+  status: AgentsRunStatusResult
   output: string
   stopReason: string
   latencyMs: number
   inputTokens: number
   outputTokens: number
   costUsd: number | null
+  sessionId: string | null
+  toolCalls: DataAgentsToolCall[]
+  pendingToolCall: {
+    id: string
+    name: string
+    input: Record<string, unknown>
+  } | null
 }
 
 export interface PayloadGetAgentsDetail {
@@ -121,6 +131,25 @@ export interface PayloadPostAgentsVersion {
   effort: AgentsEffort
   maxTokens: number
   temperature: number | null
+  toolIds: string[]
+  documentIds: string[]
+}
+
+export interface PayloadPostAgentsConfirm {
+  runId: string
+  toolCallId: string
+  decision: 'CONFIRM' | 'REJECT'
+}
+
+export type AgentsRunStatusResult = 'SUCCEEDED' | 'FAILED' | 'PENDING_CONFIRMATION'
+
+export interface DataAgentsToolCall {
+  id: string
+  name: string
+  permission: 'READ' | 'WRITE'
+  status: string
+  input: Record<string, unknown>
+  output: string
 }
 
 export interface PayloadPostAgentsPublish {
@@ -156,4 +185,6 @@ export interface AgentsConfigValue {
   maxTokens: number
   temperature: number | null
   instructions: string
+  toolIds: string[]
+  documentIds: string[]
 }

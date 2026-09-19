@@ -8,7 +8,8 @@ const getInput = (overrides: Record<string, unknown> = {}) => ({
   apiKey: 'sk-uji',
   model: 'model-uji',
   instructions: 'Jadilah asisten akuntansi.',
-  input: 'Berapa laba bulan lalu?',
+  messages: [{ role: 'user' as const, content: 'Berapa laba bulan lalu?' }],
+  tools: [],
   maxTokens: 2_048,
   effort: 'high' as const,
   temperature: null,
@@ -144,5 +145,139 @@ describe('adaptor OpenAI', () => {
     expect(result.inputTokens).toBe(0)
     expect(result.outputTokens).toBe(0)
     expect(result.stopReason).toBe('stop')
+  })
+})
+
+describe('tool pada adaptor Chat Completions', () => {
+  it('TC-75a mengirim kontrak tool sebagai function', async () => {
+    fetchMock.mockResolvedValue(
+      getJsonResponse(200, {
+        choices: [{ message: { content: 'ok' }, finish_reason: 'stop' }],
+        usage: {},
+      })
+    )
+
+    await runOpenai(
+      getInput({
+        tools: [
+          {
+            name: 'get_profit_loss',
+            description: 'Ambil laporan laba rugi.',
+            inputSchema: { type: 'object', properties: {} },
+          },
+        ],
+      })
+    )
+
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    )
+
+    expect(body.tools).toEqual([
+      {
+        type: 'function',
+        function: {
+          name: 'get_profit_loss',
+          description: 'Ambil laporan laba rugi.',
+          parameters: { type: 'object', properties: {} },
+        },
+      },
+    ])
+  })
+
+  it('TC-75b membaca permintaan tool dan memulihkan argumen JSON-nya', async () => {
+    fetchMock.mockResolvedValue(
+      getJsonResponse(200, {
+        choices: [
+          {
+            message: {
+              content: null,
+              tool_calls: [
+                {
+                  id: 'call_1',
+                  function: {
+                    name: 'get_profit_loss',
+                    arguments: '{"month":"2026-08"}',
+                  },
+                },
+              ],
+            },
+            finish_reason: 'tool_calls',
+          },
+        ],
+        usage: {},
+      })
+    )
+
+    const result = await runOpenai(getInput())
+
+    expect(result.toolCalls).toEqual([
+      { id: 'call_1', name: 'get_profit_loss', input: { month: '2026-08' } },
+    ])
+  })
+
+  it('TC-75c tidak jatuh saat argumen toolnya bukan JSON utuh', async () => {
+    fetchMock.mockResolvedValue(
+      getJsonResponse(200, {
+        choices: [
+          {
+            message: {
+              content: null,
+              tool_calls: [
+                { id: 'call_1', function: { name: 'x', arguments: '{"month":' } },
+              ],
+            },
+          },
+        ],
+        usage: {},
+      })
+    )
+
+    const result = await runOpenai(getInput())
+
+    expect(result.toolCalls[0].input).toEqual({})
+  })
+
+  it('TC-75d mengirim hasil tool sebagai pesan tool', async () => {
+    fetchMock.mockResolvedValue(
+      getJsonResponse(200, {
+        choices: [{ message: { content: 'ok' }, finish_reason: 'stop' }],
+        usage: {},
+      })
+    )
+
+    await runOpenai(
+      getInput({
+        messages: [
+          { role: 'user', content: 'berapa laba?' },
+          {
+            role: 'assistant',
+            content: '',
+            toolCalls: [{ id: 'call_1', name: 'get_profit_loss', input: { month: '08' } }],
+          },
+          { role: 'tool', toolCallId: 'call_1', content: '{"laba":12}' },
+        ],
+      })
+    )
+
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    )
+
+    expect(body.messages[2]).toMatchObject({
+      role: 'assistant',
+      tool_calls: [
+        {
+          id: 'call_1',
+          type: 'function',
+          function: { name: 'get_profit_loss', arguments: '{"month":"08"}' },
+        },
+      ],
+    })
+    expect(body.messages[3]).toEqual({
+      role: 'tool',
+      tool_call_id: 'call_1',
+      content: '{"laba":12}',
+    })
   })
 })

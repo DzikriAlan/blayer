@@ -12,8 +12,11 @@ const { adapterMock, prismaMock } = vi.hoisted(() => ({
   prismaMock: {
     agent: { findUnique: vi.fn() },
     agentVersion: { findFirst: vi.fn() },
+    agentSession: { findFirst: vi.fn() },
+    agentMessage: { findMany: vi.fn(), createMany: vi.fn() },
+    agentToolCall: { create: vi.fn() },
     providerCredential: { findUnique: vi.fn() },
-    agentRun: { create: vi.fn() },
+    agentRun: { create: vi.fn(), update: vi.fn() },
     projectApiKey: { findUnique: vi.fn(), update: vi.fn() },
   },
 }))
@@ -36,6 +39,8 @@ const getVersion = (overrides: Record<string, unknown> = {}) => ({
   effort: AgentEffort.HIGH,
   maxTokens: 16_000,
   temperature: null,
+  tools: [],
+  documents: [],
   ...overrides,
 })
 
@@ -75,9 +80,22 @@ beforeEach(async () => {
   prismaMock.agent.findUnique = vi.fn().mockResolvedValue({
     id: 'agent-1',
     projectId: 'project-1',
-    productionVersion: getVersion(),
+    productionVersionId: 'version-1',
   })
-  prismaMock.agentVersion.findFirst = vi.fn().mockResolvedValue(getVersion({ id: 'version-2', version: 4 }))
+  prismaMock.agentVersion.findFirst = vi
+    .fn()
+    .mockImplementation(({ where }: { where: { id: string } }) =>
+      Promise.resolve(
+        where.id === 'version-2'
+          ? getVersion({ id: 'version-2', version: 4 })
+          : getVersion()
+      )
+    )
+  prismaMock.agentSession.findFirst = vi.fn().mockResolvedValue(null)
+  prismaMock.agentMessage.findMany = vi.fn().mockResolvedValue([])
+  prismaMock.agentMessage.createMany = vi.fn().mockResolvedValue({})
+  prismaMock.agentToolCall.create = vi.fn().mockResolvedValue({ id: 'tool-call-1' })
+  prismaMock.agentRun.update = vi.fn().mockResolvedValue({})
   prismaMock.providerCredential.findUnique = vi.fn().mockResolvedValue({
     id: 'credential-1',
     secret: encryptSecret('sk-ant-rahasia'),
@@ -94,6 +112,7 @@ beforeEach(async () => {
   adapterMock.mockReset()
   adapterMock.mockResolvedValue({
     text: 'laba bulan lalu 12 juta',
+    toolCalls: [],
     inputTokens: 1_000,
     outputTokens: 500,
     stopReason: 'end_turn',
@@ -133,7 +152,7 @@ describe('kepemilikan rute eksekusi agent', () => {
     prismaMock.agent.findUnique = vi.fn().mockResolvedValue({
       id: 'agent-1',
       projectId: 'project-lain',
-      productionVersion: getVersion(),
+      productionVersionId: 'version-1',
     })
 
     const res = await call({ token: PROJECT_TOKEN, body: { input: 'halo' } })
@@ -194,10 +213,16 @@ describe('eksekusi agent', () => {
       expect.objectContaining({
         apiKey: 'sk-ant-rahasia',
         model: 'claude-opus-5',
-        instructions: 'Jawab hanya dari hasil tool.',
         effort: 'high',
+        messages: [{ role: 'user', content: 'berapa laba?' }],
+        tools: [],
       })
     )
+
+    // Instruksi agent tetap utuh, dengan guardrail ditambahkan di belakangnya.
+    const { instructions } = adapterMock.mock.calls[0][0]
+    expect(instructions).toContain('Jawab hanya dari hasil tool.')
+    expect(instructions).toContain('Jangan mengarang angka')
   })
 
   it('TC-61c menghitung biaya dari harga model yang benar-benar dipakai', async () => {
@@ -205,7 +230,7 @@ describe('eksekusi agent', () => {
 
     // Opus 5: (1000/1jt x $5) + (500/1jt x $25) = $0.0175
     expect(res.body.data).toMatchObject({ costUsd: 0.0175 })
-    expect(prismaMock.agentRun.create).toHaveBeenCalledWith(
+    expect(prismaMock.agentRun.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'SUCCEEDED', costUsd: 0.0175 }),
       })
@@ -224,16 +249,16 @@ describe('eksekusi agent', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.body.data).toMatchObject({ version: 4, environment: 'DEVELOPMENT' })
-    expect(prismaMock.agentVersion.findFirst).toHaveBeenCalledWith({
-      where: { id: 'version-2', agentId: 'agent-1' },
-    })
+    expect(prismaMock.agentVersion.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'version-2', agentId: 'agent-1' } })
+    )
   })
 
   it('TC-61e menolak menjalankan agent yang belum punya versi production', async () => {
     prismaMock.agent.findUnique = vi.fn().mockResolvedValue({
       id: 'agent-1',
       projectId: 'project-1',
-      productionVersion: null,
+      productionVersionId: null,
     })
 
     const res = await call({ token: PROJECT_TOKEN, body: { input: 'halo' } })
@@ -270,7 +295,7 @@ describe('eksekusi agent', () => {
 
     expect(res.statusCode).toBe(422)
     expect(res.body.errors?.[0].code).toBe('AGENT_REFUSED')
-    expect(prismaMock.agentRun.create).toHaveBeenCalledWith(
+    expect(prismaMock.agentRun.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'FAILED',
