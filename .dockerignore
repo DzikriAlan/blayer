@@ -1,0 +1,14 @@
+node_modules
+.next
+.next-verify
+.git
+.github
+.vscode
+.claude
+.qodo
+test
+sdk/dist
+*.log
+.env
+.env.local
+.env.docker

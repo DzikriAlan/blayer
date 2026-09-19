@@ -13,9 +13,10 @@ const config: Config = {
   theme: {
   	extend: {
   		fontFamily: {
-  			sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-  			display: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-  			mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+  			sans: ['var(--font-sans)', 'Geist Fallback', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+  			display: ['var(--font-sans)', 'Geist Fallback', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+  			mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+  			pixel: ['var(--font-pixel)', 'var(--font-mono)', 'ui-monospace', 'monospace'],
   		},
   		colors: {
   			background: 'hsl(var(--background))',
@@ -61,10 +62,11 @@ const config: Config = {
   			}
   		},
   		borderRadius: {
-  			xl: 'calc(var(--radius) + 4px)',
+  			'2xl': 'var(--radius)',
+  			xl: 'var(--radius)',
   			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 4px)',
-  			sm: 'calc(var(--radius) - 6px)'
+  			md: 'calc(var(--radius) - 1px)',
+  			sm: 'calc(var(--radius) - 1px)'
   		},
   		boxShadow: {
   			glow: '0 0 0 1px hsl(var(--primary) / 0.35), 0 12px 40px -12px hsl(var(--primary) / 0.55)',

@@ -32,7 +32,7 @@
     --chart-3: 240 5% 64%;
     --chart-4: 300 70% 62%;
     --chart-5: 240 5% 36%;
-    --radius: 0.75rem;
+    --radius: 5px;
   }
 
   .dark {
@@ -50,7 +50,7 @@
   h1,
   h2,
   h3 {
-    @apply font-sans tracking-tight;
+    @apply font-display tracking-tight;
   }
 }
 
@@ -67,6 +67,12 @@
 
   .eyebrow {
     @apply text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground;
+  }
+
+  /* Label 8-bit. Ukuran hurufnya dikecilkan karena Press Start 2P menggambar
+     karakter jauh lebih besar dari font biasa pada ukuran yang sama. */
+  .pixel-label {
+    @apply font-pixel text-[10px] leading-[1.6] tracking-tight;
   }
 
   .index-badge {
@@ -98,6 +104,33 @@
       linear-gradient(90deg, hsl(var(--border) / 0.7) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 100%);
+  }
+
+  /* Latar bergradien seperti panel besar di referensi: beberapa sumber cahaya
+     ungu yang saling tumpang tindih, lalu dikasari butiran halus supaya tidak
+     terlihat seperti gradien mulus buatan mesin. */
+  .mesh {
+    background-color: hsl(270 80% 8%);
+    background-image:
+      radial-gradient(60% 80% at 15% 20%, hsl(280 100% 60% / 0.55), transparent 60%),
+      radial-gradient(50% 70% at 85% 10%, hsl(258 100% 62% / 0.5), transparent 62%),
+      radial-gradient(70% 90% at 70% 90%, hsl(295 100% 52% / 0.42), transparent 65%),
+      radial-gradient(40% 60% at 40% 70%, hsl(250 100% 50% / 0.38), transparent 60%);
+  }
+
+  .mesh-soft {
+    background-color: hsl(270 60% 6%);
+    background-image:
+      radial-gradient(60% 80% at 20% 30%, hsl(275 100% 58% / 0.35), transparent 62%),
+      radial-gradient(50% 70% at 80% 20%, hsl(300 100% 55% / 0.28), transparent 60%);
+  }
+
+  .noise {
+    background-image: radial-gradient(
+      hsl(0 0% 100% / 0.16) 0.5px,
+      transparent 0.5px
+    );
+    background-size: 3px 3px;
   }
 
   .dotted {
@@ -162,6 +195,27 @@
     .rotator-track {
       animation: none;
     }
+  }
+
+  /* Cuplikan kode di kartu: token diwarnai dengan kelas, bukan pustaka
+     highlight — isinya tetap, jadi tidak perlu parser di sisi klien. */
+  .code {
+    @apply overflow-x-auto rounded-lg border border-border bg-background/80 p-4 font-mono text-xs leading-relaxed;
+  }
+  .code .tok-key {
+    @apply text-primary;
+  }
+  .code .tok-str {
+    @apply text-emerald-300;
+  }
+  .code .tok-com {
+    @apply text-muted-foreground;
+  }
+  .code .tok-fn {
+    @apply text-sky-300;
+  }
+  .code .tok-num {
+    @apply text-amber-300;
   }
 
   .scroll-hidden {

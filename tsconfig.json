@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@blayer/sdk": [
+        "./sdk/src/index.ts"
       ]
     },
     "target": "ES2017"

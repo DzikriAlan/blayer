@@ -15,7 +15,9 @@
     "postinstall": "prisma generate",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eval": "node eval/run.mjs",
+    "sdk:build": "npm --prefix sdk run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

@@ -109,21 +109,25 @@ export default function IntegrationsDetail() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
+    <div className="mx-auto w-full max-w-[1600px] px-3 py-12 sm:px-5 sm:py-16">
       <LoadData response={state} minHeight="40vh">
         {integration ? (
           <div className="flex flex-col gap-10">
-            <div>
-              <span className="text-xs text-muted-foreground">
-                {integration.slug} · {integration.auth}
-              </span>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-                {integration.name}
-              </h1>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {integration.baseUrl}
-                {integration.hint ? ` · kredensial ${integration.hint}` : ''}
-              </p>
+            <div className="mesh-soft relative overflow-hidden rounded-2xl border border-border px-6 py-10 sm:px-10">
+              <span aria-hidden className="noise pointer-events-none absolute inset-0 opacity-40" />
+              <div className="relative">
+                <span className="pixel-label text-primary">Integration</span>
+                <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+                  {integration.name}
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {integration.slug} · {integration.auth}
+                </p>
+                <p className="mt-3 font-mono text-sm text-muted-foreground">
+                  {integration.baseUrl}
+                  {integration.hint ? ` · kredensial ${integration.hint}` : ''}
+                </p>
+              </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">

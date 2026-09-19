@@ -1,27 +1,18 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import LandingHero from './landingHero'
+import LandingBento from './landingBento'
+import LandingFlow from './landingFlow'
 import LandingFeature from './landingFeature'
 import { LANDING_MARQUEE } from './landingCatalog'
 
-const FLOW = [
-  {
-    id: 'call',
-    title: 'Aplikasimu memanggil',
-    body: 'POST /api/v1/agents/{id}/run dengan API key milik projectnya sendiri.',
-  },
-  {
-    id: 'run',
-    title: 'Blayer menjalankan',
-    body: 'Versi production dimuat, dikirim ke provider yang kamu pilih, hasilnya dicatat.',
-  },
-  {
-    id: 'data',
-    title: 'Datamu tetap milikmu',
-    body: 'Kredensial provider terenkripsi di instance-mu. Data bisnis tidak pernah masuk ke sini.',
-  },
+const PROMISES = [
+  'Kunci provider terenkripsi di instance-mu, dipisah per project dan environment.',
+  'Tool yang mengubah data tidak pernah jalan tanpa konfirmasi.',
+  'Tiap eksekusi tercatat lengkap dengan token, biaya, dan lamanya.',
+  'Lisensi MIT, tanpa server pusat yang menyimpan data agentmu.',
 ]
 
 export default function LandingContent() {
@@ -29,9 +20,20 @@ export default function LandingContent() {
     <>
       <LandingHero />
 
+      <section className="mx-auto w-full max-w-4xl px-3 py-20 text-center sm:px-5 sm:py-24">
+        <p className="text-balance text-xl leading-relaxed text-muted-foreground sm:text-2xl">
+          Blayer adalah <span className="text-foreground">AI Agent Platform</span>{' '}
+          yang kamu jalankan sendiri. Ia mengatur{' '}
+          <span className="text-primary">prompt, model, versi, tool, dan
+          pengetahuan</span>{' '}
+          agentmu — sementara data bisnisnya tetap tinggal di aplikasimu, tidak
+          ikut pindah ke mana-mana.
+        </p>
+      </section>
+
       <div
         aria-hidden
-        className="overflow-hidden border-b border-border bg-card/40 py-3"
+        className="overflow-hidden border-y border-border bg-card/40 py-3"
       >
         <div className="marquee flex w-max items-center gap-10 pl-10">
           {[...LANDING_MARQUEE, ...LANDING_MARQUEE].map((word, index) => (
@@ -46,78 +48,85 @@ export default function LandingContent() {
         </div>
       </div>
 
-      <section id="cara-kerja" className="scroll-mt-20 border-b border-border">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
-          <div className="flex flex-col items-center text-center">
-            <span className="text-sm font-medium text-primary">Cara kerjanya</span>
-            <h2 className="mt-4 max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-              Otaknya di sini, datanya tetap di sana.
-            </h2>
-            <p className="mt-5 max-w-xl text-pretty leading-relaxed text-muted-foreground">
-              Aplikasimu memanggil satu endpoint. Blayer memuat konfigurasi agent
-              dan menjalankannya. Saat agent butuh data, yang dipanggil adalah
-              endpoint milik projectmu sendiri — Blayer tidak pernah menyentuh
-              basis datamu.
-            </p>
-          </div>
+      <section className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+        <LandingBento />
+      </section>
 
-          <ol className="mt-14 grid gap-4 lg:grid-cols-3">
-            {FLOW.map((step, index) => (
-              <li
-                key={step.id}
-                className="flex flex-col rounded-xl border border-border bg-card p-6"
-              >
-                <span className="text-xs text-muted-foreground">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 className="mt-4 text-lg font-medium tracking-tight">
-                  {step.title}
-                </h3>
-                <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-                  {step.body}
-                </p>
-              </li>
-            ))}
-          </ol>
+      <section id="cara-kerja" className="scroll-mt-20 border-t border-border">
+        <div className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+          <LandingFlow />
         </div>
       </section>
 
-      <section id="fitur" className="scroll-mt-20 border-b border-border">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
-          <div className="flex flex-col items-center text-center">
-            <span className="text-sm font-medium text-primary">Yang sudah jalan</span>
-            <h2 className="mt-4 max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-              Yang bisa dipakai hari ini.
-            </h2>
+      <section id="fitur" className="scroll-mt-20 border-t border-border">
+        <div className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="pixel-label text-primary">Yang sudah jalan</span>
+              <h2 className="mt-4 max-w-xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+                Yang bisa dipakai hari ini.
+              </h2>
+            </div>
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+              Yang belum selesai ditandai terang-terangan — halaman ini tidak
+              menjanjikan apa yang belum ada di dalam.
+            </p>
           </div>
 
-          <div className="mt-14">
+          <div className="mt-12">
             <LandingFeature />
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-b border-border">
-        <span
-          aria-hidden
-          className="glow pointer-events-none absolute -bottom-40 left-1/2 -z-10 h-[26rem] w-[40rem] -translate-x-1/2 blur-2xl"
-        />
+      <section className="border-t border-border">
+        <div className="mx-auto w-full max-w-[1600px] px-3 py-20 sm:px-5 sm:py-24">
+          <div className="flex flex-col items-center text-center">
+            <span className="pixel-label text-primary">Open source selamanya</span>
+            <h2 className="mt-4 max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Jalankan di infrastrukturmu sendiri.
+            </h2>
+          </div>
 
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-5 py-20 text-center sm:px-8 sm:py-24">
-          <h2 className="max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-            Jalankan di infrastrukturmu sendiri.
-          </h2>
+          <div className="mt-14 grid gap-4 lg:grid-cols-2">
+            <div className="relative overflow-hidden rounded-xl border border-border p-8">
+              <span aria-hidden className="mesh absolute inset-0" />
+              <span aria-hidden className="noise absolute inset-0 opacity-50" />
 
-          <p className="max-w-xl text-pretty leading-relaxed text-muted-foreground">
-            Blayer berlisensi MIT dan dirancang untuk di-self-host. Tidak ada
-            server pusat yang menyimpan kunci provider atau data agentmu.
-          </p>
+              <div className="relative flex h-full flex-col justify-between gap-10">
+                <p className="text-2xl font-semibold leading-tight tracking-tight text-white">
+                  Satu perintah, instance-mu sendiri.
+                </p>
 
-          <Button asChild size="lg">
-            <Link href="/console">
-              Mulai dari Console <ArrowRight />
-            </Link>
-          </Button>
+                <pre className="code border-white/15 bg-black/40 text-white/90">
+                  <code>{`docker compose up -d
+docker compose exec app npx prisma migrate deploy`}</code>
+                </pre>
+              </div>
+            </div>
+
+            <ul className="flex flex-col gap-3">
+              {PROMISES.map((promise) => (
+                <li
+                  key={promise}
+                  className="flex items-start gap-3 rounded-xl border border-border bg-card px-3 py-4"
+                >
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span className="text-sm leading-relaxed text-muted-foreground">
+                    {promise}
+                  </span>
+                </li>
+              ))}
+
+              <li className="mt-2">
+                <Button asChild size="lg">
+                  <Link href="/console">
+                    Mulai dari Console <ArrowRight />
+                  </Link>
+                </Button>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
     </>

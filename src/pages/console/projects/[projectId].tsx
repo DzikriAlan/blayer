@@ -43,7 +43,7 @@ const ProjectDetailPage: NextPage = () => {
           </ProjectsDetail>
 
           {projectId ? (
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 pb-16 sm:px-8">
+            <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-12 px-3 pb-16 sm:px-5">
               <IntegrationsList projectId={projectId} />
               <KnowledgeList projectId={projectId} />
             </div>

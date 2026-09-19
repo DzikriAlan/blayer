@@ -33,6 +33,9 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  // Image Docker memakai keluaran standalone supaya runtime-nya tidak perlu
+  // seluruh node_modules. Platform lain tetap memakai keluaran biasa.
+  ...(process.env.BLAYER_STANDALONE ? { output: 'standalone' } : {}),
   distDir: process.env.NEXT_DIST_DIR || '.next',
   poweredByHeader: false,
   images: {

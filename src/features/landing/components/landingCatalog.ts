@@ -23,6 +23,8 @@ export interface LandingFeature {
   description: string
   icon: LucideIcon
   isReady: boolean
+  // Lebar kartu di kisi bento: 1, 2, atau 3 kolom.
+  span: 1 | 2 | 3
 }
 
 export interface LandingStat {
@@ -78,6 +80,7 @@ export const LANDING_FEATURES: LandingFeature[] = [
       'Instruksi, pilihan model, effort, dan batas token tersimpan sebagai konfigurasi — bukan prompt mentah yang tercecer di kode tiap project.',
     icon: SlidersHorizontal,
     isReady: true,
+    span: 2,
   },
   {
     id: 'versioning',
@@ -86,6 +89,7 @@ export const LANDING_FEATURES: LandingFeature[] = [
       'Tiap perubahan lahir sebagai draf. Versi yang melayani production tidak pernah berubah diam-diam, dan kembali ke versi sebelumnya cukup satu langkah.',
     icon: GitBranch,
     isReady: true,
+    span: 1,
   },
   {
     id: 'playground',
@@ -94,6 +98,7 @@ export const LANDING_FEATURES: LandingFeature[] = [
       'Coba agent sebelum dipakai orang lain. Jawaban, pemakaian token, biaya, dan lamanya tercatat di eksekusi yang sama.',
     icon: PlayCircle,
     isReady: true,
+    span: 1,
   },
   {
     id: 'observability',
@@ -102,6 +107,7 @@ export const LANDING_FEATURES: LandingFeature[] = [
       'Tiap eksekusi tercatat — termasuk yang gagal. Success rate, rata-rata latency, token, dan biaya terbaca per agent.',
     icon: LineChart,
     isReady: true,
+    span: 1,
   },
   {
     id: 'keys',
@@ -110,6 +116,7 @@ export const LANDING_FEATURES: LandingFeature[] = [
       'Kredensial provider tersimpan terenkripsi di instance-mu sendiri, dipisah per project dan per environment. Tidak ada server pusat yang menerimanya.',
     icon: KeyRound,
     isReady: true,
+    span: 1,
   },
   {
     id: 'tools',
@@ -118,6 +125,7 @@ export const LANDING_FEATURES: LandingFeature[] = [
       'Blayer menyimpan kontrak toolnya; yang menjalankan tetap endpoint milik projectmu. Bagian ini sedang dibangun.',
     icon: Boxes,
     isReady: false,
+    span: 3,
   },
 ]
 

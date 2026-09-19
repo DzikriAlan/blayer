@@ -1,0 +1,41 @@
+# Satu perintah untuk menjalankan Blayer beserta basis datanya:
+#
+#   cp .env.docker.example .env.docker   # isi rahasianya
+#   docker compose up -d
+#   docker compose exec app npx prisma migrate deploy
+#
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: blayer
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-blayer}
+      POSTGRES_DB: blayer
+    volumes:
+      - blayer-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U blayer -d blayer']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://blayer:${POSTGRES_PASSWORD:-blayer}@db:5432/blayer
+      BLAYER_ENCRYPTION_KEY: ${BLAYER_ENCRYPTION_KEY:?setel BLAYER_ENCRYPTION_KEY}
+      BLAYER_ADMIN_USERNAME: ${BLAYER_ADMIN_USERNAME:-admin}
+      BLAYER_ADMIN_PASSWORD: ${BLAYER_ADMIN_PASSWORD:-admin123}
+      BLAYER_SESSION_SECRET: ${BLAYER_SESSION_SECRET:-}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-0}
+      RATE_LIMIT_STORE: postgres
+    ports:
+      - '${BLAYER_PORT:-3000}:3000'
+
+volumes:
+  blayer-db:

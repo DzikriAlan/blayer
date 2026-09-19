@@ -26,7 +26,7 @@ export default function ConsoleLogin() {
     <div className="relative flex min-h-[calc(100vh-3.6rem)] items-center justify-center px-5 py-16">
       <span
         aria-hidden
-        className="glow-soft pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 blur-2xl"
+        className="mesh-soft pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 opacity-80 blur-2xl"
       />
 
       <form

@@ -12,10 +12,11 @@ Self-hosted, berlisensi MIT.
 
 ## Status repositori
 
-**Phase 1 — Agent Foundation sudah berjalan**: project, API key, agent beserta
-versinya, Playground, Agent Run API, dan observability dasar. Phase 2 (tool,
-knowledge, memory) belum dimulai, jadi agent hari ini menjawab dari instruksinya
-sendiri — belum bisa memanggil tool milik project. Belum diuji di produksi.
+**Phase 1 dan Phase 2 sudah berjalan**: project, API key, agent beserta versinya,
+Playground, Agent Run API, observability, lalu tool beserta eksekutornya,
+knowledge, memory per sesi, dan guardrail konfirmasi tool tulis. SDK TypeScript
+dan paket Docker ikut tersedia. Belum diuji di produksi, dan alur end-to-end-nya
+belum pernah dijalankan terhadap basis data sungguhan.
 
 | Bagian | Status |
 |---|---|
@@ -30,10 +31,16 @@ sendiri — belum bisa memanggil tool milik project. Belum diuji di produksi.
 | Fondasi HTTP & data: amplop jawaban API, request id, logger, Prisma, migrasi | ✅ ada |
 | CI (lint, typecheck, test, build) + Vitest | ✅ ada |
 | Landing page (`/`) + halaman 404/500 | ✅ ada |
-| Tool Definition Registry, Tool Executor, Integration | ⛔ Phase 2 |
-| Knowledge Base, Memory, Guardrails lanjutan | ⛔ Phase 2 |
-| SDK TypeScript (`blayer.tools.register`, `blayer.agents.run`) | ⛔ belum dibangun |
-| Paket self-hosting (Docker Compose) + `CONTRIBUTING.md` | ⛔ belum dibangun |
+| Integration, Tool Definition Registry, Tool Executor | ✅ ada |
+| Tool tulis berhenti menunggu konfirmasi eksplisit | ✅ ada |
+| Knowledge Base per project, dipasang per versi agent | ✅ ada |
+| Memory percakapan per sesi | ✅ ada |
+| Guardrail tetap di tiap eksekusi | ✅ ada |
+| SDK TypeScript (`blayer.agents.run`, `blayer.tools.register`) | ✅ ada — di [`sdk/`](./sdk) |
+| Paket self-hosting (Docker Compose) | ✅ ada — lihat [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md) |
+| Harness evaluasi/regresi agent | ✅ dasar — lihat [`eval/`](./eval) |
+| Knowledge berbasis vector store / RAG | ⛔ belum — dokumen dikirim apa adanya |
+| `CONTRIBUTING.md` | ⛔ belum ditulis |
 | Skema basis data produk lama (`forms`, `form_responses`, dll) | ⚠️ masih ada, sudah tidak dibaca kode mana pun |
 
 Landing page menjelaskan platform ini apa adanya — termasuk menandai bagian yang
@@ -112,16 +119,16 @@ tahu di mana databasenya.
 | Token usage tracking per agent & environment | Must | ✅ |
 | Rate limiting & fair usage per API key | Should | ✅ per project, 60 eksekusi/menit |
 | Analytics dashboard | Should | ✅ dasar — ringkasan per agent |
-| Tool Definition Registry | Must | ⛔ Phase 2 |
-| Integration management (base URL, auth, API key) | Must | ⛔ Phase 2 |
-| Tool permission read/write + confirmation | Must | ⛔ Phase 2 |
-| Tool Executor | Must | ⛔ Phase 2 |
-| Knowledge Base | Must | ⛔ Phase 2 |
-| Guardrails enforcement | Must | ⛔ Phase 2 |
-| SDK TypeScript & SDK tool registration | Must / Should | ⛔ belum dibangun |
-| Memory per sesi | Should | ⛔ belum dibangun |
-| Paket self-hosting (Docker Compose) | Should | ⛔ belum dibangun |
-| Evaluation / regression testing | Could | ⛔ Phase 4 |
+| Tool Definition Registry | Must | ✅ |
+| Integration management (base URL, auth, API key) | Must | ✅ |
+| Tool permission read/write + confirmation | Must | ✅ |
+| Tool Executor | Must | ✅ |
+| Knowledge Base | Must | ✅ — dokumen dikirim apa adanya, belum vector store |
+| Guardrails enforcement | Must | ✅ |
+| SDK TypeScript & SDK tool registration | Must / Should | ✅ |
+| Memory per sesi | Should | ✅ |
+| Paket self-hosting (Docker Compose) | Should | ✅ |
+| Evaluation / regression testing | Could | ✅ dasar |
 
 **Di luar cakupan fase ini:** multi-agent orchestration, workflow builder,
 marketplace agent, long-term memory lintas sesi, scheduled/event-triggered agent,
@@ -255,7 +262,9 @@ src/
 │   └── api/
 │       ├── health.ts      # Kesiapan layanan
 │       └── v1/            # Agent API — satu amplop jawaban untuk semuanya
-├── features/console/      # Gerbang token pengelolaan
+├── features/console/      # Login operator dan gerbang sesinya
+├── features/integrations/ # Integration dan kontrak tool
+├── features/knowledge/    # Dokumen pengetahuan project
 ├── features/projects/     # Project, API key, kredensial provider
 ├── features/agents/       # Builder, versi, playground, riwayat eksekusi
 ├── features/landing/      # Isi halaman depan (statis, tanpa pemanggilan API)
@@ -269,7 +278,8 @@ src/
 └── shared/
     ├── components/        # LoadData, ErrorBoundary
     ├── lib/               # apiHandler, apiResponse, logger, rateLimit, prisma
-    │                      # agentRuntime, agentCatalog, agentCrypto, providers/
+    │                      # agentRuntime, toolExecutor, agentCatalog,
+    │                      # agentCrypto, adminSession, providers/
     └── styles/            # Tailwind + token desain
 ```
 
@@ -309,7 +319,11 @@ Rincian tiap rute, kredensial, dan kode kesalahannya ada di
 | `POST /api/v1/auth/login` | — | Menukar username + kata sandi dengan token sesi 12 jam |
 | `/api/v1/projects…` | token pengelolaan | Project, API key, kredensial provider |
 | `/api/v1/agents…` | token pengelolaan | Agent, versi, publikasi, riwayat eksekusi |
+| `/api/v1/integrations…`, `/api/v1/tools…` | token pengelolaan | Kontrak tool dan koneksi ke API project |
+| `/api/v1/projects/{id}/knowledge` | token pengelolaan | Dokumen pengetahuan |
 | `POST /api/v1/agents/{id}/run` | API key project | Menjalankan agent |
+| `POST /api/v1/agents/{id}/sessions` | API key project | Membuka sesi percakapan |
+| `POST /api/v1/runs/{id}/confirm` | API key project | Menyetujui tool yang mengubah data |
 | `GET /api/v1/models` | token pengelolaan | Katalog model, harga, dan kemampuannya |
 
 ## Skrip
@@ -326,6 +340,8 @@ npm run db:generate  # Regenerasi Prisma Client
 npm run db:migrate   # Buat & terapkan migrasi (pengembangan)
 npm run db:deploy    # Terapkan migrasi tertunda (produksi)
 npm run db:studio    # Prisma Studio
+npm run sdk:build    # Build paket @blayer/sdk
+npm run eval         # Uji regresi agent terhadap instance yang hidup
 ```
 
 CI menjalankan lint, typecheck, test, dan build di tiap PR
@@ -350,7 +366,10 @@ Estimasi dan metrik suksesnya ada di [PRD.md](./PRD.md).
 
 ## Dokumentasi
 
-- **[docs/AGENT_API.md](./docs/AGENT_API.md)** — rute Agent API, kredensial, contoh permintaan, dan kode kesalahannya
+- **[docs/AGENT_API.md](./docs/AGENT_API.md)** — rute Agent API, kredensial, tool, konfirmasi, contoh permintaan, dan kode kesalahannya
+- **[docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)** — menjalankan Blayer sendiri lewat Docker Compose atau tanpa Docker
+- **[sdk/README.md](./sdk/README.md)** — klien TypeScript untuk memanggil agent dari aplikasimu
+- **[eval/README.md](./eval/README.md)** — harness regresi sebelum menaikkan versi agent
 - **[docs/API_RESPONSE.md](./docs/API_RESPONSE.md)** — bentuk amplop jawaban yang dipakai semua rute
 - **[PRD.md](./PRD.md)** — rencana produk, metrik sukses, dan batasan arsitekturnya
 

@@ -63,7 +63,15 @@ basis data adalah hash SHA-256 dan dua belas karakter awalnya.
 | `/api/v1/agents/{agentId}/versions` | GET, POST | pengelolaan | Riwayat versi & pembuatan draf |
 | `/api/v1/agents/{agentId}/publish` | POST | pengelolaan | Menaikkan satu versi ke production |
 | `/api/v1/agents/{agentId}/run` | POST | pengelolaan **atau** API key project | Menjalankan agent |
+| `/api/v1/agents/{agentId}/sessions` | GET, POST | pengelolaan **atau** API key project | Sesi percakapan (ingatan antar permintaan) |
 | `/api/v1/agents/{agentId}/runs` | GET | pengelolaan | Riwayat eksekusi & ringkasannya |
+| `/api/v1/runs/{runId}/confirm` | POST | pengelolaan **atau** API key project | Menyetujui atau menolak tool yang mengubah data |
+| `/api/v1/projects/{projectId}/integrations` | GET, POST | pengelolaan | Koneksi ke API project beserta kredensialnya |
+| `/api/v1/integrations/{integrationId}` | GET, PUT, DELETE | pengelolaan | Satu integration beserta toolnya |
+| `/api/v1/integrations/{integrationId}/tools` | GET, POST | pengelolaan | Kontrak tool di bawah integration itu |
+| `/api/v1/tools/{toolId}` | PUT, DELETE | pengelolaan | Ubah atau hapus satu kontrak tool |
+| `/api/v1/projects/{projectId}/knowledge` | GET, POST | pengelolaan | Dokumen pengetahuan project |
+| `/api/v1/knowledge/{documentId}` | GET, PUT, DELETE | pengelolaan | Satu dokumen pengetahuan |
 | `/api/v1/models` | GET | pengelolaan | Katalog model beserta harga dan kemampuannya |
 
 ## Menjalankan agent
@@ -134,6 +142,83 @@ melayani production tidak pernah berubah diam-diam. `POST /publish` memindahkan
 production ke versi yang dipilih dan mengarsipkan yang lama, jadi rollback cukup
 mempublikasikan versi sebelumnya kembali.
 
+## Tool
+
+Tool hidup di bawah sebuah **Integration** — satu koneksi ke API milik project,
+berisi base URL dan kredensialnya. Yang tersimpan di Blayer hanya kontraknya:
+
+```bash
+curl -X POST http://localhost:3002/api/v1/integrations/$INTEGRATION_ID/tools \
+  -H "Authorization: Bearer $BLAYER_ADMIN_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "name": "get_profit_loss",
+        "description": "Ambil laporan laba rugi satu periode.",
+        "method": "GET",
+        "path": "/ai/tools/profit-loss",
+        "permission": "READ",
+        "inputSchema": {
+          "type": "object",
+          "properties": { "month": { "type": "string" } },
+          "required": ["month"]
+        }
+      }'
+```
+
+Saat agent berjalan, Blayer memanggil `baseUrl + path`. Nilai `{nama}` di dalam
+path diambil dari masukan tool; sisanya menjadi query untuk GET/DELETE atau body
+JSON untuk method lain. Jawaban endpoint dipotong di 8.000 karakter.
+
+Tool dipasang **per versi agent** lewat `toolIds` pada pembuatan draf, jadi versi
+lama tetap memakai daftar tool yang berlaku saat ia dipublikasikan.
+
+### Tool yang mengubah data
+
+Tool ber-`permission: "WRITE"` tidak pernah dijalankan langsung. Eksekusi
+berhenti, jawabannya membawa `status: "PENDING_CONFIRMATION"` dan
+`pendingToolCall`, lalu menunggu:
+
+```bash
+curl -X POST http://localhost:3002/api/v1/runs/$RUN_ID/confirm \
+  -H "Authorization: Bearer $BLAYER_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"toolCallId":"clz…","decision":"CONFIRM"}'
+```
+
+`CONFIRM` menjalankan toolnya lalu melanjutkan percakapan; `REJECT` tidak
+menjalankan apa pun tapi tetap memberi tahu model, sehingga ia bisa menjawab
+pengguna dengan layak. Tiap eksekusi dibatasi enam putaran tool.
+
+## Knowledge
+
+Dokumen disimpan per project lalu dipasang ke versi agent lewat `documentIds`.
+Isinya ikut dikirim sebagai rujukan di system prompt, terpisah dari instruksi,
+dengan batas 24.000 karakter per eksekusi.
+
+## Memory
+
+Sesi menyimpan percakapan supaya agent mengingat pesan sebelumnya:
+
+```bash
+SESSION=$(curl -s -X POST http://localhost:3002/api/v1/agents/$AGENT_ID/sessions \
+  -H "Authorization: Bearer $BLAYER_API_KEY" -H 'Content-Type: application/json' \
+  -d '{}' | jq -r .data.id)
+
+curl -X POST http://localhost:3002/api/v1/agents/$AGENT_ID/run \
+  -H "Authorization: Bearer $BLAYER_API_KEY" -H 'Content-Type: application/json' \
+  -d "{\"input\":\"Siapa nama saya?\",\"sessionId\":\"$SESSION\"}"
+```
+
+Dua puluh pesan terakhir ikut dikirim ke model. Environment sesi mengikuti kunci
+pemanggilnya, sehingga ingatan development tidak tercampur dengan production.
+
+## Guardrail
+
+Selain konfirmasi tool tulis, tiap eksekusi membawa aturan tetap di system
+prompt: jangan mengarang angka, ambil data lewat tool, jelaskan dulu apa yang
+akan diubah, dan jawab dalam bahasa penanya. Aturan ini ditambahkan Blayer, tidak
+bisa dihapus lewat instruksi agent.
+
 ## Konfigurasi model
 
 | Field | Nilai | Bawaan |
@@ -185,6 +270,13 @@ terlihat sempurna.
 | `AGENT_NOT_FOUND` | 404 | Agent tidak ada, atau milik project lain |
 | `PROJECT_NOT_FOUND` | 404 | Project tidak ada |
 | `VERSION_NOT_FOUND` | 404 | Versi bukan milik agent itu |
+| `INTEGRATION_NOT_FOUND` | 404 | Integration tidak ada |
+| `TOOL_NOT_FOUND` | 404 | Tool tidak ada |
+| `DOCUMENT_NOT_FOUND` | 404 | Dokumen pengetahuan tidak ada |
+| `SESSION_NOT_FOUND` | 404 | Sesi bukan milik agent itu |
+| `TOOL_CALL_NOT_FOUND` | 404 | Permintaan konfirmasi tidak ada |
+| `TOOL_CALL_RESOLVED` | 409 | Permintaan konfirmasi sudah diputuskan sebelumnya |
+| `NAME_TAKEN` | 409 | Nama tool sudah dipakai di integration itu |
 | `SLUG_TAKEN` | 409 | Slug sudah dipakai |
 | `AGENT_NOT_PUBLISHED` | 409 | Agent belum punya versi production |
 | `PROVIDER_KEY_MISSING` | 409 | Project belum punya kunci provider di environment itu |

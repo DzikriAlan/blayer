@@ -84,26 +84,27 @@ export default function ProjectsDetail({ children }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
+    <div className="mx-auto w-full max-w-[1600px] px-3 py-12 sm:px-5 sm:py-16">
       <LoadData response={state} minHeight="40vh">
         {project ? (
           <div className="flex flex-col gap-12">
-            <div>
-              <span className="text-xs text-muted-foreground">
-                {project.slug}
-              </span>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                {project.name}
-                <span className="text-primary">.</span>
-              </h1>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                {project.description || 'Tanpa deskripsi.'}
-              </p>
+            <div className="mesh-soft relative overflow-hidden rounded-2xl border border-border px-6 py-10 sm:px-10">
+              <span aria-hidden className="noise pointer-events-none absolute inset-0 opacity-40" />
+              <div className="relative">
+                <span className="pixel-label text-primary">Project</span>
+                <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+                  {project.name}
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">{project.slug}</p>
+                <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                  {project.description || 'Tanpa deskripsi.'}
+                </p>
+              </div>
             </div>
 
             <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <h2 className="text-sm font-medium text-primary">
+                <h2 className="pixel-label text-primary">
                   API KEY PROJECT
                 </h2>
 
@@ -201,7 +202,7 @@ export default function ProjectsDetail({ children }: Props) {
 
             <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <h2 className="text-sm font-medium text-primary">
+                <h2 className="pixel-label text-primary">
                   KREDENSIAL PROVIDER
                 </h2>
                 <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
@@ -324,7 +325,7 @@ export default function ProjectsDetail({ children }: Props) {
 
             <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <h2 className="text-sm font-medium text-primary">
+                <h2 className="pixel-label text-primary">
                   AGENT
                 </h2>
 

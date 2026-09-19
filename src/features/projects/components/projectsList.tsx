@@ -59,12 +59,19 @@ export default function ProjectsList() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Project</h1>
-      <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
-        Tiap project punya agent, API key, dan kredensial provider sendiri.
-        Pemisahan itu yang menjaga satu project tidak memakai kunci project lain.
-      </p>
+    <div className="mx-auto w-full max-w-[1600px] px-3 py-12 sm:px-5 sm:py-16">
+      <div className="mesh-soft relative overflow-hidden rounded-2xl border border-border px-6 py-10 sm:px-10">
+        <span aria-hidden className="noise pointer-events-none absolute inset-0 opacity-40" />
+        <div className="relative">
+          <span className="pixel-label text-primary">Console</span>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight">Project</h1>
+          <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
+            Tiap project punya agent, API key, dan kredensial provider sendiri.
+            Pemisahan itu yang menjaga satu project tidak memakai kunci project
+            lain.
+          </p>
+        </div>
+      </div>
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <LoadData response={data} minHeight="20vh">
