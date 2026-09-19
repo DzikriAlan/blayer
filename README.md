@@ -12,24 +12,28 @@ Self-hosted, berlisensi MIT.
 
 ## Status repositori
 
-Repositori ini sedang berada di titik awal pembangunan platform. Isi aplikasi
-produk sebelumnya (form builder) sudah dicabut; yang tersisa adalah landing page
-beserta fondasi teknis yang akan dipakai ulang. **Belum ada Agent Runtime, Tool
-Registry, maupun SDK di dalam repo ini.** Jangan pakai untuk produksi.
+**Phase 1 — Agent Foundation sudah berjalan**: project, API key, agent beserta
+versinya, Playground, Agent Run API, dan observability dasar. Phase 2 (tool,
+knowledge, memory) belum dimulai, jadi agent hari ini menjawab dari instruksinya
+sendiri — belum bisa memanggil tool milik project. Belum diuji di produksi.
 
 | Bagian | Status |
 |---|---|
-| Landing page (`/`) + halaman 404/500 | ✅ ada |
-| Fondasi HTTP: amplop jawaban API, request id, logger terstruktur, rate limit | ✅ ada |
-| Fondasi data: Prisma + PostgreSQL, migrasi, health check | ✅ ada |
-| Skema basis data produk lama (`forms`, `form_responses`, dll) | ⚠️ masih ada, sudah tidak dibaca kode mana pun |
+| Project workspace + API key per project & environment | ✅ ada |
+| Agent CRUD + versioning (draf → production, rollback) | ✅ ada |
+| Model provider key per project & environment, tersimpan terenkripsi | ✅ ada |
+| Multi-provider model (Anthropic, Chat Completions) | ✅ ada |
+| Agent Run API (`POST /api/v1/agents/{id}/run`) + rate limit per project | ✅ ada |
+| Console: builder konfigurasi, Playground, riwayat eksekusi | ✅ ada |
+| Observability: token, biaya, latency, success rate per agent | ✅ ada |
+| Fondasi HTTP & data: amplop jawaban API, request id, logger, Prisma, migrasi | ✅ ada |
 | CI (lint, typecheck, test, build) + Vitest | ✅ ada |
-| Agent CRUD, Builder UI, Playground, Versioning | ⛔ belum dibangun |
-| Tool Definition Registry, Tool Executor, Integration | ⛔ belum dibangun |
-| Knowledge Base, Memory, Guardrails | ⛔ belum dibangun |
-| Agent Run API (`POST /v1/agents/{id}/run`) + SDK TypeScript | ⛔ belum dibangun |
-| Observability (token, cost, latency, tool calls) | ⛔ belum dibangun |
+| Landing page (`/`) + halaman 404/500 | ✅ ada |
+| Tool Definition Registry, Tool Executor, Integration | ⛔ Phase 2 |
+| Knowledge Base, Memory, Guardrails lanjutan | ⛔ Phase 2 |
+| SDK TypeScript (`blayer.tools.register`, `blayer.agents.run`) | ⛔ belum dibangun |
 | Paket self-hosting (Docker Compose) + `CONTRIBUTING.md` | ⛔ belum dibangun |
+| Skema basis data produk lama (`forms`, `form_responses`, dll) | ⚠️ masih ada, sudah tidak dibaca kode mana pun |
 
 Landing page masih memakai naskah dan tampilan produk sebelumnya, tapi tidak lagi
 menyentuh basis data: daftar kategori, acara, dan angkanya adalah **data contoh**
@@ -96,26 +100,28 @@ tahu di mana databasenya.
 
 | Fitur | Prioritas | Status |
 |---|---|---|
-| Agent CRUD & configuration | Must | Belum |
-| Multi-provider model (OpenAI, Anthropic, Google, dll) | Must | Belum |
-| Agent Builder (wizard UI) | Must | Belum |
-| Tool Definition Registry | Must | Belum |
-| Integration management (base URL, auth, API key) | Must | Belum |
-| Tool permission read/write + confirmation | Must | Belum |
-| Tool Executor | Must | Belum |
-| Knowledge Base | Must | Belum |
-| Playground | Must | Belum |
-| Agent versioning & deployment (dev/staging/prod) | Must | Belum |
-| Project workspace + API key per project | Must | Belum |
-| Agent Run API & SDK TypeScript | Must | Belum |
-| Observability & logs (token, cost, latency, tool calls) | Must | Belum |
-| Guardrails enforcement | Must | Belum |
-| SDK tool registration (`blayer.tools.register`) | Should | Belum |
-| Memory per sesi | Should | Belum |
-| Analytics dashboard | Should | Belum |
-| Paket self-hosting (Docker Compose) | Should | Belum |
-| Rate limiting & fair usage per API key | Should | Sebagian (rate limit per IP sudah ada) |
-| Evaluation / regression testing | Could | Belum |
+| Agent CRUD & configuration | Must | ✅ |
+| Multi-provider model (Anthropic, Chat Completions) | Must | ✅ |
+| Agent Builder (UI konfigurasi + publikasi) | Must | ✅ sebagian — belum berbentuk wizard bertahap |
+| Agent versioning & deployment (dev/staging/prod) | Must | ✅ |
+| Project workspace + API key per project | Must | ✅ |
+| Model provider key per project & environment | Must | ✅ |
+| Playground | Must | ✅ |
+| Agent Run API | Must | ✅ |
+| Observability & logs (token, cost, latency) | Must | ✅ — tool call menyusul bersama Phase 2 |
+| Token usage tracking per agent & environment | Must | ✅ |
+| Rate limiting & fair usage per API key | Should | ✅ per project, 60 eksekusi/menit |
+| Analytics dashboard | Should | ✅ dasar — ringkasan per agent |
+| Tool Definition Registry | Must | ⛔ Phase 2 |
+| Integration management (base URL, auth, API key) | Must | ⛔ Phase 2 |
+| Tool permission read/write + confirmation | Must | ⛔ Phase 2 |
+| Tool Executor | Must | ⛔ Phase 2 |
+| Knowledge Base | Must | ⛔ Phase 2 |
+| Guardrails enforcement | Must | ⛔ Phase 2 |
+| SDK TypeScript & SDK tool registration | Must / Should | ⛔ belum dibangun |
+| Memory per sesi | Should | ⛔ belum dibangun |
+| Paket self-hosting (Docker Compose) | Should | ⛔ belum dibangun |
+| Evaluation / regression testing | Could | ⛔ Phase 4 |
 
 **Di luar cakupan fase ini:** multi-agent orchestration, workflow builder,
 marketplace agent, long-term memory lintas sesi, scheduled/event-triggered agent,
@@ -146,11 +152,22 @@ npm install
 cp .env.example .env
 ```
 
-Satu-satunya variabel yang wajib terisi:
+Tiga variabel yang wajib terisi:
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/blayer"
+
+# Token pengelolaan: membuka Console dan seluruh rute konfigurasi
+BLAYER_ADMIN_TOKEN="$(openssl rand -base64 32)"
+
+# Kunci enkripsi kredensial provider — 32 byte acak dalam base64
+BLAYER_ENCRYPTION_KEY="$(openssl rand -base64 32)"
 ```
+
+`BLAYER_ENCRYPTION_KEY` membuka kunci provider yang sudah tersimpan. Menggantinya
+membuat kredensial lama tidak bisa dibaca lagi dan eksekusi agent menjawab
+`503 CONFIG_MISSING` — simpan seperti rahasia produksi lain, jangan dibangkitkan
+ulang tiap deploy.
 
 Opsional, semuanya punya nilai bawaan yang aman:
 
@@ -162,11 +179,12 @@ Opsional, semuanya punya nilai bawaan yang aman:
 | `SLOW_REQUEST_MS` | Ambang batas permintaan lambat yang dicatat di log (bawaan 1000). |
 | `ALERT_WEBHOOK_URL` | Tujuan kiriman log level error. |
 | `NEXT_PUBLIC_API_BASE_URL` | Base URL API kalau front-end dan API dipisah. |
+| `OPENAI_BASE_URL` | Endpoint sebentuk Chat Completions selain OpenAI (gateway, proxy, model lokal). Bawaannya `https://api.openai.com/v1`. |
 
-> `.env.example` masih memuat variabel Supabase dan Resend dari produk
-> sebelumnya. Variabel itu tidak lagi dibaca kode, kecuali
-> `NEXT_PUBLIC_SUPABASE_URL` yang hanya dipakai `next.config.js` untuk
-> melonggarkan CSP.
+> `.env.example` belum memuat `BLAYER_ADMIN_TOKEN` dan `BLAYER_ENCRYPTION_KEY`,
+> dan masih memuat variabel Supabase dan Resend dari produk sebelumnya. Variabel
+> lama itu tidak lagi dibaca kode, kecuali `NEXT_PUBLIC_SUPABASE_URL` yang hanya
+> dipakai `next.config.js` untuk melonggarkan CSP.
 
 ### 3. Siapkan basis data
 
@@ -193,6 +211,29 @@ curl http://localhost:3002/api/health
 Jawaban `503` dengan kode `DATABASE_UNAVAILABLE` berarti `DATABASE_URL` belum
 menunjuk basis data yang hidup.
 
+### 5. Agent pertama
+
+Buka **http://localhost:3002/console** dan isi token pengelolaan yang tadi
+disetel. Tokennya disimpan di browser itu saja dan dikirim sebagai header
+`Authorization` — tidak ada sesi di server.
+
+1. **Buat project.** Wadah agent, API key, dan kredensial provider.
+2. **Simpan kunci provider** untuk environment yang akan dipakai. Tanpa itu
+   eksekusi menjawab `409 PROVIDER_KEY_MISSING`, bukan gagal diam-diam.
+3. **Buat agent** beserta instruksi dan modelnya. Agent lahir sebagai draf v1.
+4. **Uji di Playground.** Jawaban, token, biaya, dan lamanya langsung terlihat.
+5. **Publikasikan versinya.** Baru setelah itu API key project bisa memanggilnya.
+6. **Terbitkan API key project**, lalu panggil dari aplikasi lain:
+
+```bash
+curl -X POST http://localhost:3002/api/v1/agents/$AGENT_ID/run \
+  -H "Authorization: Bearer $BLAYER_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"input":"Berapa laba bulan lalu?"}'
+```
+
+Rincian tiap rute ada di [docs/AGENT_API.md](./docs/AGENT_API.md).
+
 ---
 
 ## Struktur proyek
@@ -201,8 +242,13 @@ menunjuk basis data yang hidup.
 src/
 ├── pages/                 # Rute halaman & API (Pages Router)
 │   ├── index.tsx          # Landing page
+│   ├── console/           # Console operator (project, agent, playground)
 │   └── api/
-│       └── health.ts      # Kesiapan layanan
+│       ├── health.ts      # Kesiapan layanan
+│       └── v1/            # Agent API — satu amplop jawaban untuk semuanya
+├── features/console/      # Gerbang token pengelolaan
+├── features/projects/     # Project, API key, kredensial provider
+├── features/agents/       # Builder, versi, playground, riwayat eksekusi
 ├── features/landing/      # Isi halaman depan (statis, tanpa pemanggilan API)
 ├── features/<fitur>/      # Satu fitur = satu folder berlapis
 │   ├── types/             # Bentuk data & payload
@@ -214,6 +260,7 @@ src/
 └── shared/
     ├── components/        # LoadData, ErrorBoundary
     ├── lib/               # apiHandler, apiResponse, logger, rateLimit, prisma
+    │                      # agentRuntime, agentCatalog, agentCrypto, providers/
     └── styles/            # Tailwind + token desain
 ```
 
@@ -230,6 +277,8 @@ supaya penambahannya tidak menyusun ulang pola dari nol.
 | State klien | Zustand |
 | State server | TanStack Query |
 | Basis data | PostgreSQL + Prisma |
+| Validasi | Zod, dipakai ulang di seluruh rute |
+| Provider AI | Anthropic SDK resmi + adaptor Chat Completions |
 | Pengujian | Vitest + Testing Library |
 | Kualitas kode | ESLint + TypeScript strict |
 
@@ -242,11 +291,16 @@ berhasil maupun gagal — lengkap dengan `request_id` yang juga muncul di header
 `X-Request-Id` dan di log. Rinciannya di
 [docs/API_RESPONSE.md](./docs/API_RESPONSE.md).
 
-Belum ada rute `/api/v1` yang terpasang. Endpoint yang ada saat ini hanya:
+Rincian tiap rute, kredensial, dan kode kesalahannya ada di
+[docs/AGENT_API.md](./docs/AGENT_API.md).
 
-| Endpoint | Gunanya |
-|---|---|
-| `GET /api/health` | Kesiapan aplikasi, basis data, dan penyimpanan rate limit |
+| Endpoint | Kredensial | Gunanya |
+|---|---|---|
+| `GET /api/health` | — | Kesiapan aplikasi, basis data, dan penyimpanan rate limit |
+| `/api/v1/projects…` | token pengelolaan | Project, API key, kredensial provider |
+| `/api/v1/agents…` | token pengelolaan | Agent, versi, publikasi, riwayat eksekusi |
+| `POST /api/v1/agents/{id}/run` | API key project | Menjalankan agent |
+| `GET /api/v1/models` | token pengelolaan | Katalog model, harga, dan kemampuannya |
 
 ## Skrip
 
@@ -274,15 +328,21 @@ branch yang merah.
 
 | Fase | Fokus |
 |---|---|
-| Phase 1 — Agent Foundation | Project, Agent CRUD, konfigurasi model, instructions, Playground, API, API key |
-| Phase 2 — Agent Intelligence | Tools, Knowledge, RAG, function calling, memory dasar |
+| Phase 1 — Agent Foundation | Project, Agent CRUD, konfigurasi model, instructions, Playground, API, API key — **selesai** |
+| Phase 2 — Agent Intelligence | Tools, Knowledge, RAG, function calling, memory dasar — **berikutnya** |
 | Pilot Integration | Integrasi end-to-end dengan satu project consumer |
-| Phase 3 — Production Readiness | Versioning, deployment layer, log, monitoring, cost tracking |
+| Phase 3 — Production Readiness | Deployment layer, monitoring lanjutan, error tracking (versioning & cost tracking sudah ada sejak Phase 1) |
 | Persiapan Open Source | Pemisahan core, paket self-hosting, dokumentasi publik, rate limiting per API key |
 | Rilis Open Source | Publikasi repositori dan dokumentasi |
 | Phase 4 — Evaluation | Test case, dataset, regression testing (opsional, setelah pilot stabil) |
 
 Estimasi dan metrik suksesnya ada di [PRD.md](./PRD.md).
+
+## Dokumentasi
+
+- **[docs/AGENT_API.md](./docs/AGENT_API.md)** — rute Agent API, kredensial, contoh permintaan, dan kode kesalahannya
+- **[docs/API_RESPONSE.md](./docs/API_RESPONSE.md)** — bentuk amplop jawaban yang dipakai semua rute
+- **[PRD.md](./PRD.md)** — rencana produk, metrik sukses, dan batasan arsitekturnya
 
 ## Kontribusi
 
