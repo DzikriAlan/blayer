@@ -67,20 +67,48 @@ describe('alamat basis data', () => {
   })
 
   it('TC-86e menyusun alamat pooler dari project, sandi, dan wilayahnya', () => {
-    process.env.SUPABASE_PROJECT = 'abcdef'
+    process.env.SUPABASE_PROJECT = 'aomfloxezgbgkazzzsuq'
     process.env.SUPABASE_PASSWORD = 'sandi@kuat'
-    process.env.SUPABASE_REGION = 'ap-southeast-1'
+    process.env.SUPABASE_REGION = 'ap-northeast-2'
 
     expect(getDatabaseUrl()).toBe(
-      'postgresql://postgres.abcdef:sandi%40kuat@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres'
+      'postgresql://postgres.aomfloxezgbgkazzzsuq:sandi%40kuat@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1'
     )
   })
 
   it('TC-86f tidak menebak alamat saat wilayahnya tidak diketahui', () => {
-    process.env.SUPABASE_PROJECT = 'abcdef'
+    process.env.SUPABASE_PROJECT = 'aomfloxezgbgkazzzsuq'
     process.env.SUPABASE_PASSWORD = 'sandi'
 
     expect(getDatabaseUrl()).toBe('')
+  })
+
+  it('TC-86g mencari ref project dari alamat Supabase saat SUPABASE_PROJECT berisi nama', () => {
+    process.env.SUPABASE_PROJECT = 'blayer'
+    process.env.SUPABASE_URL = 'https://aomfloxezgbgkazzzsuq.supabase.co'
+    process.env.SUPABASE_PASSWORD = 'sandi'
+    process.env.SUPABASE_REGION = 'ap-northeast-2'
+
+    expect(getDatabaseUrl()).toContain('postgres.aomfloxezgbgkazzzsuq:')
+  })
+
+  it('TC-86h mendahulukan pooler atas koneksi langsung yang hanya ber-IPv6', () => {
+    process.env.SUPABASE_DIRECT_CONNECTION_STRING =
+      'postgresql://postgres:sandi@db.aomfloxezgbgkazzzsuq.supabase.co:5432/postgres'
+    process.env.SUPABASE_PASSWORD = 'sandi'
+    process.env.SUPABASE_REGION = 'ap-northeast-2'
+
+    expect(getDatabaseUrl()).toContain('pooler.supabase.com:6543')
+  })
+
+  it('TC-86i mengabaikan alamat project yang tertukar dengan connection string', () => {
+    process.env.DATABASE_URL = 'https://aomfloxezgbgkazzzsuq.supabase.co'
+    process.env.SUPABASE_DIRECT_CONNECTION_STRING =
+      'postgresql://postgres:sandi@db.aomfloxezgbgkazzzsuq.supabase.co:5432/postgres'
+
+    expect(getDatabaseUrl()).toBe(
+      'postgresql://postgres:sandi@db.aomfloxezgbgkazzzsuq.supabase.co:5432/postgres'
+    )
   })
 })
 

@@ -57,6 +57,21 @@ const getValue = (name: keyof typeof ENV) =>
 export const DATABASE_ENV_HINT =
   'Setel DATABASE_URL, atau SUPABASE_DIRECT_CONNECTION_STRING, atau pasangan SUPABASE_PROJECT + SUPABASE_PASSWORD + SUPABASE_REGION.'
 
+// Alamat project Supabase (https://xxxx.supabase.co) gampang tertukar dengan
+// connection string-nya, dan keduanya memang bersebelahan di dashboard. Yang
+// tertukar dibuang di sini supaya sumber berikutnya masih dipakai — kalau tidak,
+// satu nilai salah tempel mematikan seluruh aplikasi.
+const asDatabaseUrl = (url: string) => {
+  if (!url) return ''
+  if (/^postgres(ql)?:\/\//.test(url)) return url
+
+  console.warn(
+    `[env] nilai "${url.slice(0, 24)}…" bukan connection string PostgreSQL dan diabaikan. ${DATABASE_ENV_HINT}`
+  )
+
+  return ''
+}
+
 // Dashboard Supabase menyalin connection string dengan sandi masih berupa
 // penanda [YOUR-PASSWORD]. Kalau begitu bentuknya, sandinya diisikan dari
 // SUPABASE_PASSWORD dan di-encode agar karakter seperti "@" tidak memotong URL.
@@ -74,10 +89,32 @@ const withPassword = (url: string) => {
   return isPlaceholder ? `${prefix}${encodeURIComponent(password)}${rest}` : url
 }
 
+// Pooler memanggil project dengan ref-nya (20 huruf), bukan nama yang terbaca
+// manusia. SUPABASE_PROJECT sering diisi nama, jadi ref-nya dicari juga dari
+// alamat project dan dari connection string — keduanya memuat ref yang sama.
+const getProjectRef = () => {
+  const named = getValue('SUPABASE_PROJECT')
+  if (/^[a-z]{16,}$/.test(named)) return named
+
+  const fromHost = [
+    getValue('SUPABASE_URL'),
+    getValue('NEXT_PUBLIC_SUPABASE_URL'),
+    getValue('SUPABASE_DIRECT_CONNECTION_STRING'),
+  ]
+    .join(' ')
+    .match(/(?:\/\/|@)(?:db\.)?([a-z]{16,})\.supabase\.(?:co|com)/)
+
+  return fromHost?.[1] ?? named
+}
+
+// Host pooler-lah yang bisa dihubungi dari lingkungan serverless; koneksi
+// langsung (db.<ref>.supabase.co) hanya punya alamat IPv6. Port 6543 adalah mode
+// transaksi, yang memang dipakai bersama pgbouncer.
+//
 // Kata sandi Supabase kerap memuat karakter seperti "@" atau "#", yang memotong
 // URL kalau ditempel mentah.
 const getPoolerUrl = () => {
-  const project = getValue('SUPABASE_PROJECT')
+  const project = getProjectRef()
   const password = getValue('SUPABASE_PASSWORD')
   const host =
     getValue('SUPABASE_POOLER_HOST') ||
@@ -87,26 +124,28 @@ const getPoolerUrl = () => {
 
   if (!project || !password || !host) return ''
 
-  const port = getValue('SUPABASE_POOLER_PORT') || '5432'
+  const port = getValue('SUPABASE_POOLER_PORT') || '6543'
+  const query = port === '6543' ? '?pgbouncer=true&connection_limit=1' : ''
 
-  return `postgresql://postgres.${project}:${encodeURIComponent(password)}@${host}:${port}/postgres`
+  return `postgresql://postgres.${project}:${encodeURIComponent(password)}@${host}:${port}/postgres${query}`
 }
 
 /**
- * Urutannya sengaja: DATABASE_URL yang ditulis sendiri selalu menang, lalu
- * connection string langsung dari dashboard Supabase, baru URL pooler yang
- * disusun dari project dan kata sandinya.
+ * Urutannya sengaja: DATABASE_URL yang ditulis sendiri selalu menang, lalu URL
+ * pooler kalau wilayahnya diketahui, baru koneksi langsung dari dashboard.
+ * Pooler didahulukan karena koneksi langsung tidak terjangkau dari lingkungan
+ * serverless yang hanya punya IPv4; untuk migrasi ada getDirectDatabaseUrl.
  */
 export const getDatabaseUrl = () =>
-  withPassword(getValue('DATABASE_URL')) ||
-  withPassword(getValue('SUPABASE_DIRECT_CONNECTION_STRING')) ||
-  getPoolerUrl()
+  asDatabaseUrl(withPassword(getValue('DATABASE_URL'))) ||
+  getPoolerUrl() ||
+  asDatabaseUrl(withPassword(getValue('SUPABASE_DIRECT_CONNECTION_STRING')))
 
 // Migrasi tidak bisa lewat pooler; kalau ada connection string langsung, itu
 // yang dipakai.
 export const getDirectDatabaseUrl = () =>
-  withPassword(getValue('DIRECT_URL')) ||
-  withPassword(getValue('SUPABASE_DIRECT_CONNECTION_STRING')) ||
+  asDatabaseUrl(withPassword(getValue('DIRECT_URL'))) ||
+  asDatabaseUrl(withPassword(getValue('SUPABASE_DIRECT_CONNECTION_STRING'))) ||
   getDatabaseUrl()
 
 // Dipakai util lain supaya semuanya membaca environment lewat satu jalur yang
