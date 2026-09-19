@@ -5,7 +5,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Archivo, JetBrains_Mono } from "next/font/google";
 import "@/shared/styles/globals.css";
 
-import AuthGuard from "@/features/auth/components/authGuard";
 import ErrorBoundary from "@/shared/components/error-boundary";
 
 const archivo = Archivo({
@@ -41,11 +40,9 @@ export default function App({ Component, pageProps }: AppProps) {
         />
       </Head>
       <div className={`${archivo.variable} ${jetbrainsMono.variable}`}>
-        <AuthGuard>
-          <ErrorBoundary>
-            <Component {...pageProps} />
-          </ErrorBoundary>
-        </AuthGuard>
+        <ErrorBoundary>
+          <Component {...pageProps} />
+        </ErrorBoundary>
       </div>
       {process.env.NODE_ENV === "development" ? (
         <ReactQueryDevtools initialIsOpen={false} />

@@ -6,22 +6,13 @@ import Image from 'next/image'
 import logo from '@/shared/images/logoblayer.png'
 import wordmark from '@/shared/images/blayer.png'
 import { cn } from '@/shared/lib/utils'
-import AuthAccount from '@/features/auth/components/authAccount'
 
 const FOOTER_COLUMNS = [
   {
     title: 'HALAMAN',
     links: [
       { href: '/', label: 'Beranda' },
-      { href: '/forms', label: 'Semua Form' },
-      { href: '/privacy', label: 'Privasi' },
-    ],
-  },
-  {
-    title: 'AKUN',
-    links: [
-      { href: '/login', label: 'Masuk' },
-      { href: '/register', label: 'Daftar' },
+      { href: '/#kategori', label: 'Kategori' },
     ],
   },
 ]
@@ -44,10 +35,6 @@ export default function LandingShell({ className, children }: Props) {
               className="h-14 w-auto shrink-0"
             />
           </Link>
-
-          <div className="ml-auto flex items-center gap-3">
-            <AuthAccount />
-          </div>
         </div>
       </header>
 
