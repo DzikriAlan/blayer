@@ -2,10 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import type { Project, ProjectApiKey } from '@prisma/client'
 
 import { prisma } from './prisma'
-import { hashToken, isSameToken } from './agentCrypto'
+import { hashToken } from './agentCrypto'
+import { isAdminToken } from './adminSession'
 import { sendFailure } from './apiResponse'
-
-export const ADMIN_TOKEN_ENV = 'BLAYER_ADMIN_TOKEN'
 
 export const getBearerToken = (req: NextApiRequest) => {
   const header = req.headers.authorization ?? ''
@@ -13,46 +12,25 @@ export const getBearerToken = (req: NextApiRequest) => {
   return header.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : ''
 }
 
-// Rute pengelolaan dipegang operator instance ini, bukan project consumer. Tanpa
-// token yang tersetel, rutenya menolak dengan pesan — bukan terbuka lebar.
+// Rute pengelolaan dipegang operator instance ini, bukan project consumer.
+// Sesi hasil login maupun token mentah sama-sama diterima; keduanya diperiksa
+// di satu tempat supaya tidak ada rute yang punya aturannya sendiri.
 export const getAdminGuard = (req: NextApiRequest, res: NextApiResponse) => {
-  const expected = (process.env[ADMIN_TOKEN_ENV] ?? '').trim()
+  if (isAdminToken(getBearerToken(req))) return true
 
-  if (!expected) {
-    sendFailure(res, {
-      status: 503,
-      message: 'Instance ini belum siap melayani rute pengelolaan.',
-      errors: [
-        {
-          code: 'CONFIG_MISSING',
-          field: ADMIN_TOKEN_ENV,
-          message: `Setel ${ADMIN_TOKEN_ENV} lebih dulu di environment instance ini.`,
-        },
-      ],
-    })
+  sendFailure(res, {
+    status: 401,
+    message: 'Sesi pengelolaan tidak dikenali atau sudah kedaluwarsa.',
+    errors: [
+      {
+        code: 'UNAUTHORIZED',
+        field: 'authorization',
+        message: 'Masuk lebih dulu, lalu kirim header Authorization: Bearer <token sesi>.',
+      },
+    ],
+  })
 
-    return false
-  }
-
-  const token = getBearerToken(req)
-
-  if (!token || !isSameToken(token, expected)) {
-    sendFailure(res, {
-      status: 401,
-      message: 'Token pengelolaan tidak dikenali.',
-      errors: [
-        {
-          code: 'UNAUTHORIZED',
-          field: 'authorization',
-          message: 'Kirim header Authorization: Bearer <token pengelolaan>.',
-        },
-      ],
-    })
-
-    return false
-  }
-
-  return true
+  return false
 }
 
 export interface ProjectActor {
@@ -138,9 +116,7 @@ export const getRunActor = async (
 
   if (!token) return sendUnauthorized()
 
-  const adminToken = (process.env[ADMIN_TOKEN_ENV] ?? '').trim()
-
-  if (adminToken && isSameToken(token, adminToken)) return { kind: 'admin' }
+  if (isAdminToken(token)) return { kind: 'admin' }
 
   const apiKey = await prisma.projectApiKey.findUnique({
     where: { hash: hashToken(token) },
