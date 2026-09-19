@@ -1,51 +1,138 @@
-# Blayer - Form Builder dengan Dashboard Hasil
+# Blayer
 
-**Take Exactly What You Need**
+**AI Agent Platform / AI Control Plane** — tempat membuat, mengatur, menguji, dan
+menyediakan AI Agent yang bisa dipakai banyak aplikasi lewat satu API.
+Self-hosted, berlisensi MIT.
 
-Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interaktif sesuai kebutuhan dan hasil yang ingin dicapai. Dibangun di atas Next.js 14, TypeScript, Prisma, dan Supabase, dengan konvensi arsitektur yang konsisten di seluruh fitur.
-
-## What i do
-
-* Merancang **arsitektur full-stack berlapis** dengan **Next.js 14, React 18, TypeScript, Tailwind CSS, dan Shadcn/UI**, memisahkan tiap fitur menjadi `types → states → services → controllers → components` sehingga penambahan fitur baru mengikuti jalur yang sudah tetap dan tidak menyusun ulang pola dari nol.
-* Membangun **satu form builder yang melayani tiga bentuk produk berbeda** — pendaftaran acara, survei, dan form berskor — diturunkan dari satu field `view` pada template, dan kategori acara (teknologi, olahraga, musik, bisnis) cukup ditambahkan sebagai entri katalog baru, sehingga halaman isi, layar setelah kirim, dan dashboard hasil menyesuaikan diri tanpa cabang kode per produk.
-* Mengimplementasikan **autentikasi dan kepemilikan data** dengan **Supabase Auth**, mendukung masuk lewat username-kata sandi maupun Google OAuth, dengan penolakan ditegakkan di API (401 tanpa token, 403 untuk milik akun lain) — bukan sekadar menyembunyikan halaman di browser.
-* Menurunkan **halaman kategori publik** dari `view` yang sama, sehingga pengunjung bisa menemukan dan mengikuti form yang sedang terbuka tanpa membuat akun, dan lama pengerjaan tiap jawaban tercatat sendiri.
-* Menyusun **penanganan keadaan data terpusat** lewat komponen `LoadData`, sehingga keadaan memuat, kosong, gagal, dan tidak terverifikasi ditangani satu tempat dan tiap permukaan tidak menyusun ulang logika yang sama.
-* Menjaga **kualitas lewat pengujian otomatis** dengan **Vitest dan Testing Library** — 203 uji yang menutup builder, halaman isi, guard halaman, layar kredensial, hingga kepemilikan data di API, dengan tiap kasus terpetakan ke ID kebutuhan di `TEST_CASE.md`.
-* Merawat **standar kode** memakai **ESLint, TypeScript strict mode, dan konvensi penamaan yang tertulis**, sehingga nama berkas, fungsi, dan prefix method bisa diturunkan langsung dari URL endpoint-nya.
+> **Blayer mengatur AI, project menguasai data.**
+> Blayer menyimpan *kontrak* tool — bukan database bisnismu. Implementasi tool
+> tetap berjalan di sisi project, di infrastruktur yang kamu kuasai sendiri.
 
 ---
 
-## Tech Stack
+## Status repositori
 
-| Concern | Technology | Purpose |
+Repositori ini sedang berada di titik awal pembangunan platform. Isi aplikasi
+produk sebelumnya (form builder) sudah dicabut; yang tersisa adalah landing page
+beserta fondasi teknis yang akan dipakai ulang. **Belum ada Agent Runtime, Tool
+Registry, maupun SDK di dalam repo ini.** Jangan pakai untuk produksi.
+
+| Bagian | Status |
+|---|---|
+| Landing page (`/`) + halaman 404/500 | ✅ ada |
+| Fondasi HTTP: amplop jawaban API, request id, logger terstruktur, rate limit | ✅ ada |
+| Fondasi data: Prisma + PostgreSQL, migrasi, health check | ✅ ada |
+| Skema basis data produk lama (`forms`, `form_responses`, dll) | ⚠️ masih ada, sudah tidak dibaca kode mana pun |
+| CI (lint, typecheck, test, build) + Vitest | ✅ ada |
+| Agent CRUD, Builder UI, Playground, Versioning | ⛔ belum dibangun |
+| Tool Definition Registry, Tool Executor, Integration | ⛔ belum dibangun |
+| Knowledge Base, Memory, Guardrails | ⛔ belum dibangun |
+| Agent Run API (`POST /v1/agents/{id}/run`) + SDK TypeScript | ⛔ belum dibangun |
+| Observability (token, cost, latency, tool calls) | ⛔ belum dibangun |
+| Paket self-hosting (Docker Compose) + `CONTRIBUTING.md` | ⛔ belum dibangun |
+
+Landing page masih memakai naskah dan tampilan produk sebelumnya, tapi tidak lagi
+menyentuh basis data: daftar kategori, acara, dan angkanya adalah **data contoh**
+yang ditulis di `src/features/landing/components/landingCatalog.ts`. Desainnya
+dipertahankan sebagai rangka; naskah dan isinya diganti begitu permukaan platform
+yang baru siap.
+
+Rencana produk selengkapnya ada di [PRD.md](./PRD.md).
+
+---
+
+## Masalah yang diselesaikan
+
+- Tiap project membangun logic AI-nya sendiri — duplikasi kerja, kualitas tidak
+  seragam, sulit dirawat.
+- Tidak ada tempat terpusat untuk mengelola prompt, model, knowledge, dan tool
+  lintas project.
+- Menyimpan agent sebagai `system_prompt` mentah tidak bisa di-versioning, sulit
+  diuji, dan tidak terpantau.
+- Tidak ada catatan biaya, token, latency, dan error atas pemakaian AI.
+- Data bisnis tidak boleh diakses bebas oleh layer AI — perlu batas tegas antara
+  *siapa mendefinisikan tool* dan *siapa menjalankannya*.
+
+## Prinsip arsitektur
+
+**Control plane vs data plane.** Blayer tidak pernah menyimpan atau meng-query
+database project. Yang disimpan hanya kontrak tool: nama, deskripsi, skema
+input/output, method, dan referensi endpoint — plus konfigurasi *Integration*
+(base URL, autentikasi) milik project tujuan.
+
+**Definition vs implementation.** Selama endpoint memenuhi kontrak yang
+didaftarkan, implementasi di baliknya bisa diganti (project lain, atau mock API)
+tanpa mengubah definisi di Blayer.
+
+**Runtime dependency satu arah,** bukan circular:
+
+```mermaid
+flowchart LR
+    A[Project consumer] -->|POST /v1/agents/:id/run| B[Blayer API]
+    B --> C[Agent Runtime]
+    C --> D[LLM Reasoning]
+    D -->|butuh data| E[Tool Executor]
+    E -->|HTTP, sesuai kontrak| F[Endpoint tool milik project]
+    F --> G[(Database project)]
+    F --> E
+    E --> D
+    D --> H[Response + log token, cost, latency]
+    H --> A
+```
+
+Analogi: **Blayer = otak**, **project = tubuh**, **tool = tangan**. Otak
+memerintah "ambil laporan laba rugi"; tangan yang tahu caranya — otak tidak perlu
+tahu di mana databasenya.
+
+**Aturan yang tidak dinegosiasikan:**
+
+- Tool WRITE berhenti di runtime dan mengembalikan status *pending confirmation*;
+  eksekusi baru lanjut setelah ada konfirmasi eksplisit lewat API/SDK.
+- Agent tidak boleh mengarang angka — angka harus datang dari hasil tool.
+- Kredensial AI provider tersimpan di instance milikmu sendiri, di-scope per
+  project dan per environment. Tidak ada server pusat Blayer yang menerimanya.
+
+## Peta fitur
+
+| Fitur | Prioritas | Status |
 |---|---|---|
-| **Framework** | Next.js 14 (Pages Router) + React 18 | Satu basis kode untuk antarmuka dan API |
-| **Language** | TypeScript | Pengembangan bertipe dengan strict mode |
-| **Styling** | Tailwind CSS + Shadcn/UI | Utility-first CSS dan komponen yang bisa dipakai ulang |
-| **State Management (Client)** | Zustand | State tampilan yang ringan dan dapat diprediksi |
-| **State Management (Server)** | TanStack Query | Cache, sinkronisasi, dan keadaan permintaan data |
-| **Forms** | React Hook Form + Zod | Validasi berskema di klien, dipakai ulang di server |
-| **Authentication** | Supabase Auth | Username-kata sandi dan Google OAuth tanpa menyimpan kata sandi sendiri |
-| **Database** | PostgreSQL (Supabase) | Basis data relasional yang andal dan bisa diskalakan |
-| **ORM** | Prisma | Akses basis data bertipe dan sinkronisasi skema |
-| **File Storage** | Supabase Storage | Banner acara yang permanen dan bisa dibuka tanpa login |
-| **Testing** | Vitest + Testing Library | Uji unit dan komponen yang selaras dengan struktur fitur |
-| **Icons** | Lucide React | Pustaka ikon yang konsisten dan aksesibel |
-| **Code Quality** | ESLint + TypeScript Strict | Linting dan pemeriksaan tipe demi keterawatan |
+| Agent CRUD & configuration | Must | Belum |
+| Multi-provider model (OpenAI, Anthropic, Google, dll) | Must | Belum |
+| Agent Builder (wizard UI) | Must | Belum |
+| Tool Definition Registry | Must | Belum |
+| Integration management (base URL, auth, API key) | Must | Belum |
+| Tool permission read/write + confirmation | Must | Belum |
+| Tool Executor | Must | Belum |
+| Knowledge Base | Must | Belum |
+| Playground | Must | Belum |
+| Agent versioning & deployment (dev/staging/prod) | Must | Belum |
+| Project workspace + API key per project | Must | Belum |
+| Agent Run API & SDK TypeScript | Must | Belum |
+| Observability & logs (token, cost, latency, tool calls) | Must | Belum |
+| Guardrails enforcement | Must | Belum |
+| SDK tool registration (`blayer.tools.register`) | Should | Belum |
+| Memory per sesi | Should | Belum |
+| Analytics dashboard | Should | Belum |
+| Paket self-hosting (Docker Compose) | Should | Belum |
+| Rate limiting & fair usage per API key | Should | Sebagian (rate limit per IP sudah ada) |
+| Evaluation / regression testing | Could | Belum |
+
+**Di luar cakupan fase ini:** multi-agent orchestration, workflow builder,
+marketplace agent, long-term memory lintas sesi, scheduled/event-triggered agent,
+SDK selain TypeScript, dan versi cloud berbayar. Blayer murni open source
+self-hosted.
 
 ---
 
-## Quick Start
+## Menjalankan secara lokal
 
-### Prerequisites
+### Prasyarat
 
-- [Node.js](https://nodejs.org) v20+ (verify: `node --version`)
-- [PostgreSQL](https://www.postgresql.org) (lokal atau Supabase, verify: `psql --version`)
-- Akun [Supabase](https://supabase.com) untuk Auth dan Storage
-- Package manager: npm (included with Node.js)
+- [Node.js](https://nodejs.org) v20.9+ (`node --version`)
+- [PostgreSQL](https://www.postgresql.org) v14+, lokal atau terkelola
+- npm (ikut terpasang bersama Node.js)
 
-### 1. Clone & Install
+### 1. Pasang dependensi
 
 ```bash
 git clone <repo-url>
@@ -53,236 +140,157 @@ cd blayer
 npm install
 ```
 
-If installation fails, use:
-```bash
-npm ci
-```
-
-### 2. Setup Environment Variables
+### 2. Siapkan environment
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Edit `.env.local` with your configuration:
+Satu-satunya variabel yang wajib terisi:
 
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/blayer"
-
-# Supabase Auth — key publik, aman terkirim ke browser
-NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="your-publishable-or-anon-key"
-
-# Supabase Storage & verifikasi token — hanya dibaca di API route
-SUPABASE_URL="https://xxxx.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-SUPABASE_BANNER_BUCKET="form-banners"
-
+DATABASE_URL="postgresql://user:password@localhost:5432/blayer"
 ```
 
-Aktifkan Google OAuth di dashboard Supabase:
-```bash
-# Authentication → Providers → Google  : isi Client ID + Secret
-# Authentication → URL Configuration   : tambahkan http://localhost:3000/auth/callback
-# Google Cloud Console → Credentials   : tambahkan https://xxxx.supabase.co/auth/v1/callback
-```
+Opsional, semuanya punya nilai bawaan yang aman:
 
-### 3. Setup Database
+| Variabel | Gunanya |
+|---|---|
+| `TRUST_PROXY_HOPS` | Jumlah proxy tepercaya di depan aplikasi. Wajib diisi di produksi di balik proxy, kalau tidak rate limit membaca IP yang salah. |
+| `RATE_LIMIT_STORE` | `memory` atau `postgres`. Tanpa diisi: Redis kalau kredensialnya ada, selain itu Postgres di produksi dan memori proses di pengembangan. |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Penyimpanan rate limit di Redis (bisa juga `RATE_LIMIT_REDIS_REST_URL` / `RATE_LIMIT_REDIS_REST_TOKEN`). |
+| `SLOW_REQUEST_MS` | Ambang batas permintaan lambat yang dicatat di log (bawaan 1000). |
+| `ALERT_WEBHOOK_URL` | Tujuan kiriman log level error. |
+| `NEXT_PUBLIC_API_BASE_URL` | Base URL API kalau front-end dan API dipisah. |
+
+> `.env.example` masih memuat variabel Supabase dan Resend dari produk
+> sebelumnya. Variabel itu tidak lagi dibaca kode, kecuali
+> `NEXT_PUBLIC_SUPABASE_URL` yang hanya dipakai `next.config.js` untuk
+> melonggarkan CSP.
+
+### 3. Siapkan basis data
 
 ```bash
 npx prisma generate
 npm run db:migrate
 ```
 
-`db:migrate` menjalankan migrasi yang tersimpan di `prisma/migrations` dan
-mencatat setiap perubahan skema. `db:push` masih ada untuk coba-coba cepat di
-basis data sekali pakai, tapi jangan dipakai pada basis data yang sudah berisi
-data sungguhan — perubahannya tidak punya jejak dan tidak bisa diputar balik.
+`db:push` sengaja diblokir — perubahan skema harus lewat migrasi supaya punya
+jejak dan bisa diputar balik.
 
-Verify the database connection:
-```bash
-npx prisma studio
-```
-
-Isi data contoh (butuh akun `adminblayerganteng` sudah terdaftar, atau set `SEED_OWNER_ID`):
-```bash
-npm run db:seed
-```
-
-### 4. Start Development Server
+### 4. Jalankan
 
 ```bash
 npm run dev
 ```
 
-Verify the app is running:
-```bash
-curl http://localhost:3000
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-Halaman `/`, `/forms/[id]`, `/login`, dan `/register` terbuka tanpa login. Halaman `/forms`, `/forms/create`, dan `/forms/[id]/result` menuntut sesi lebih dulu.
-
----
-
-## Troubleshooting
-
-### Database connection error
-
-**Error:** `Error: Can't reach database server`
-
-**Solution:**
-```bash
-# Verify PostgreSQL is running
-psql --version
-psql -U postgres -c "SELECT 1"
-```
-
-Jika memakai Supabase, gunakan **connection pooler** (`aws-*.pooler.supabase.com`), bukan host `db.*.supabase.co` yang IPv6-only:
-```bash
-# Password dengan karakter "@" wajib ditulis %40, kalau tidak URL terpotong
-DATABASE_URL="postgresql://user:pass%40word@aws-0-region.pooler.supabase.com:5432/postgres"
-```
-
----
-
-### Port 3000 already in use
-
-**Error:** `error: listen EADDRINUSE: address already in use :::3000`
-
-**Solution:**
-```bash
-# Find process on port 3000
-lsof -i :3000
-
-# Kill the process
-kill -9 <PID>
-
-# Or use a different port
-npm run dev -- -p 3001
-```
-
-Callback Google terdaftar di port 3000, jadi login gagal bila aplikasi berjalan di port lain.
-
----
-
-### Prisma schema out of sync
-
-**Error:** `The Prisma schema validation warnings should not block the Prisma CLI`
-
-**Solution:**
-```bash
-# Regenerate Prisma client
-npx prisma generate
-
-# Push schema to database
-npx prisma db push
-```
-
-Project ini memakai `db push`, bukan folder migrasi. Hindari `prisma migrate reset` pada basis data yang berisi data sungguhan — perintah itu mengosongkan seluruh tabel.
-
----
-
-### npm install fails with peer dependency errors
-
-**Error:** `npm ERR! peer dep missing`
-
-**Solution:**
-```bash
-# Install with legacy peer deps
-npm install --legacy-peer-deps
-
-# Or use npm ci
-npm ci
-```
-
----
-
-### TypeScript compilation errors
-
-**Error:** `TS2305: Module not found` or type errors
-
-**Solution:**
-```bash
-# Regenerate types
-npx prisma generate
-
-# Clear Next.js cache
-rm -rf .next
-
-# Rebuild
-npm run build
-```
-
----
-
-## Scripts
+Aplikasi berjalan di **http://localhost:3002**. Periksa kesiapannya:
 
 ```bash
-npm run dev              # Development server with hot-reload
-npm run build            # Build for production
-npm run start            # Start production server
-npm run lint             # Run ESLint and fix issues
-npm run test             # Run the Vitest suite once
-npm run test:watch       # Run Vitest in watch mode
-npm run db:generate      # Regenerate Prisma client
-npm run typecheck        # Type-check the whole project without emitting
-npm run db:push          # Push schema without a migration (throwaway DB only)
-npm run db:migrate       # Create and apply a migration (development)
-npm run db:deploy        # Apply pending migrations (production)
-npm run db:seed          # Seed demo forms for every template
-npm run db:studio        # Open Prisma Studio (database GUI)
+curl http://localhost:3002/api/health
 ```
 
----
-
-## Deploy Checklist
-
-Sebelum melepas ke publik:
-
-1. **Migrasi, bukan push.** Jalankan `npm run db:deploy` memakai koneksi
-   langsung ke Postgres. Migrasi tidak bisa lewat pooler:
-   ```bash
-   DATABASE_URL="$DIRECT_URL" npm run db:deploy
-   ```
-2. **Pooler untuk aplikasinya.** `DATABASE_URL` yang dipakai aplikasi harus URL
-   pooler (`?pgbouncer=true&connection_limit=1`). Tanpa itu, tiap instance
-   serverless membuka pool sendiri dan koneksi Postgres habis di bawah trafik.
-3. **Rahasia server tanpa prefix publik.** `SUPABASE_SERVICE_ROLE_KEY` dan
-   `SUPABASE_SECRET_KEY` tidak boleh pernah diberi prefix `NEXT_PUBLIC_` — apa pun dengan prefix itu ikut terkirim ke browser.
-   Lihat `.env.example` untuk daftar lengkapnya.
-4. **CI hijau.** `.github/workflows/ci.yml` menjalankan lint, typecheck, test,
-   dan build di tiap PR. Jangan deploy dari branch yang merah.
-5. **Log terbaca.** Kegagalan API keluar sebagai satu baris JSON berisi
-   `requestId`, `route`, dan `errorMessage`. Pengguna menerima requestId yang
-   sama pada pesan errornya, jadi laporan bisa langsung dicocokkan ke log.
-
-### Batas yang diketahui
-
-- **Rate limit disimpan di memori instance.** Cukup untuk menahan banjir dari
-  satu sumber, tapi di banyak instance tiap instance punya jatah sendiri. Kalau
-  trafik tumbuh, ganti isi `src/shared/lib/rateLimit.ts` dengan penyimpanan
-  bersama (mis. Redis) — pemanggilnya tidak perlu diubah.
-- **Belum ada agregator error pihak ketiga.** Log terstruktur sudah siap
-  di-parse; menyambungkannya ke Sentry/Logtail tinggal menambahkan pengirim di
-  `src/shared/lib/logger.ts`.
+Jawaban `503` dengan kode `DATABASE_UNAVAILABLE` berarti `DATABASE_URL` belum
+menunjuk basis data yang hidup.
 
 ---
 
-## Documentation
+## Struktur proyek
 
-- **[CODE.md](./CODE.md)** — Architecture guide, naming conventions, component patterns, and project structure rules
-- **[PRD.md](./PRD.md)** — Product requirements, feature status, and architecture decisions
-- **[TEST_CASE.md](./TEST_CASE.md)** — Test cases mapped to requirement IDs, automated and manual
-- **[Prisma Docs](https://www.prisma.io/docs)** — Database ORM documentation
-- **[Next.js Docs](https://nextjs.org/docs)** — Framework documentation
-- **[Supabase Docs](https://supabase.com/docs)** — Auth, Storage, and Postgres documentation
-- **[Tailwind CSS](https://tailwindcss.com/docs)** — Utility-first CSS framework
-- **[Shadcn/UI](https://ui.shadcn.com)** — Component library documentation
+```
+src/
+├── pages/                 # Rute halaman & API (Pages Router)
+│   ├── index.tsx          # Landing page
+│   └── api/
+│       └── health.ts      # Kesiapan layanan
+├── features/landing/      # Isi halaman depan (statis, tanpa pemanggilan API)
+├── features/<fitur>/      # Satu fitur = satu folder berlapis
+│   ├── types/             # Bentuk data & payload
+│   ├── states/            # State klien (Zustand)
+│   ├── services/          # Pemanggilan HTTP
+│   ├── controllers/       # Query/mutation (TanStack Query) + turunan state
+│   └── components/        # Tampilan
+├── components/ui/         # Komponen dasar (Shadcn/UI)
+└── shared/
+    ├── components/        # LoadData, ErrorBoundary
+    ├── lib/               # apiHandler, apiResponse, logger, rateLimit, prisma
+    └── styles/            # Tailwind + token desain
+```
+
+Fitur baru mengikuti jalur `types → states → services → controllers → components`
+supaya penambahannya tidak menyusun ulang pola dari nol.
+
+### Tumpukan teknologi
+
+| Lapis | Pilihan |
+|---|---|
+| Framework | Next.js 16 (Pages Router) + React 18 |
+| Bahasa | TypeScript (strict) |
+| Tampilan | Tailwind CSS + Shadcn/UI + Lucide |
+| State klien | Zustand |
+| State server | TanStack Query |
+| Basis data | PostgreSQL + Prisma |
+| Pengujian | Vitest + Testing Library |
+| Kualitas kode | ESLint + TypeScript strict |
 
 ---
 
-## License
+## Kontrak API
 
-MIT
+Semua rute di bawah `/api/v1` menjawab dengan satu bentuk amplop yang sama —
+berhasil maupun gagal — lengkap dengan `request_id` yang juga muncul di header
+`X-Request-Id` dan di log. Rinciannya di
+[docs/API_RESPONSE.md](./docs/API_RESPONSE.md).
+
+Belum ada rute `/api/v1` yang terpasang. Endpoint yang ada saat ini hanya:
+
+| Endpoint | Gunanya |
+|---|---|
+| `GET /api/health` | Kesiapan aplikasi, basis data, dan penyimpanan rate limit |
+
+## Skrip
+
+```bash
+npm run dev          # Server pengembangan (port 3002)
+npm run build        # Build produksi
+npm run start        # Jalankan hasil build
+npm run lint         # ESLint
+npm run typecheck    # tsc --noEmit
+npm run test         # Vitest sekali jalan
+npm run test:watch   # Vitest mode pantau
+npm run db:generate  # Regenerasi Prisma Client
+npm run db:migrate   # Buat & terapkan migrasi (pengembangan)
+npm run db:deploy    # Terapkan migrasi tertunda (produksi)
+npm run db:studio    # Prisma Studio
+```
+
+CI menjalankan lint, typecheck, test, dan build di tiap PR
+([.github/workflows/ci.yml](./.github/workflows/ci.yml)). Jangan gabungkan
+branch yang merah.
+
+---
+
+## Peta jalan
+
+| Fase | Fokus |
+|---|---|
+| Phase 1 — Agent Foundation | Project, Agent CRUD, konfigurasi model, instructions, Playground, API, API key |
+| Phase 2 — Agent Intelligence | Tools, Knowledge, RAG, function calling, memory dasar |
+| Pilot Integration | Integrasi end-to-end dengan satu project consumer |
+| Phase 3 — Production Readiness | Versioning, deployment layer, log, monitoring, cost tracking |
+| Persiapan Open Source | Pemisahan core, paket self-hosting, dokumentasi publik, rate limiting per API key |
+| Rilis Open Source | Publikasi repositori dan dokumentasi |
+| Phase 4 — Evaluation | Test case, dataset, regression testing (opsional, setelah pilot stabil) |
+
+Estimasi dan metrik suksesnya ada di [PRD.md](./PRD.md).
+
+## Kontribusi
+
+Panduan kontribusi (`CONTRIBUTING.md`) belum ditulis dan menjadi salah satu
+prasyarat sebelum repositori dibuka ke publik. Sementara itu, tiap perubahan
+tetap harus lolos `npm run lint`, `npm run typecheck`, `npm test`, dan
+`npm run build`.
+
+## Lisensi
+
+[MIT](https://opensource.org/licenses/MIT).
