@@ -36,13 +36,12 @@ describe('halaman tidak ditemukan', () => {
     expect(
       screen.getByRole('link', { name: /Kembali ke Beranda/ })
     ).toHaveAttribute('href', '/')
-    expect(screen.getAllByRole('link', { name: /Semua Form/ })[0]).toHaveAttribute(
+    expect(
+      screen.getByRole('link', { name: /Lihat Kategori/ })
+    ).toHaveAttribute('href', '/#kategori')
+    expect(screen.getByRole('link', { name: /KATEGORI/ })).toHaveAttribute(
       'href',
-      '/forms'
-    )
-    expect(screen.getByRole('link', { name: /BUAT FORM/ })).toHaveAttribute(
-      'href',
-      '/forms/create'
+      '/#kategori'
     )
   })
 

@@ -6,19 +6,9 @@ import ErrorView from '@/components/error-view'
 
 const SERVER_ERROR_LINKS = [
   {
-    href: '/forms',
-    label: 'RIWAYAT FORM',
-    description: 'Coba buka daftar form; kegagalan biasanya hanya sesaat.',
-  },
-  {
-    href: '/forms/create',
-    label: 'BUAT FORM',
-    description: 'Isian yang belum tersimpan sayangnya harus disusun ulang.',
-  },
-  {
     href: '/#kategori',
     label: 'KATEGORI',
-    description: 'Lihat bentuk form yang bisa dipakai selagi menunggu.',
+    description: 'Coba buka halaman depan; kegagalan biasanya hanya sesaat.',
   },
 ]
 

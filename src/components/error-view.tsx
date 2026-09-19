@@ -61,8 +61,8 @@ export default function ErrorView({
                 size="lg"
                 className="whitespace-normal text-center"
               >
-                <Link href="/forms">
-                  <LayoutGrid /> Semua Form
+                <Link href="/#kategori">
+                  <LayoutGrid /> Lihat Kategori
                 </Link>
               </Button>
               {children}
