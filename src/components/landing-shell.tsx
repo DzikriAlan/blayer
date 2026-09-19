@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
+import { Button } from '@/components/ui/button'
 import logo from '@/shared/images/logoblayer.png'
 import wordmark from '@/shared/images/blayer.png'
 import { cn } from '@/shared/lib/utils'
@@ -12,7 +13,15 @@ const FOOTER_COLUMNS = [
     title: 'HALAMAN',
     links: [
       { href: '/', label: 'Beranda' },
-      { href: '/#kategori', label: 'Kategori' },
+      { href: '/#cara-kerja', label: 'Cara Kerja' },
+      { href: '/#fitur', label: 'Fitur' },
+    ],
+  },
+  {
+    title: 'PLATFORM',
+    links: [
+      { href: '/console', label: 'Console' },
+      { href: '/api/health', label: 'Status Layanan' },
     ],
   },
 ]
@@ -35,6 +44,12 @@ export default function LandingShell({ className, children }: Props) {
               className="h-14 w-auto shrink-0"
             />
           </Link>
+
+          <div className="ml-auto flex items-center gap-3">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/console">Masuk Console</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -51,11 +66,11 @@ export default function LandingShell({ className, children }: Props) {
               className="h-auto w-[180px] border-2 border-background"
             />
             <p className="brutal-eyebrow mt-5 leading-relaxed opacity-70">
-              TAKE WHAT YOU NEED.
+              BLAYER MENGATUR AI.
               <br />
-              BUILD WHAT YOU NEED.
+              PROJECT MENGUASAI DATA.
               <br />
-              MAKE WHAT YOU NEED.
+              SELF-HOSTED, MIT.
             </p>
           </div>
 
@@ -84,7 +99,7 @@ export default function LandingShell({ className, children }: Props) {
               © {new Date().getFullYear()} BLAYER® STUDIO
             </p>
             <p className="brutal-eyebrow opacity-60">
-              DIBUAT UNTUK FORM YANG HASILNYA LANGSUNG TERBACA
+              AI AGENT PLATFORM YANG JALAN DI INFRASTRUKTURMU SENDIRI
             </p>
           </div>
         </div>

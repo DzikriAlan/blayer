@@ -1,64 +1,22 @@
-'use client'
+import Link from 'next/link'
+import { ArrowUpRight } from 'lucide-react'
 
-import { useMemo } from 'react'
-
+import { Button } from '@/components/ui/button'
 import LandingHero from './landingHero'
-import LandingCategory from './landingCategory'
-import { LANDING_CATEGORIES } from './landingCatalog'
-
-const HERO_EVENT_LIMIT = 4
-
-const MARQUEE_WORDS = [
-  'TEKNOLOGI',
-  'OLAHRAGA',
-  'MUSIK & SENI',
-  'BISNIS & KARIER',
-  'TIKET TERBIT SENDIRI',
-]
+import LandingFeature from './landingFeature'
+import { LANDING_MARQUEE } from './landingCatalog'
 
 export default function LandingContent() {
-  const data = useMemo(() => {
-    const events = LANDING_CATEGORIES.flatMap((category) =>
-      category.events.map((event) => ({ event, category }))
-    )
-
-    return {
-      categories: LANDING_CATEGORIES,
-      totalCategory: LANDING_CATEGORIES.length,
-      totalEvent: events.length,
-      totalResponses: events.reduce(
-        (total, item) => total + item.event.totalResponses,
-        0
-      ),
-      heroEvents: events
-        .map(({ event, category }) => ({
-          id: event.id,
-          title: event.title,
-          categoryName: category.name,
-          icon: category.icon,
-          totalResponses: event.totalResponses,
-        }))
-        .sort((left, right) => right.totalResponses - left.totalResponses)
-        .slice(0, HERO_EVENT_LIMIT),
-      marqueeWords: [...MARQUEE_WORDS, ...MARQUEE_WORDS],
-    }
-  }, [])
-
   return (
     <>
-      <LandingHero
-        events={data.heroEvents}
-        totalCategory={data.totalCategory}
-        totalEvent={data.totalEvent}
-        totalResponses={data.totalResponses}
-      />
+      <LandingHero />
 
       <div
         aria-hidden
         className="overflow-hidden border-b-2 border-foreground bg-foreground py-3 text-background"
       >
         <div className="brutal-marquee flex w-max items-center gap-8 pl-8">
-          {data.marqueeWords.map((word, index) => (
+          {[...LANDING_MARQUEE, ...LANDING_MARQUEE].map((word, index) => (
             <span
               key={`${word}-${index}`}
               className="brutal-eyebrow flex shrink-0 items-center gap-8"
@@ -71,33 +29,110 @@ export default function LandingContent() {
       </div>
 
       <section
-        id="kategori"
+        id="cara-kerja"
         className="scroll-mt-24 border-b-2 border-foreground bg-background"
       >
         <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
           <div className="flex items-stretch gap-3">
             <span className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
-              YANG SEDANG TERBUKA
+              CARA KERJANYA
             </span>
             <span aria-hidden className="brutal-hatch flex-1 opacity-20" />
           </div>
 
           <h2 className="mt-7 max-w-2xl break-words font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
-            Pilih acaranya,
+            Otaknya di sini,
             <br />
-            langsung ikut
+            datanya tetap di sana
             <span className="text-primary">.</span>
           </h2>
 
           <p className="mt-5 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-            Semua pendaftarannya sedang dibuka sekarang. Pilih kategori yang
-            kamu minati dan daftar langsung — tanpa perlu membuat apa pun
-            lebih dulu.
+            Aplikasimu memanggil satu endpoint. Blayer memuat konfigurasi agent
+            dan menjalankannya. Saat agent butuh data, yang dipanggil adalah
+            endpoint milik projectmu sendiri — Blayer tidak pernah menyentuh
+            basis datamu.
           </p>
 
-          <div className="mt-12">
-            <LandingCategory data={data.categories} />
+          <ol className="mt-12 grid gap-4 sm:gap-6 lg:grid-cols-3">
+            {[
+              {
+                id: 'call',
+                title: 'Aplikasimu memanggil',
+                body: 'POST /api/v1/agents/{id}/run dengan API key milik projectnya sendiri.',
+              },
+              {
+                id: 'run',
+                title: 'Blayer menjalankan',
+                body: 'Versi production dimuat, dikirim ke provider yang kamu pilih, hasilnya dicatat.',
+              },
+              {
+                id: 'data',
+                title: 'Datamu tetap milikmu',
+                body: 'Kredensial provider terenkripsi di instance-mu. Data bisnis tidak pernah masuk ke sini.',
+              },
+            ].map((step, index) => (
+              <li
+                key={step.id}
+                className="flex flex-col border-2 border-foreground bg-paper p-5"
+              >
+                <span className="brutal-eyebrow text-muted-foreground">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 break-words font-display text-lg font-black uppercase leading-tight tracking-tight sm:text-xl">
+                  {step.title}
+                </h3>
+                <p className="mt-3 font-mono text-xs leading-relaxed text-muted-foreground">
+                  {step.body}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section
+        id="fitur"
+        className="scroll-mt-24 border-b-2 border-foreground bg-background"
+      >
+        <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+          <div className="flex items-stretch gap-3">
+            <span className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
+              YANG SUDAH JALAN
+            </span>
+            <span aria-hidden className="brutal-hatch flex-1 opacity-20" />
           </div>
+
+          <h2 className="mt-7 max-w-2xl break-words font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
+            Yang bisa dipakai
+            <br />
+            hari ini
+            <span className="text-primary">.</span>
+          </h2>
+
+          <div className="mt-12">
+            <LandingFeature />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b-2 border-foreground bg-paper">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-5 py-16 sm:px-8 sm:py-20">
+          <h2 className="max-w-2xl break-words font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
+            Jalankan di infrastrukturmu sendiri
+            <span className="text-primary">.</span>
+          </h2>
+
+          <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
+            Blayer berlisensi MIT dan dirancang untuk di-self-host. Tidak ada
+            server pusat yang menyimpan kunci provider atau data agentmu.
+          </p>
+
+          <Button asChild size="lg">
+            <Link href="/console">
+              Mulai dari Console <ArrowUpRight />
+            </Link>
+          </Button>
         </div>
       </section>
     </>

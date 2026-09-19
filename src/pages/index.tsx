@@ -8,10 +8,10 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>BLAYER — Take exactly what you need</title>
+        <title>BLAYER — Satu tempat atur semua agent</title>
         <meta
           name="description"
-          content="Blayer adalah platform berbasis form untuk membangun berbagai pengalaman interaktif sesuai kebutuhan dan hasil yang ingin dicapai."
+          content="Blayer adalah AI Agent Platform yang bisa kamu jalankan sendiri: rancang agent, uji di Playground, publikasikan versinya, lalu panggil lewat satu API."
         />
       </Head>
       <LandingShell>

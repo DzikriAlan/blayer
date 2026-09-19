@@ -1,14 +1,10 @@
-import {
-  ArrowUpRight,
-  Copy,
-  FileText,
-  TrendingUp,
-  type LucideIcon,
-} from 'lucide-react'
+import Link from 'next/link'
+import { ArrowUpRight } from 'lucide-react'
 
-import { LoadData } from '@/shared/components/load-data'
+import { Button } from '@/components/ui/button'
+import { LANDING_STATS, LANDING_STEPS } from './landingCatalog'
 
-const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
+const TAGLINES = ['AI Agent Platform', 'Control Plane', 'Self-Hosted']
 
 // Sudut kanan panel dan bilah statistik dipangkas miring. Sudut yang sama
 // dipakai dua lapis — lapisan hitam di luar jadi garis tepinya, lapisan isi
@@ -16,47 +12,7 @@ const TAGLINES = ['Form Builder', 'Take Your Values', 'Take Your Needs']
 const CHAMFER =
   'polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 26px 100%, 0 calc(100% - 26px))'
 
-export interface LandingHeroEvent {
-  id: string
-  title: string
-  categoryName: string
-  icon: LucideIcon
-  totalResponses: number
-}
-
-interface Props {
-  events: LandingHeroEvent[]
-  totalCategory: number
-  totalEvent: number
-  totalResponses: number
-}
-
-export default function LandingHero({
-  events,
-  totalCategory,
-  totalEvent,
-  totalResponses,
-}: Props) {
-  const eventState = {
-    data: events,
-    isEmpty: !events.length,
-    emptyTitle: 'Belum Ada Acara Dibuka',
-    emptySubtitle:
-      'Kategori acaranya tetap bisa dijelajahi di bagian bawah halaman ini.',
-    emptyImage: '/no-data.svg',
-  }
-
-  const stats = [
-    { key: 'kategori', label: 'KATEGORI', value: totalCategory, icon: Copy },
-    { key: 'event', label: 'FORM AKTIF', value: totalEvent, icon: FileText },
-    {
-      key: 'response',
-      label: 'JAWABAN MASUK',
-      value: totalResponses,
-      icon: TrendingUp,
-    },
-  ]
-
+export default function LandingHero() {
   return (
     <section className="relative flex flex-col overflow-hidden border-b-2 border-foreground bg-paper lg:min-h-[calc(100svh-4.4rem)]">
       <span
@@ -87,17 +43,28 @@ export default function LandingHero({
           </span>
 
           <h1 className="mt-7 hyphens-auto break-words font-display text-[clamp(2.25rem,5.6vw,4rem)] font-black uppercase leading-[0.86] tracking-[-0.03em]">
-            Take exactly
+            Satu tempat
             <br />
-            what you need
+            atur semua agent
             <span className="text-primary">.</span>
           </h1>
 
           <p className="mt-6 max-w-xl font-mono text-sm leading-relaxed text-foreground/80">
-            Lebih dari form builder, Blayer membangun ekosistem tempat
-            kemampuan, peluang, dan penghasilan saling menyambung satu sama
-            lain.
+            Blayer mengatur AI, project menguasai data. Prompt, model, versi, dan
+            catatan pemakaiannya hidup di sini — data bisnismu tetap di
+            infrastrukturmu sendiri.
           </p>
+
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Button asChild size="lg">
+              <Link href="/console">
+                Masuk Console <ArrowUpRight />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="#cara-kerja">Lihat Cara Kerjanya</Link>
+            </Button>
+          </div>
         </div>
 
         <div className="relative">
@@ -106,52 +73,46 @@ export default function LandingHero({
             className="brutal-hatch absolute -top-8 right-14 hidden h-5 w-28 lg:block"
           />
 
-          <div
-            className="bg-foreground p-[3px]"
-            style={{ clipPath: CHAMFER }}
-          >
+          <div className="bg-foreground p-[3px]" style={{ clipPath: CHAMFER }}>
             <div className="bg-background" style={{ clipPath: CHAMFER }}>
               <div className="flex items-center justify-between gap-3 border-b-2 border-foreground bg-foreground px-4 py-2.5 text-background sm:px-5 sm:py-3">
                 <span className="brutal-eyebrow text-[10px] tracking-[0.14em] sm:text-[11px] sm:tracking-[0.18em]">
-                  ACARA PALING POPULER
+                  DARI NOL SAMPAI DIPANGGIL
                 </span>
                 <span className="brutal-eyebrow whitespace-nowrap text-[10px] tracking-[0.14em] opacity-70 sm:text-[11px] sm:tracking-[0.18em]">
-                  {String(events.length).padStart(2, '0')} TERATAS
+                  {String(LANDING_STEPS.length).padStart(2, '0')} LANGKAH
                 </span>
               </div>
 
-              <LoadData response={eventState}>
-                <ul>
-                  {events.map((event) => {
-                    const Icon = event.icon
+              <ol>
+                {LANDING_STEPS.map((step, index) => {
+                  const Icon = step.icon
 
-                    return (
-                      <li
-                        key={event.id}
-                        className="border-b-2 border-foreground last:border-b-0"
-                      >
-                        <div className="group flex w-full items-center gap-2.5 px-3.5 py-3 text-left transition-colors hover:bg-primary hover:text-primary-foreground sm:gap-4 sm:px-5 sm:py-3.5">
-                          <span className="brutal-index h-8 w-8 shrink-0 transition-colors group-hover:bg-background group-hover:text-foreground sm:h-10 sm:w-10">
-                            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                          </span>
+                  return (
+                    <li
+                      key={step.id}
+                      className="flex items-center gap-2.5 border-b-2 border-foreground px-3.5 py-3 last:border-b-0 sm:gap-4 sm:px-5 sm:py-3.5"
+                    >
+                      <span className="brutal-index h-8 w-8 shrink-0 sm:h-10 sm:w-10">
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      </span>
 
-                          <span className="min-w-0 flex-1">
-                            <span className="line-clamp-3 break-words font-display text-[15px] font-black uppercase leading-tight tracking-tight sm:line-clamp-2 sm:text-lg">
-                              {event.title}
-                            </span>
-                            <span className="brutal-eyebrow mt-1 block truncate text-[10px] tracking-[0.1em] text-muted-foreground transition-colors group-hover:text-primary-foreground/80 sm:text-[11px] sm:tracking-[0.18em]">
-                              {String(event.totalResponses).padStart(2, '0')}{' '}
-                              TERDAFTAR · {event.categoryName}
-                            </span>
-                          </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block break-words font-display text-[15px] font-black uppercase leading-tight tracking-tight sm:text-lg">
+                          {step.title}
+                        </span>
+                        <span className="mt-1 block font-mono text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
+                          {step.description}
+                        </span>
+                      </span>
 
-                          <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary-foreground sm:h-5 sm:w-5" />
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </LoadData>
+                      <span className="brutal-eyebrow shrink-0 text-muted-foreground">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ol>
             </div>
           </div>
         </div>
@@ -171,7 +132,7 @@ export default function LandingHero({
             className="relative grid border-2 border-foreground bg-paper sm:grid-cols-3"
             style={{ clipPath: CHAMFER }}
           >
-            {stats.map((stat, index) => {
+            {LANDING_STATS.map((stat, index) => {
               const Icon = stat.icon
               const isPrimary = index === 2
 
@@ -187,7 +148,7 @@ export default function LandingHero({
                   <div className="min-w-0">
                     <dt className="brutal-eyebrow opacity-70">{stat.label}</dt>
                     <dd className="mt-1.5 font-display text-[clamp(1.75rem,3vw,2.5rem)] font-black leading-none">
-                      {String(stat.value).padStart(2, '0')}
+                      {stat.value}
                     </dd>
                   </div>
 

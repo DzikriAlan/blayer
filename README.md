@@ -36,11 +36,10 @@ sendiri — belum bisa memanggil tool milik project. Belum diuji di produksi.
 | Paket self-hosting (Docker Compose) + `CONTRIBUTING.md` | ⛔ belum dibangun |
 | Skema basis data produk lama (`forms`, `form_responses`, dll) | ⚠️ masih ada, sudah tidak dibaca kode mana pun |
 
-Landing page masih memakai naskah dan tampilan produk sebelumnya, tapi tidak lagi
-menyentuh basis data: daftar kategori, acara, dan angkanya adalah **data contoh**
-yang ditulis di `src/features/landing/components/landingCatalog.ts`. Desainnya
-dipertahankan sebagai rangka; naskah dan isinya diganti begitu permukaan platform
-yang baru siap.
+Landing page menjelaskan platform ini apa adanya — termasuk menandai bagian yang
+masih dibangun — dan tidak menyentuh basis data sama sekali; isinya konstanta di
+`src/features/landing/components/landingCatalog.ts`. Bahasa desainnya diwarisi
+dari produk sebelumnya, naskahnya tidak.
 
 Rencana produk selengkapnya ada di [PRD.md](./PRD.md).
 
