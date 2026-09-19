@@ -44,9 +44,19 @@ Butuh Node.js 20.9+ dan PostgreSQL 14+.
 Di Supabase, `DATABASE_URL` boleh diganti nama variabel dari dashboard-nya:
 `SUPABASE_DIRECT_CONNECTION_STRING` + `SUPABASE_PASSWORD` (penanda
 `[YOUR-PASSWORD]` di connection string diisikan sendiri), atau
-`SUPABASE_PROJECT` + `SUPABASE_PASSWORD` + `SUPABASE_REGION` untuk menyusun URL
-pooler. Aturannya ada di satu tempat, `server/config/env.ts`, dan Prisma CLI
-memakai aturan yang sama lewat `npm run db:deploy`.
+`SUPABASE_PASSWORD` + `SUPABASE_REGION` untuk menyusun URL pooler — ref
+project-nya diambil dari `SUPABASE_URL`. Aturannya ada di satu tempat,
+`server/config/env.ts`, dan Prisma CLI memakai aturan yang sama lewat
+`npm run db:deploy`.
+
+## Di serverless
+
+Host koneksi langsung Supabase (`db.<ref>.supabase.co`) hanya punya alamat IPv6,
+sedangkan function di Vercel dan Lambda keluar lewat IPv4. Alamat basis datanya
+karena itu harus menunjuk pooler (`aws-0-<region>.pooler.supabase.com:6543`,
+mode transaksi) — kalau tidak, seluruh permintaan menjawab
+`503 DATABASE_UNAVAILABLE` meski kredensialnya benar. Migrasi tetap butuh mode
+sesi di port 5432; `npm run db:deploy` sudah memilihkannya sendiri.
 
 `BLAYER_ENCRYPTION_KEY` tidak boleh berganti setelah ada kredensial tersimpan —
 kredensial lama akan gagal dibuka dan eksekusi agent menjawab

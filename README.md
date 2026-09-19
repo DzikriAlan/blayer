@@ -178,10 +178,24 @@ SUPABASE_PASSWORD="kata-sandi-basis-data"
 
 Penanda `[YOUR-PASSWORD]` yang ikut tersalin dari dashboard sengaja dibiarkan:
 nilainya diisi dari `SUPABASE_PASSWORD` dan di-encode, jadi kata sandi dengan
-karakter seperti `@` tidak memotong URL. Sebagai cara ketiga, `SUPABASE_PROJECT`
-+ `SUPABASE_PASSWORD` + `SUPABASE_REGION` cukup untuk menyusun URL pooler
-sendiri. Urutan pembacaannya: `DATABASE_URL` → `SUPABASE_DIRECT_CONNECTION_STRING`
-→ pooler; yang ditulis sendiri selalu menang.
+karakter seperti `@` tidak memotong URL. Sebagai cara ketiga, `SUPABASE_PASSWORD`
++ `SUPABASE_REGION` cukup untuk menyusun URL pooler sendiri; ref project-nya
+diambil dari `SUPABASE_URL`. Urutan pembacaannya: `DATABASE_URL` → pooler →
+koneksi langsung; yang ditulis sendiri selalu menang.
+
+**Di serverless (Vercel, Lambda) wajib lewat pooler.** Host koneksi langsung
+`db.<ref>.supabase.co` hanya punya alamat IPv6, sementara function-nya keluar
+lewat IPv4 — hasilnya `503 DATABASE_UNAVAILABLE` meski kredensialnya benar.
+Pakai URL mode transaksi dari dashboard, atau isi `SUPABASE_REGION` dan biarkan
+aplikasi menyusunnya:
+
+```env
+DATABASE_URL="postgresql://postgres.<ref>:password@aws-0-<region>.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+```
+
+Satu nilai yang sering tertukar: `https://xxxx.supabase.co` adalah alamat
+project, bukan connection string. Kalau itu yang masuk `DATABASE_URL`, nilainya
+diabaikan dengan peringatan di log dan sumber berikutnya yang dipakai.
 
 `BLAYER_ENCRYPTION_KEY` membuka kunci provider yang sudah tersimpan. Menggantinya
 membuat kredensial lama tidak bisa dibaca lagi dan eksekusi agent menjawab
