@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 
+import { getEnvValue } from '@server/config/env'
+
 import { isSameToken } from './crypto.util'
 
 export const ADMIN_USERNAME_ENV = 'BLAYER_ADMIN_USERNAME'
@@ -16,7 +18,9 @@ export const DEFAULT_ADMIN_PASSWORD = 'admin123'
 export const SESSION_TTL_MS = 12 * 60 * 60 * 1000
 const SESSION_PREFIX = 'blas_'
 
-const getEnv = (name: string) => (process.env[name] ?? '').trim()
+// Seluruh pembacaan environment lewat satu jalur di config, termasuk cadangan
+// dari berkas .env saat runtime tidak menyalurkannya.
+const getEnv = getEnvValue
 
 export const getAdminCredentials = () => {
   const username = getEnv(ADMIN_USERNAME_ENV) || DEFAULT_ADMIN_USERNAME

@@ -1,5 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from 'crypto'
 
+import { getEnvValue } from '@server/config/env'
+
 // Kredensial provider AI disimpan di instance milik pengguna sendiri (PRD §4),
 // jadi yang masuk basis data adalah cipher-nya, bukan kuncinya. Kunci pembuka
 // hidup di env dan tidak pernah ikut tersimpan bersama datanya.
@@ -10,7 +12,7 @@ const KEY_BYTES = 32
 export const ENCRYPTION_KEY_ENV = 'BLAYER_ENCRYPTION_KEY'
 
 export const getEncryptionKey = () => {
-  const raw = (process.env[ENCRYPTION_KEY_ENV] ?? '').trim()
+  const raw = getEnvValue('BLAYER_ENCRYPTION_KEY')
   if (!raw) return null
 
   const key = Buffer.from(raw, 'base64')
