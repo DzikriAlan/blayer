@@ -22,22 +22,22 @@ export default function ConsoleShell({
 }: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-50 border-b-2 border-foreground bg-paper">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-2 sm:px-8">
-          <Link href="/console" className="flex items-center gap-3">
-            <Image src={logo} alt="Blayer" priority className="h-10 w-auto shrink-0" />
-            <span className="brutal-eyebrow border-2 border-foreground px-2 py-1">
-              CONSOLE
+      <header className="sticky top-0 z-50 border-b border-border/80 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-5 py-3 sm:px-8">
+          <Link href="/console" className="flex items-center gap-2.5">
+            <Image src={logo} alt="Blayer" priority className="h-8 w-auto shrink-0" />
+            <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              Console
             </span>
           </Link>
 
           {backHref ? (
             <Link
               href={backHref}
-              className="brutal-eyebrow ml-auto inline-flex items-center gap-2 text-muted-foreground hover:text-primary"
+              className="ml-auto inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              {backLabel ?? 'KEMBALI'}
+              <ArrowLeft className="h-4 w-4" />
+              {backLabel ?? 'Kembali'}
             </Link>
           ) : null}
         </div>

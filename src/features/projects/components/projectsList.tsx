@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,11 +30,10 @@ export default function ProjectsList() {
       isLoading: projects.status === 'loading',
       isError: projects.status === 'error',
       isEmpty: projects.status === 'empty',
-      emptyTitle: 'Belum Ada Project',
+      emptyTitle: 'Belum ada project',
       emptySubtitle:
         'Project adalah wadah agent, API key, dan kredensial provider. Buat satu untuk mulai.',
-      emptyImage: '/no-data.svg',
-      errorTitle: 'Gagal Memuat Project',
+      errorTitle: 'Gagal memuat project',
       errorSubtitle: projects.statusSubtitle,
     }),
     [projects]
@@ -61,53 +60,45 @@ export default function ProjectsList() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
-      <h1 className="font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
-        Project
-        <span className="text-primary">.</span>
-      </h1>
-      <p className="mt-4 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
+      <h1 className="text-3xl font-semibold tracking-tight">Project</h1>
+      <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
         Tiap project punya agent, API key, dan kredensial provider sendiri.
         Pemisahan itu yang menjaga satu project tidak memakai kunci project lain.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-        <div>
-          <LoadData response={data} minHeight="20vh">
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {projects.data.map((project) => (
-                <li key={project.id}>
-                  <Link
-                    href={`/console/projects/${project.id}`}
-                    className="group flex h-full flex-col border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
-                  >
-                    <span className="brutal-eyebrow text-muted-foreground">
-                      {project.slug}
-                    </span>
-                    <span className="mt-2 font-display text-lg font-black uppercase leading-tight tracking-tight">
-                      {project.name}
-                    </span>
-                    <span className="mt-3 line-clamp-2 font-mono text-xs leading-relaxed text-muted-foreground">
-                      {project.description || 'Tanpa deskripsi.'}
-                    </span>
-                    <span className="brutal-eyebrow mt-5 flex items-center gap-2 text-muted-foreground">
-                      {String(project.totalAgents).padStart(2, '0')} AGENT ·{' '}
-                      {String(project.totalApiKeys).padStart(2, '0')} KEY
-                      <ArrowUpRight className="h-3.5 w-3.5 transition-colors group-hover:text-primary" />
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </LoadData>
-        </div>
+      <div className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <LoadData response={data} minHeight="20vh">
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {projects.data.map((project) => (
+              <li key={project.id}>
+                <Link
+                  href={`/console/projects/${project.id}`}
+                  className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-muted/30"
+                >
+                  <span className="text-xs text-muted-foreground">
+                    {project.slug}
+                  </span>
+                  <span className="mt-2 text-lg font-medium tracking-tight">
+                    {project.name}
+                  </span>
+                  <span className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                    {project.description || 'Tanpa deskripsi.'}
+                  </span>
+                  <span className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
+                    {project.totalAgents} agent · {project.totalApiKeys} key
+                    <ArrowRight className="h-3.5 w-3.5 transition-colors group-hover:text-primary" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </LoadData>
 
         <form
           onSubmit={saveProjects}
-          className="flex h-fit flex-col gap-4 border-2 border-foreground bg-paper p-5"
+          className="flex h-fit flex-col gap-4 rounded-xl border border-border bg-card p-6"
         >
-          <h2 className="font-display text-lg font-black uppercase leading-none tracking-tight">
-            Project Baru
-          </h2>
+          <h2 className="text-lg font-medium tracking-tight">Project baru</h2>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="project-name">Nama</Label>
@@ -141,13 +132,13 @@ export default function ProjectsList() {
           </div>
 
           {storeProjects.isError ? (
-            <p className="font-mono text-xs leading-relaxed text-primary">
+            <p className="text-sm leading-relaxed text-destructive">
               {storeProjects.error.message}
             </p>
           ) : null}
 
           <Button type="submit" disabled={storeProjects.isPending || !form.name.trim()}>
-            {storeProjects.isPending ? 'Menyimpan…' : 'Buat Project'}
+            {storeProjects.isPending ? 'Menyimpan…' : 'Buat project'}
           </Button>
         </form>
       </div>

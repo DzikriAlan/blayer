@@ -6,9 +6,14 @@ import ErrorView from '@/components/error-view'
 
 const NOT_FOUND_LINKS = [
   {
-    href: '/#kategori',
-    label: 'KATEGORI',
-    description: 'Lihat kategori yang sedang terbuka di halaman depan.',
+    href: '/console',
+    label: 'Console',
+    description: 'Kelola project, agent, dan API key dari satu tempat.',
+  },
+  {
+    href: '/#fitur',
+    label: 'Fitur platform',
+    description: 'Lihat apa saja yang sudah bisa dipakai hari ini.',
   },
 ]
 

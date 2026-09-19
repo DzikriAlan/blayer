@@ -89,30 +89,30 @@ export default function ProjectsDetail({ children }: Props) {
         {project ? (
           <div className="flex flex-col gap-12">
             <div>
-              <span className="brutal-eyebrow text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {project.slug}
               </span>
-              <h1 className="mt-3 font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
                 {project.name}
                 <span className="text-primary">.</span>
               </h1>
-              <p className="mt-4 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
                 {project.description || 'Tanpa deskripsi.'}
               </p>
             </div>
 
             <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <h2 className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
+                <h2 className="text-sm font-medium text-primary">
                   API KEY PROJECT
                 </h2>
 
                 {createdKey ? (
-                  <div className="mt-5 border-2 border-primary bg-paper p-4">
-                    <p className="brutal-eyebrow text-primary">
+                  <div className="mt-5 rounded-lg border border-primary/40 bg-primary/10 p-4">
+                    <p className="text-xs font-medium text-primary">
                       SALIN SEKARANG — TIDAK BISA DILIHAT LAGI
                     </p>
-                    <code className="mt-3 block break-all font-mono text-xs">
+                    <code className="mt-3 block break-all text-sm text-foreground">
                       {createdKey.token}
                     </code>
                   </div>
@@ -122,20 +122,20 @@ export default function ProjectsDetail({ children }: Props) {
                   {project.apiKeys.map((apiKey) => (
                     <li
                       key={apiKey.id}
-                      className="flex flex-wrap items-center justify-between gap-3 border-2 border-foreground bg-paper px-4 py-3"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
                     >
-                      <span className="font-mono text-xs">
+                      <span className="text-sm">
                         {apiKey.name}
                         <span className="text-muted-foreground"> · {apiKey.prefix}…</span>
                       </span>
-                      <span className="brutal-eyebrow text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {apiKey.environment}
                         {apiKey.isRevoked ? ' · DICABUT' : ''}
                       </span>
                     </li>
                   ))}
                   {!project.apiKeys.length ? (
-                    <li className="font-mono text-xs text-muted-foreground">
+                    <li className="text-sm text-muted-foreground">
                       Belum ada API key. Project consumer butuh satu kunci untuk
                       memanggil agent.
                     </li>
@@ -145,9 +145,9 @@ export default function ProjectsDetail({ children }: Props) {
 
               <form
                 onSubmit={saveKey}
-                className="flex h-fit flex-col gap-4 border-2 border-foreground bg-paper p-5"
+                className="flex h-fit flex-col gap-4 rounded-xl border border-border bg-card p-6"
               >
-                <h3 className="font-display text-lg font-black uppercase leading-none tracking-tight">
+                <h3 className="text-lg font-medium tracking-tight">
                   Key Baru
                 </h3>
 
@@ -185,7 +185,7 @@ export default function ProjectsDetail({ children }: Props) {
                 </div>
 
                 {storeProjectsKey.isError ? (
-                  <p className="font-mono text-xs leading-relaxed text-primary">
+                  <p className="text-sm leading-relaxed text-destructive">
                     {storeProjectsKey.error.message}
                   </p>
                 ) : null}
@@ -201,10 +201,10 @@ export default function ProjectsDetail({ children }: Props) {
 
             <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <h2 className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
+                <h2 className="text-sm font-medium text-primary">
                   KREDENSIAL PROVIDER
                 </h2>
-                <p className="mt-4 max-w-xl font-mono text-xs leading-relaxed text-muted-foreground">
+                <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
                   Kunci provider disimpan terenkripsi di instance ini dan
                   dipisahkan per environment. Tidak pernah dikirim ke mana pun
                   selain ke provider yang bersangkutan.
@@ -214,22 +214,22 @@ export default function ProjectsDetail({ children }: Props) {
                   {project.providerKeys.map((credential) => (
                     <li
                       key={credential.id}
-                      className="flex flex-wrap items-center justify-between gap-3 border-2 border-foreground bg-paper px-4 py-3"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
                     >
-                      <span className="font-mono text-xs">
+                      <span className="text-sm">
                         {credential.provider}
                         <span className="text-muted-foreground">
                           {' '}
                           · {credential.hint}
                         </span>
                       </span>
-                      <span className="brutal-eyebrow text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {credential.environment}
                       </span>
                     </li>
                   ))}
                   {!project.providerKeys.length ? (
-                    <li className="font-mono text-xs text-muted-foreground">
+                    <li className="text-sm text-muted-foreground">
                       Belum ada kredensial. Agent tidak bisa dijalankan sebelum
                       providernya punya kunci di environment yang dipakai.
                     </li>
@@ -239,9 +239,9 @@ export default function ProjectsDetail({ children }: Props) {
 
               <form
                 onSubmit={saveCredential}
-                className="flex h-fit flex-col gap-4 border-2 border-foreground bg-paper p-5"
+                className="flex h-fit flex-col gap-4 rounded-xl border border-border bg-card p-6"
               >
-                <h3 className="font-display text-lg font-black uppercase leading-none tracking-tight">
+                <h3 className="text-lg font-medium tracking-tight">
                   Simpan Kunci
                 </h3>
 
@@ -305,7 +305,7 @@ export default function ProjectsDetail({ children }: Props) {
                 </div>
 
                 {updateProjectsCredential.isError ? (
-                  <p className="font-mono text-xs leading-relaxed text-primary">
+                  <p className="text-sm leading-relaxed text-destructive">
                     {updateProjectsCredential.error.message}
                   </p>
                 ) : null}
@@ -324,7 +324,7 @@ export default function ProjectsDetail({ children }: Props) {
 
             <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <h2 className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
+                <h2 className="text-sm font-medium text-primary">
                   AGENT
                 </h2>
 
@@ -333,13 +333,13 @@ export default function ProjectsDetail({ children }: Props) {
                     <li key={agent.id}>
                       <Link
                         href={`/console/agents/${agent.id}`}
-                        className="flex flex-wrap items-center justify-between gap-3 border-2 border-foreground bg-paper px-4 py-3 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
                       >
-                        <span className="font-mono text-xs">
+                        <span className="text-sm">
                           {agent.name}
                           <span className="text-muted-foreground"> · {agent.slug}</span>
                         </span>
-                        <span className="brutal-eyebrow text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {agent.isPublished ? 'PRODUCTION' : 'DRAF'} ·{' '}
                           {String(agent.totalRuns).padStart(2, '0')} RUN
                         </span>
@@ -347,7 +347,7 @@ export default function ProjectsDetail({ children }: Props) {
                     </li>
                   ))}
                   {!project.agents.length ? (
-                    <li className="font-mono text-xs text-muted-foreground">
+                    <li className="text-sm text-muted-foreground">
                       Belum ada agent di project ini.
                     </li>
                   ) : null}

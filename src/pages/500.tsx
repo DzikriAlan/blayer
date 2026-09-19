@@ -6,8 +6,13 @@ import ErrorView from '@/components/error-view'
 
 const SERVER_ERROR_LINKS = [
   {
-    href: '/#kategori',
-    label: 'KATEGORI',
+    href: '/api/health',
+    label: 'Status layanan',
+    description: 'Periksa kesiapan aplikasi, basis data, dan rate limit.',
+  },
+  {
+    href: '/#fitur',
+    label: 'Fitur platform',
     description: 'Coba buka halaman depan; kegagalan biasanya hanya sesaat.',
   },
 ]

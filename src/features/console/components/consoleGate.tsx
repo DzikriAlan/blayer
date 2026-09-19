@@ -33,14 +33,15 @@ export default function ConsoleGate({ children }: Props) {
 
   return (
     <>
-      <div className="border-b-2 border-foreground bg-muted">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-2 sm:px-8">
-          <span className="brutal-eyebrow text-muted-foreground">
-            MASUK SEBAGAI {username.toUpperCase() || 'OPERATOR'}
+      <div className="border-b border-border bg-card/40">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-2.5 sm:px-8">
+          <span className="text-sm text-muted-foreground">
+            Masuk sebagai{' '}
+            <span className="text-foreground">{username || 'operator'}</span>
           </span>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={removeConsoleSession}
           >
@@ -50,10 +51,10 @@ export default function ConsoleGate({ children }: Props) {
       </div>
 
       {isDefaultCredentials ? (
-        <div className="border-b-2 border-foreground bg-primary text-primary-foreground">
-          <div className="mx-auto w-full max-w-6xl px-5 py-2 sm:px-8">
-            <p className="brutal-eyebrow">
-              KREDENSIAL MASIH BAWAAN — GANTI SEBELUM INSTANCE INI DIBUKA KE LUAR
+        <div className="border-b border-primary/30 bg-primary/10">
+          <div className="mx-auto w-full max-w-6xl px-5 py-2.5 sm:px-8">
+            <p className="text-sm text-primary">
+              Kredensial masih bawaan — ganti sebelum instance ini dibuka ke luar.
             </p>
           </div>
         </div>

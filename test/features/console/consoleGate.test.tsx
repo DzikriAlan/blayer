@@ -109,7 +109,8 @@ describe('gerbang console', () => {
     renderGate()
 
     expect(await screen.findByText('daftar project')).toBeInTheDocument()
-    expect(screen.getByText(/MASUK SEBAGAI ADMIN/)).toBeInTheDocument()
+    expect(screen.getByText(/Masuk sebagai/)).toBeInTheDocument()
+    expect(screen.getByText('admin')).toBeInTheDocument()
   })
 
   it('TC-68e meminta masuk lagi begitu sesinya kedaluwarsa', async () => {
@@ -153,6 +154,8 @@ describe('gerbang console', () => {
     await userEvent.type(screen.getByLabelText('Kata sandi'), 'admin123')
     await userEvent.click(screen.getByRole('button', { name: /^masuk$/i }))
 
-    expect(await screen.findByText(/KREDENSIAL MASIH BAWAAN/)).toBeInTheDocument()
+    expect(
+      await screen.findByText(/Kredensial masih bawaan/)
+    ).toBeInTheDocument()
   })
 })

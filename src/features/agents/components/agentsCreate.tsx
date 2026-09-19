@@ -58,9 +58,9 @@ export default function AgentsCreate({ projectId }: Props) {
   return (
     <form
       onSubmit={saveAgents}
-      className="flex h-fit flex-col gap-4 border-2 border-foreground bg-paper p-5"
+      className="flex h-fit flex-col gap-4 rounded-xl border border-border bg-card p-6"
     >
-      <h3 className="font-display text-lg font-black uppercase leading-none tracking-tight">
+      <h3 className="text-lg font-medium tracking-tight">
         Agent Baru
       </h3>
 
@@ -100,7 +100,7 @@ export default function AgentsCreate({ projectId }: Props) {
       />
 
       {storeAgents.isError ? (
-        <p className="font-mono text-xs leading-relaxed text-primary">
+        <p className="text-sm leading-relaxed text-destructive">
           {storeAgents.error.message}
         </p>
       ) : null}

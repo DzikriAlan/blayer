@@ -50,13 +50,12 @@ export default function AgentsPlayground() {
     <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
       <form
         onSubmit={runAgent}
-        className="flex flex-col gap-5 border-2 border-foreground bg-paper p-5"
+        className="flex flex-col gap-5 rounded-xl border border-border bg-card p-6"
       >
         <div className="flex items-stretch gap-3">
-          <span className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
+          <span className="text-sm font-medium text-primary">
             PLAYGROUND
           </span>
-          <span aria-hidden className="brutal-hatch flex-1 opacity-20" />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -115,7 +114,7 @@ export default function AgentsPlayground() {
         </div>
 
         {storeAgentsRun.isError ? (
-          <p className="font-mono text-xs leading-relaxed text-primary">
+          <p className="text-sm leading-relaxed text-destructive">
             {storeAgentsRun.error.message}
           </p>
         ) : null}
@@ -128,14 +127,14 @@ export default function AgentsPlayground() {
         </Button>
       </form>
 
-      <div className="flex flex-col gap-4 border-2 border-foreground bg-paper p-5">
-        <h2 className="font-display text-lg font-black uppercase leading-none tracking-tight">
+      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
+        <h2 className="text-lg font-medium tracking-tight">
           Jawaban
         </h2>
 
         {playgroundResult ? (
           <>
-            <dl className="grid grid-cols-2 gap-3 border-2 border-foreground p-4 sm:grid-cols-4">
+            <dl className="grid grid-cols-2 gap-4 rounded-lg border border-border p-4 sm:grid-cols-4">
               {[
                 { label: 'VERSI', value: `v${playgroundResult.version}` },
                 { label: 'LATENCY', value: `${playgroundResult.latencyMs} ms` },
@@ -152,20 +151,20 @@ export default function AgentsPlayground() {
                 },
               ].map((item) => (
                 <div key={item.label}>
-                  <dt className="brutal-eyebrow text-muted-foreground">
+                  <dt className="text-xs text-muted-foreground">
                     {item.label}
                   </dt>
-                  <dd className="mt-1 font-mono text-xs">{item.value}</dd>
+                  <dd className="mt-1 text-sm">{item.value}</dd>
                 </div>
               ))}
             </dl>
 
-            <p className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed">
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
               {playgroundResult.output}
             </p>
           </>
         ) : (
-          <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             Belum ada jawaban di sesi ini. Jalankan agent untuk melihat keluaran,
             token, dan biayanya.
           </p>

@@ -5,16 +5,16 @@ import { cn } from "@/shared/lib/utils"
 const Input = React.forwardRef<
   HTMLInputElement,
   React.ComponentProps<"input"> & { variant?: "underline" | "boxed" }
->(({ className, type, variant = "underline", ...props }, ref) => {
+>(({ className, type, variant = "boxed", ...props }, ref) => {
   return (
     <input
       type={type}
       className={cn(
-        "w-full bg-transparent font-mono text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-40",
+        "h-10 w-full text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-50",
         variant === "underline" &&
-          "border-0 border-b-[3px] border-foreground px-0 py-2 focus:border-primary",
+          "border-0 border-b border-border bg-transparent px-0 focus:border-primary",
         variant === "boxed" &&
-          "border-2 border-foreground bg-paper px-3 py-2 focus:border-primary",
+          "rounded-lg border border-border bg-muted/40 px-3 focus:border-primary/70 focus:bg-muted/60 focus:ring-2 focus:ring-primary/25",
         className
       )}
       ref={ref}

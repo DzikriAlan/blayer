@@ -14,7 +14,7 @@ const EFFORTS: AgentsEffort[] = ['LOW', 'MEDIUM', 'HIGH', 'XHIGH', 'MAX']
 const PROVIDERS: AgentsProvider[] = ['ANTHROPIC', 'OPENAI']
 
 export const SELECT_CLASS =
-  'h-11 w-full border-2 border-foreground bg-paper px-3 font-mono text-xs uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+  'h-10 w-full rounded-lg border border-border bg-muted/40 px-3 text-sm text-foreground outline-none transition-colors focus:border-primary/70 focus:ring-2 focus:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-50'
 
 interface Props {
   value: AgentsConfigValue
@@ -144,7 +144,7 @@ export default function AgentsConfigFields({
       </div>
 
       {selected && !selected.supportsSampling ? (
-        <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           {selected.label} tidak menerima temperature — isian itu diabaikan
           supaya permintaannya tidak ditolak provider.
         </p>

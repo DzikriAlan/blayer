@@ -30,7 +30,7 @@ const ProjectDetailPage: NextPage = () => {
         <title>Project — BLAYER Console</title>
         <meta name="robots" content="noindex" />
       </Head>
-      <ConsoleShell backHref="/console" backLabel="SEMUA PROJECT">
+      <ConsoleShell backHref="/console" backLabel="Semua project">
         <ConsoleGate>
           <ProjectsDetail>
             {projectId ? <AgentsCreate projectId={projectId} /> : null}

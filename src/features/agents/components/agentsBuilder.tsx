@@ -78,16 +78,15 @@ export default function AgentsBuilder() {
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
           <form
             onSubmit={saveVersion}
-            className="flex flex-col gap-5 border-2 border-foreground bg-paper p-5"
+            className="flex flex-col gap-5 rounded-xl border border-border bg-card p-6"
           >
             <div className="flex items-stretch gap-3">
-              <span className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
+              <span className="text-sm font-medium text-primary">
                 KONFIGURASI
               </span>
-              <span aria-hidden className="brutal-hatch flex-1 opacity-20" />
             </div>
 
-            <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               Menyimpan perubahan membuat draf versi baru. Versi yang sedang
               melayani production tidak ikut berubah sampai dipublikasikan.
             </p>
@@ -102,7 +101,7 @@ export default function AgentsBuilder() {
             />
 
             {storeAgentsVersion.isError ? (
-              <p className="font-mono text-xs leading-relaxed text-primary">
+              <p className="text-sm leading-relaxed text-destructive">
                 {storeAgentsVersion.error.message}
               </p>
             ) : null}
@@ -118,8 +117,8 @@ export default function AgentsBuilder() {
             </Button>
           </form>
 
-          <div className="flex h-fit flex-col gap-4 border-2 border-foreground bg-paper p-5">
-            <h2 className="font-display text-lg font-black uppercase leading-none tracking-tight">
+          <div className="flex h-fit flex-col gap-4 rounded-xl border border-border bg-card p-6">
+            <h2 className="text-lg font-medium tracking-tight">
               Versi
             </h2>
 
@@ -127,15 +126,15 @@ export default function AgentsBuilder() {
               {agent.versions.map((version) => (
                 <li
                   key={version.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border-2 border-foreground px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-4 py-3"
                 >
-                  <span className="font-mono text-xs">
+                  <span className="text-sm">
                     v{version.version}
                     <span className="text-muted-foreground"> · {version.model}</span>
                   </span>
 
                   {version.isProduction ? (
-                    <span className="brutal-eyebrow bg-primary px-2 py-1 text-primary-foreground">
+                    <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/30">
                       PRODUCTION
                     </span>
                   ) : (
@@ -159,7 +158,7 @@ export default function AgentsBuilder() {
             </ul>
 
             {storeAgentsPublish.isError ? (
-              <p className="font-mono text-xs leading-relaxed text-primary">
+              <p className="text-sm leading-relaxed text-destructive">
                 {storeAgentsPublish.error.message}
               </p>
             ) : null}

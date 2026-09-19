@@ -33,17 +33,16 @@ const AgentDetailPage: NextPage = () => {
       </Head>
       <ConsoleShell
         backHref={agent ? `/console/projects/${agent.projectId}` : '/console'}
-        backLabel="PROJECT"
+        backLabel="Project"
       >
         <ConsoleGate>
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-12 sm:px-8 sm:py-16">
             <div>
-              <span className="brutal-eyebrow text-muted-foreground">
-                {agent ? `${agent.projectName} · ${agent.slug}` : 'MEMUAT'}
+              <span className="text-xs text-muted-foreground">
+                {agent ? `${agent.projectName} · ${agent.slug}` : 'Memuat…'}
               </span>
-              <h1 className="mt-3 font-display text-[clamp(1.9rem,4.5vw,3rem)] font-black uppercase leading-[0.9] tracking-[-0.03em]">
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">
                 {agent?.name ?? 'Agent'}
-                <span className="text-primary">.</span>
               </h1>
             </div>
 

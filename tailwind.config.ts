@@ -13,47 +13,11 @@ const config: Config = {
   theme: {
   	extend: {
   		fontFamily: {
-  			display: ['var(--font-display)', 'Arial Black', 'sans-serif'],
+  			sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+  			display: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
   			mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
-  			poppins: ['var(--font-poppins)', 'sans-serif'],
-  			playfair: ['var(--font-playfair)', 'serif'],
   		},
   		colors: {
-  			midnight: {
-  				DEFAULT: '#0D0D0D',
-  				50: '#1A1A1A',
-  				100: '#171717',
-  				200: '#141414',
-  				300: '#111111',
-  				400: '#0F0F0F',
-  				500: '#0D0D0D',
-  			},
-  			gold: {
-  				DEFAULT: '#D4AF37',
-  				50: '#FDF9E8',
-  				100: '#FBF3D1',
-  				200: '#F7E7A3',
-  				300: '#F3DB75',
-  				400: '#EFCF47',
-  				500: '#EBC319',
-  				600: '#D4AF37',
-  				700: '#B8962E',
-  				800: '#9C7E25',
-  				900: '#80651C',
-  			},
-  			navy: {
-  				DEFAULT: '#0A0A23',
-  				50: '#F4F4FB',
-  				100: '#E9E9F7',
-  				200: '#D3D3EF',
-  				300: '#BDBDE7',
-  				400: '#A7A7DF',
-  				500: '#9191D7',
-  				600: '#7B7BCF',
-  				700: '#6565C7',
-  				800: '#4F4FBF',
-  				900: '#0A0A23',
-  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			paper: 'hsl(var(--paper))',
@@ -97,15 +61,14 @@ const config: Config = {
   			}
   		},
   		borderRadius: {
+  			xl: 'calc(var(--radius) + 4px)',
   			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			md: 'calc(var(--radius) - 4px)',
+  			sm: 'calc(var(--radius) - 6px)'
   		},
   		boxShadow: {
-  			'brutal-sm': '2px 2px 0 0 hsl(var(--border))',
-  			brutal: '4px 4px 0 0 hsl(var(--border))',
-  			'brutal-lg': '6px 6px 0 0 hsl(var(--border))',
-  			'brutal-xl': '9px 9px 0 0 hsl(var(--border))',
+  			glow: '0 0 0 1px hsl(var(--primary) / 0.35), 0 12px 40px -12px hsl(var(--primary) / 0.55)',
+  			lift: '0 1px 0 0 hsl(0 0% 100% / 0.04) inset, 0 12px 32px -16px hsl(0 0% 0% / 0.9)'
   		}
   	}
   },

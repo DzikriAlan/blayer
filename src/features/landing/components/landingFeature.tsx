@@ -2,32 +2,37 @@ import { LANDING_FEATURES } from './landingCatalog'
 
 export default function LandingFeature() {
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {LANDING_FEATURES.map((feature) => {
         const Icon = feature.icon
 
         return (
           <li
             key={feature.id}
-            className="flex flex-col border-2 border-foreground bg-paper p-5 transition-shadow hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]"
+            className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/40"
           >
+            <span
+              aria-hidden
+              className="glow-soft pointer-events-none absolute -right-16 -top-16 h-40 w-40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            />
+
             <div className="flex items-center justify-between gap-3">
-              <span className="brutal-index h-10 w-10 shrink-0">
-                <Icon className="h-5 w-5" />
+              <span className="index-badge">
+                <Icon className="h-4 w-4" />
               </span>
 
               {feature.isReady ? null : (
-                <span className="brutal-eyebrow border-2 border-foreground px-2 py-1 text-muted-foreground">
-                  SEDANG DIBANGUN
+                <span className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">
+                  Sedang dibangun
                 </span>
               )}
             </div>
 
-            <h3 className="mt-5 break-words font-display text-lg font-black uppercase leading-tight tracking-tight sm:text-xl">
+            <h3 className="mt-5 text-lg font-medium tracking-tight">
               {feature.title}
             </h3>
 
-            <p className="mt-3 font-mono text-xs leading-relaxed text-muted-foreground">
+            <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
               {feature.description}
             </p>
           </li>

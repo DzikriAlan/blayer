@@ -31,14 +31,13 @@ export default function AgentsRuns() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-stretch gap-3">
-        <span className="brutal-eyebrow bg-foreground px-3 py-2 text-background">
+        <span className="text-sm font-medium text-primary">
           OBSERVABILITY
         </span>
-        <span aria-hidden className="brutal-hatch flex-1 opacity-20" />
       </div>
 
       {summary ? (
-        <dl className="grid gap-4 border-2 border-foreground bg-paper p-5 sm:grid-cols-3 lg:grid-cols-5">
+        <dl className="grid gap-4 rounded-xl border border-border bg-card p-6 sm:grid-cols-3 lg:grid-cols-5">
           {[
             { label: 'EKSEKUSI', value: String(summary.totalRuns) },
             { label: 'SUCCESS RATE', value: `${summary.successRate}%` },
@@ -50,8 +49,8 @@ export default function AgentsRuns() {
             { label: 'BIAYA', value: `$${summary.totalCostUsd.toFixed(4)}` },
           ].map((item) => (
             <div key={item.label}>
-              <dt className="brutal-eyebrow text-muted-foreground">{item.label}</dt>
-              <dd className="mt-1.5 font-display text-2xl font-black leading-none">
+              <dt className="text-xs text-muted-foreground">{item.label}</dt>
+              <dd className="mt-1.5 text-2xl font-semibold tracking-tight">
                 {item.value}
               </dd>
             </div>
@@ -64,10 +63,10 @@ export default function AgentsRuns() {
           {(history?.runs ?? []).map((run) => (
             <li
               key={run.id}
-              className="border-2 border-foreground bg-paper px-4 py-3"
+              className="rounded-lg border border-border bg-card px-4 py-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="brutal-eyebrow">
+                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                   v{run.version} · {run.environment} ·{' '}
                   <span
                     className={
@@ -77,17 +76,17 @@ export default function AgentsRuns() {
                     {run.status}
                   </span>
                 </span>
-                <span className="brutal-eyebrow text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {run.latencyMs} MS · {run.inputTokens}/{run.outputTokens} TOKEN
                   {run.costUsd === null ? '' : ` · $${run.costUsd.toFixed(6)}`}
                 </span>
               </div>
 
-              <p className="mt-3 line-clamp-2 font-mono text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                 {run.input}
               </p>
 
-              <p className="mt-2 line-clamp-3 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed">
+              <p className="mt-2 line-clamp-3 whitespace-pre-wrap break-words text-sm leading-relaxed">
                 {run.status === 'FAILED'
                   ? `${run.errorCode}: ${run.errorMessage}`
                   : run.output}
