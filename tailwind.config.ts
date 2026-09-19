@@ -39,32 +39,28 @@ const config: Config = {
       },
 
       colors: {
-        // ─── Chaplin Brand Blue-Indigo (from logo) ───────────────────────────
+        // ─── Blayer Brand Violet ────────────────────────────────────────────
         brand: {
-          50:  "#EEF2FF",
-          100: "#E0E7FF",
-          200: "#C7D2FE",
-          300: "#A5B4FC",
-          400: "#818CF8",
-          500: "#5075EF",
-          600: "#3B5BD9",
-          700: "#2B46C0",
-          800: "#1E3A9A",
-          900: "#172E7A",
+          50:  "#FAF5FF",
+          100: "#F3E8FF",
+          200: "#E9D5FF",
+          300: "#D8B4FE",
+          400: "#C084FC",
+          500: "#A855F7",
+          600: "#9333EA",
+          700: "#7E22CE",
+          800: "#6B21A8",
+          900: "#581C87",
         },
 
-        // ─── Purple accent ──────────────────────────────────────────────────
-        purple: {
-          50:  "#F8F5FF",
-          100: "#F1EAFF",
-          200: "#E5D8FF",
-          300: "#D4BCFF",
-          400: "#BB95FF",
-          500: "#9D6BFF",
-          600: "#8B5CF6",
-          700: "#7C3AED",
-          800: "#6D28D9",
-          900: "#5B21B6",
+        // ─── Orchid — the deep half of the halftone gradients ───────────────
+        orchid: {
+          300: "#D8B4FE",
+          400: "#C084FC",
+          500: "#A855F7",
+          600: "#9333EA",
+          700: "#7E22CE",
+          800: "#6B21A8",
         },
 
         // ─── Design surfaces ────────────────────────────────────────────────
@@ -92,17 +88,6 @@ const config: Config = {
         success: { DEFAULT: "#22C55E", soft: "#DCFCE7" },
         warning: { DEFAULT: "#F59E0B", soft: "#FEF3C7" },
         danger:  { DEFAULT: "#EF4444", soft: "#FEE2E2" },
-
-        blue: {
-          DEFAULT: "#5075EF",
-          hover:   "#3B5BD9",
-          "12":    "rgba(80,117,239,0.12)",
-          "15":    "rgba(80,117,239,0.15)",
-          "20":    "rgba(80,117,239,0.20)",
-          "30":    "rgba(80,117,239,0.30)",
-          "50":    "rgba(80,117,239,0.50)",
-          "70":    "rgba(80,117,239,0.70)",
-        },
 
         // ─── shadcn / CSS-variable tokens ───────────────────────────────────
         background: "hsl(var(--background))",
@@ -137,17 +122,30 @@ const config: Config = {
           foreground: "#FFFFFF",
         },
 
+        // Brand-coloured text that stays readable on the page background
+        // in BOTH themes — `primary` is a fill, this is an ink.
+        iris: "hsl(var(--iris))",
+
+        // Validated categorical chart slots — see globals.css.
+        series: {
+          1: "hsl(var(--series-1))",
+          2: "hsl(var(--series-2))",
+          3: "hsl(var(--series-3))",
+          4: "hsl(var(--series-4))",
+        },
+        "viz-surface": "hsl(var(--viz-surface))",
+
         sidebar: "hsl(var(--sidebar))",
         border: "hsl(var(--border))",
         input:  "hsl(var(--input))",
         ring:   "hsl(var(--ring))",
 
         chart: {
-          1: "#5075EF",
-          2: "#8B5CF6",
-          3: "#0EA5E9",
-          4: "#F59E0B",
-          5: "#EF4444",
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
         },
       },
 
@@ -156,7 +154,7 @@ const config: Config = {
         card:      "0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04)",
         "card-md": "0 4px 12px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04)",
         soft:      "0 4px 20px rgba(15,23,42,0.07)",
-        focus:     "0 0 0 3px rgba(80,117,239,0.25)",
+        focus:     "0 0 0 3px rgba(147,51,234,0.30)",
         popup:     "0 8px 32px rgba(15,23,42,0.14)",
       },
 
@@ -173,6 +171,67 @@ const config: Config = {
 
       // ─── Marquee & hero-float animations ────────────────────────────────────
       keyframes: {
+        // Entrance variants. Sections deliberately do NOT share one entrance —
+        // a page where everything fades up from below reads as templated.
+        "slide-in-left": {
+          from: { opacity: "0", transform: "translateX(-24px)" },
+          to:   { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-in-right": {
+          from: { opacity: "0", transform: "translateX(24px)" },
+          to:   { opacity: "1", transform: "translateX(0)" },
+        },
+        "clip-up": {
+          from: { opacity: "0", clipPath: "inset(100% 0 0 0)" },
+          to:   { opacity: "1", clipPath: "inset(0 0 0 0)" },
+        },
+        "unroll": {
+          from: { opacity: "0", transform: "scaleX(.82)" },
+          to:   { opacity: "1", transform: "scaleX(1)" },
+        },
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(14px)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to:   { opacity: "1" },
+        },
+        "scale-in": {
+          from: { opacity: "0", transform: "scale(.96)" },
+          to:   { opacity: "1", transform: "scale(1)" },
+        },
+        // Chat — a message landing, and the three-dot thinking indicator.
+        "message-in": {
+          from: { opacity: "0", transform: "translateY(10px) scale(.98)" },
+          to:   { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "dot-bounce": {
+          "0%, 80%, 100%": { transform: "translateY(0)", opacity: ".45" },
+          "40%":           { transform: "translateY(-4px)", opacity: "1" },
+        },
+        // Charts — stroke draw-on, bar grow, and the travelling sheen.
+        "draw-line": {
+          from: { strokeDashoffset: "var(--draw-length, 1000)" },
+          to:   { strokeDashoffset: "0" },
+        },
+        "grow-y": {
+          from: { transform: "scaleY(0)" },
+          to:   { transform: "scaleY(1)" },
+        },
+        "grow-x": {
+          from: { transform: "scaleX(0)" },
+          to:   { transform: "scaleX(1)" },
+        },
+        shimmer: {
+          from: { transform: "translateX(-100%)" },
+          to:   { transform: "translateX(200%)" },
+        },
+        "pulse-ring": {
+          "0%":   { transform: "scale(.8)", opacity: ".7" },
+          "70%":  { transform: "scale(1.9)", opacity: "0" },
+          "100%": { transform: "scale(1.9)", opacity: "0" },
+        },
         "hero-float": {
           "0%, 100%": { transform: "translateY(0px) rotate(-0.5deg)" },
           "50%":      { transform: "translateY(-10px) rotate(0.5deg)" },
@@ -187,6 +246,20 @@ const config: Config = {
         },
       },
       animation: {
+        "fade-up":         "fade-up .55s cubic-bezier(.22,1,.36,1) both",
+        "slide-in-left":   "slide-in-left .6s cubic-bezier(.22,1,.36,1) both",
+        "slide-in-right":  "slide-in-right .6s cubic-bezier(.22,1,.36,1) both",
+        "clip-up":         "clip-up .7s cubic-bezier(.22,1,.36,1) both",
+        unroll:            "unroll .6s cubic-bezier(.22,1,.36,1) both",
+        "fade-in":         "fade-in .5s ease-out both",
+        "scale-in":        "scale-in .4s cubic-bezier(.22,1,.36,1) both",
+        "message-in":      "message-in .32s cubic-bezier(.22,1,.36,1) both",
+        "dot-bounce":      "dot-bounce 1.2s ease-in-out infinite",
+        "draw-line":       "draw-line 1.4s cubic-bezier(.4,0,.2,1) both",
+        "grow-y":          "grow-y .8s cubic-bezier(.22,1,.36,1) both",
+        "grow-x":          "grow-x .9s cubic-bezier(.22,1,.36,1) both",
+        shimmer:           "shimmer 2.4s ease-in-out infinite",
+        "pulse-ring":      "pulse-ring 2s ease-out infinite",
         "hero-float":      "hero-float 6s ease-in-out infinite",
         marquee:           "marquee 30s linear infinite",
         "marquee-reverse": "marquee-reverse 30s linear infinite",

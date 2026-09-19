@@ -117,7 +117,7 @@ export default function ConversationHistory({ collapsed }: Readonly<Props>) {
                       type="text"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="flex-1 px-2 py-1 rounded text-rem-85 bg-black/30 text-foreground border border-border outline-none"
+                      className="flex-1 px-2 py-1 rounded text-rem-85 bg-background text-foreground border border-border outline-none focus:border-primary"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') void handleRenameSave(conv.sessionId)
@@ -126,11 +126,11 @@ export default function ConversationHistory({ collapsed }: Readonly<Props>) {
                     />
                     <button
                       onClick={() => void handleRenameSave(conv.sessionId)}
-                      className="p-1 text-green-400 hover:text-green-300"
+                      className="p-1 text-success transition-colors hover:text-success/80"
                     >
                       <Check className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={handleRenameCancel} className="p-1 text-red-400 hover:text-red-300">
+                    <button onClick={handleRenameCancel} className="p-1 text-destructive transition-colors hover:text-destructive/80">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -153,7 +153,7 @@ export default function ConversationHistory({ collapsed }: Readonly<Props>) {
                         <button
                           type="button"
                           onClick={(e) => handleRenameStart(e, conv)}
-                          className="p-1 text-muted-foreground hover:text-blue-400"
+                          className="p-1 text-muted-foreground hover:text-iris"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>

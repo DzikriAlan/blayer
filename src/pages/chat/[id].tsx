@@ -13,7 +13,7 @@ const ChatDetailPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Chat — Chaplin</title>
+        <title>Chat — Blayer</title>
       </Head>
       <Layout noPadding headerRight={<ChatHeaderAgentSwitch />}>
         {!router.isReady ? (

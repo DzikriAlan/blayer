@@ -53,6 +53,9 @@
 @layer base {
   html {
     font-size: 16px;
+    /* Anchor nav on the landing page — smooth jumps, and enough offset that a
+       target heading clears the sticky 3rem header instead of hiding under it. */
+    scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -74,87 +77,130 @@
     box-sizing: border-box;
   }
 
-  /* ── Light mode — logo blue-violet ──────────────────────────────────────────── */
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 224 40% 10%;
+  [id] {
+    scroll-margin-top: 4.5rem;
+  }
 
-    --sidebar: 220 12% 96%;
+  /* One global opt-out. Every entrance, draw-on and loop in this app is a CSS
+     animation or transition, so cutting them here covers all of them — including
+     the inline `animationDelay` staggers, which become delays on nothing. */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ── Light mode — Blayer violet ─────────────────────────────────────────── */
+  :root {
+    --background: 270 30% 99%;
+    --foreground: 270 20% 10%;
+
+    --sidebar: 270 24% 96%;
 
     --card:            0 0% 100%;
-    --card-foreground: 224 40% 10%;
+    --card-foreground: 270 20% 10%;
 
     --popover:            0 0% 100%;
-    --popover-foreground: 224 40% 10%;
+    --popover-foreground: 270 20% 10%;
 
-    --primary:            0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    /* Violet at the same saturation the amber carried (~95%). Unlike amber,
+       violet at L 50% is DARK (luminance .116), so the label is white (6.3:1)
+       rather than near-black. */
+    --primary:            270 95% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary:            0 0% 94%;
-    --secondary-foreground: 0 0% 9%;
+    /* Brand-coloured TEXT on the page background. The fill only manages 2.2:1
+       on white, so headings use this deeper violet instead (7.9:1). */
+    --iris: 272 85% 45%;
 
-    --muted:            220 18% 93%;
-    --muted-foreground: 220 13% 46%;
+    --secondary:            270 25% 94%;
+    --secondary-foreground: 270 30% 18%;
 
-    --accent:            0 0% 92%;
-    --accent-foreground: 0 0% 9%;
+    --muted:            270 20% 95%;
+    --muted-foreground: 270 8% 42%;
+
+    --accent:            270 90% 95%;
+    --accent-foreground: 272 85% 32%;
 
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 18% 87%;
-    --input:  220 18% 87%;
-    --ring:   0 0% 15%;
+    --border: 270 18% 88%;
+    --input:  270 18% 86%;
+    --ring:   270 95% 50%;
 
     --radius:         0.5rem;
     --radius-small:   0.25rem;
     --radius-large:   0.75rem;
     --radius-rounded: 9999px;
 
-    --chart-1: 226 70% 42%;
-    --chart-2: 259 88% 66%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 0 72% 51%;
+    /* Chart surface + categorical slots. Validated as a set against #FFFFFF:
+       lightness band, chroma floor, protan/deutan ΔE, normal-vision ΔE and
+       3:1 contrast all pass. Do not re-step one slot in isolation. */
+    --viz-surface: 0 0% 100%;
+    --series-1: 262 83% 58%;
+    --series-2: 175 84% 32%;
+    --series-3: 32 95% 44%;
+    --series-4: 333 71% 51%;
+
+    --chart-1: 262 83% 58%;
+    --chart-2: 175 84% 32%;
+    --chart-3: 32 95% 44%;
+    --chart-4: 333 71% 51%;
+    --chart-5: 272 85% 45%;
   }
 
-  /* ── Dark mode — hitam pekat, logo blue accent ───────────────────────────────── */
+  /* ── Dark mode — violet ink ─────────────────────────────────────────────── */
   .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 93%;
+    --background: 270 18% 5%;
+    --foreground: 270 14% 93%;
 
-    --sidebar: 0 0% 10%;
+    --sidebar: 270 16% 8%;
 
-    --card:            0 0% 10%;
-    --card-foreground: 0 0% 93%;
+    --card:            270 14% 10%;
+    --card-foreground: 270 14% 93%;
 
-    --popover:            0 0% 12%;
-    --popover-foreground: 0 0% 93%;
+    --popover:            270 14% 12%;
+    --popover-foreground: 270 14% 93%;
 
-    --primary:            0 0% 95%;
-    --primary-foreground: 0 0% 9%;
+    --primary:            270 96% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary:            0 0% 17%;
-    --secondary-foreground: 0 0% 93%;
+    --iris: 272 95% 78%;
 
-    --muted:            0 0% 14%;
-    --muted-foreground: 0 0% 80%;
+    --secondary:            270 12% 18%;
+    --secondary-foreground: 270 14% 93%;
 
-    --accent:            0 0% 18%;
-    --accent-foreground: 0 0% 93%;
+    --muted:            270 11% 15%;
+    --muted-foreground: 270 10% 68%;
+
+    --accent:            272 35% 22%;
+    --accent-foreground: 272 90% 85%;
 
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 15%;
-    --input:  0 0% 17%;
-    --ring:   0 0% 80%;
+    --border: 270 11% 17%;
+    --input:  270 11% 19%;
+    --ring:   270 96% 60%;
 
-    --chart-1: 226 72% 56%;
-    --chart-2: 259 80% 68%;
-    --chart-3: 199 84% 55%;
-    --chart-4: 38 90% 55%;
-    --chart-5: 0 72% 57%;
+    /* Re-stepped for the dark card (#1A161D), not flipped from light. */
+    --viz-surface: 270 14% 10%;
+    --series-1: 258 90% 66%;
+    --series-2: 174 83% 36%;
+    --series-3: 40 91% 39%;
+    --series-4: 330 81% 60%;
+
+    --chart-1: 258 90% 66%;
+    --chart-2: 174 83% 36%;
+    --chart-3: 40 91% 39%;
+    --chart-4: 330 81% 60%;
+    --chart-5: 272 95% 78%;
   }
 }
 
@@ -193,4 +239,49 @@
   color: hsl(var(--muted-foreground));
   max-width: 480px;
   margin: 0 auto 12px;
+}
+
+/* ── Halftone / dither ─────────────────────────────────────────────────────
+   A dot grid painted in `currentColor`. Laid over a colour wash and masked
+   with a gradient, the dots thin out into the retro dither used across the
+   marketing sections. Colour comes from the element's own text colour, so a
+   `text-background` overlay punches holes and a `text-primary` one adds grain. */
+.halftone {
+  background-image: radial-gradient(circle at center, currentColor 1.1px, transparent 1.3px);
+  background-size: 6px 6px;
+}
+.halftone-fine { background-size: 4px 4px; }
+.halftone-coarse { background-size: 9px 9px; }
+
+/* Mask helpers — prefixed for Safari < 15.4, which only knows -webkit-mask-image. */
+.mask-orb {
+  -webkit-mask-image: radial-gradient(circle at 32% 28%, transparent 14%, #000 74%);
+  mask-image: radial-gradient(circle at 32% 28%, transparent 14%, #000 74%);
+}
+.mask-down {
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+.mask-up {
+  -webkit-mask-image: linear-gradient(to top, #000, transparent);
+  mask-image: linear-gradient(to top, #000, transparent);
+}
+.mask-radial {
+  -webkit-mask-image: radial-gradient(circle at center, #000 30%, transparent 72%);
+  mask-image: radial-gradient(circle at center, #000 30%, transparent 72%);
+}
+
+/* ── Scroll reveal ─────────────────────────────────────────────────────────
+   Hidden only when JS is running (the `js` class is stamped by the pre-paint
+   script in _document). With JS off, or if IntersectionObserver never fires,
+   the element simply stays visible — a reveal that fails must fail to "shown",
+   never to "invisible". */
+.js [data-reveal='pending'] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal='pending'] {
+    opacity: 1;
+  }
 }

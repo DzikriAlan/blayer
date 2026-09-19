@@ -105,7 +105,7 @@ export default function EmbedChatPage() {
   }
 
   const closeWidget = useCallback(() => {
-    window.parent.postMessage({ type: 'chaplin:close' }, '*')
+    window.parent.postMessage({ type: 'blayer:close' }, '*')
   }, [])
 
   const resetConversation = useCallback(() => {
@@ -114,18 +114,18 @@ export default function EmbedChatPage() {
     setMessages([])
   }, [isStreaming])
 
-  const agentName = agentInfo?.name ?? 'Chaplin AI'
+  const agentName = agentInfo?.name ?? 'Blayer AI'
 
   return (
     <>
       <Head>
-        <title>Chaplin Chat</title>
+        <title>Blayer Chat</title>
         <meta name="robots" content="noindex" />
       </Head>
 
-      <div className="flex h-screen flex-col bg-background text-foreground font-sans">
+      <div className="flex h-dvh flex-col bg-background font-sans text-foreground">
         {/* Header */}
-        <div className="shrink-0 border-b border-border px-4 py-3 flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5 sm:px-4 sm:py-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 overflow-hidden">
             {agentInfo?.image ? (
               <Image src={agentInfo.image} alt={agentName} width={32} height={32} className="h-full w-full object-cover" />
@@ -164,9 +164,12 @@ export default function EmbedChatPage() {
               <p className="text-sm text-muted-foreground">Mulai percakapan dengan mengirim pesan</p>
             </div>
           )}
-          <div className="space-y-3 max-w-full">
+          <div className="max-w-full space-y-3" aria-live="polite" aria-busy={isStreaming}>
             {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                key={msg.id}
+                className={`flex animate-message-in ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
                 <div
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                     msg.role === 'user'
@@ -177,16 +180,26 @@ export default function EmbedChatPage() {
                   {msg.role === 'assistant' ? (
                     <>
                       {msg.content && (
-                        <div className="text-sm leading-relaxed [&_p]:my-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_strong]:font-semibold [&_code:not(pre_>_code)]:bg-black/20 [&_code:not(pre_>_code)]:px-1 [&_code:not(pre_>_code)]:rounded [&_code:not(pre_>_code)]:text-orange-400 [&_pre]:bg-black/30 [&_pre]:p-2 [&_pre]:rounded-lg [&_pre]:my-1.5 [&_pre]:overflow-x-auto [&_pre]:text-xs">
+                        <div className="text-sm leading-relaxed [&_p]:my-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_strong]:font-semibold [&_code:not(pre_>_code)]:bg-foreground/10 [&_code:not(pre_>_code)]:px-1 [&_code:not(pre_>_code)]:rounded [&_code:not(pre_>_code)]:text-iris [&_pre]:bg-foreground/[0.07] [&_pre]:dark:bg-black/50 [&_pre]:p-2 [&_pre]:rounded-lg [&_pre]:my-1.5 [&_pre]:overflow-x-auto [&_pre]:text-xs">
                           <ReactMarkdown>{msg.content}</ReactMarkdown>
                         </div>
                       )}
-                      {msg.streaming && (
-                        <div className={`flex items-center gap-1 ${msg.content ? 'mt-1.5' : 'py-0.5'}`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:0ms]" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:150ms]" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:300ms]" />
+                      {msg.streaming && !msg.content && (
+                        <div className="flex items-center gap-1 py-0.5" aria-label="Agent is typing">
+                          {[0, 1, 2].map((i) => (
+                            <span
+                              key={i}
+                              className="h-1.5 w-1.5 animate-dot-bounce rounded-full bg-current"
+                              style={{ animationDelay: `${i * 160}ms` }}
+                            />
+                          ))}
                         </div>
+                      )}
+                      {msg.streaming && msg.content && (
+                        <span
+                          aria-hidden="true"
+                          className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] animate-pulse rounded-full bg-current align-baseline"
+                        />
                       )}
                     </>
                   ) : (
@@ -200,8 +213,8 @@ export default function EmbedChatPage() {
         </div>
 
         {/* Input */}
-        <div className="shrink-0 border-t border-border px-3 py-3">
-          <div className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5">
+        <div className="shrink-0 border-t border-border px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+          <div className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 transition-colors focus-within:border-primary/50">
             <input
               ref={inputRef}
               type="text"
@@ -218,12 +231,12 @@ export default function EmbedChatPage() {
               type="button"
               onClick={() => void sendMessage(input)}
               disabled={!input.trim() || isStreaming}
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground text-background disabled:opacity-30 hover:opacity-80 transition-opacity"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:bg-primary/90 active:scale-90 disabled:opacity-30 disabled:active:scale-100"
             >
               {isStreaming ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowUp className="h-3.5 w-3.5" />}
             </button>
           </div>
-          <p className="text-center text-[10px] text-muted-foreground mt-1.5">Powered by Chaplin AI</p>
+          <p className="text-center text-[10px] text-muted-foreground mt-1.5">Powered by Blayer AI</p>
         </div>
       </div>
     </>

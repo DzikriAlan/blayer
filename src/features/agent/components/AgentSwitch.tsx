@@ -43,7 +43,7 @@ export default function AgentSwitch({ selectedAgentId, onSelectAgent }: Readonly
                 )}
               </div>
               <span className="max-w-[100px] sm:max-w-[160px] truncate">{selectedAgent.name}</span>
-              {selectedAgent.isDefault && <Star className="h-3 w-3 text-amber-500 shrink-0" />}
+              {selectedAgent.isDefault && <Star className="h-3 w-3 text-warning shrink-0" />}
             </>
           ) : (
             <>
@@ -91,7 +91,7 @@ export default function AgentSwitch({ selectedAgentId, onSelectAgent }: Readonly
                 <p className="text-rem-70 text-muted-foreground truncate">{agent.personalization}</p>
               )}
             </div>
-            {agent.isDefault && <Star className="h-3 w-3 text-amber-500 shrink-0" />}
+            {agent.isDefault && <Star className="h-3 w-3 text-warning shrink-0" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -41,6 +41,7 @@ export default function ChatView({ conversationId }: Props) {
   const [isInputBarVisible, setIsInputBarVisible] = useState(true)
   const sessionIdRef = useRef<string>(conversationId || crypto.randomUUID())
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const lastScrollTopRef = useRef(0)
   const messages = useMemo(() => chat.data ?? [], [chat.data])
@@ -50,6 +51,7 @@ export default function ChatView({ conversationId }: Props) {
   const activeAgent = agents.find((a) => a.id === selectedAgentId) ?? defaultAgent
   const displayName = session?.user?.name?.split(' ')[0] ?? defaultName
   const isEmptyConversation = messages.length === 0
+  const streamingContent = messages[messages.length - 1]?.content ?? ''
 
   // function / methode
   const appendChunk = (chunk: string) => {
@@ -167,7 +169,11 @@ export default function ChatView({ conversationId }: Props) {
   const handleMessagesScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop
     const lastScrollTop = lastScrollTopRef.current
-    if (scrollTop <= 0 || scrollTop < lastScrollTop) {
+    // The auto-scroll below also fires this handler, so without the streaming
+    // guard the composer slid away on its own while a reply came in.
+    if (isStreaming) {
+      setIsInputBarVisible(true)
+    } else if (scrollTop <= 0 || scrollTop < lastScrollTop) {
       setIsInputBarVisible(true)
     } else if (scrollTop > lastScrollTop) {
       setIsInputBarVisible(false)
@@ -176,9 +182,23 @@ export default function ChatView({ conversationId }: Props) {
   }
 
   // lifecycle react
+
+  // `messages` gets a new identity on every streamed chunk, so scrolling on the
+  // array itself fired a fresh smooth-scroll dozens of times a second and the
+  // animations fought each other. Split it: smooth-scroll only when a message
+  // is added, and during streaming just stay pinned — and only if the reader
+  // was already at the bottom, so scrolling up to re-read is not yanked back.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages.length])
+
+  useEffect(() => {
+    if (!isStreaming) return
+    const el = scrollRef.current
+    if (!el) return
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    if (distanceFromBottom < 120) el.scrollTop = el.scrollHeight
+  }, [streamingContent, isStreaming])
 
   useEffect(() => {
     if (!conversationId) {
@@ -211,7 +231,7 @@ export default function ChatView({ conversationId }: Props) {
   )
 
   const inputBar = (
-    <div className="flex items-center gap-3 rounded-full border border-border bg-background px-4 py-3">
+    <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2.5 shadow-sm transition-shadow focus-within:border-primary/50 focus-within:shadow-focus sm:gap-3 sm:px-4 sm:py-3">
       <Button
         type="button"
         variant="ghost"
@@ -237,7 +257,7 @@ export default function ChatView({ conversationId }: Props) {
         onClick={() => void saveChatMessage(input)}
         disabled={!input.trim() || isStreaming || isLoading}
         aria-label="Kirim pesan"
-        className="h-7 w-7 shrink-0 rounded-full bg-foreground text-background hover:bg-foreground/80"
+        className="h-7 w-7 shrink-0 rounded-full bg-primary text-primary-foreground transition-transform hover:bg-primary/90 active:scale-90 disabled:active:scale-100"
       >
         {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
       </Button>
@@ -255,27 +275,32 @@ export default function ChatView({ conversationId }: Props) {
   if (isEmptyConversation) {
     return (
       <div className="flex h-full flex-col items-center justify-center overflow-hidden bg-card px-4 md:bg-background">
-        <div className="relative isolate w-full max-w-xl overflow-hidden">
-          <h1 className="mb-6 text-center text-2xl font-semibold text-foreground tracking-tight">
-            Hello {displayName}, this is chaplin!
+        <div className="relative isolate w-full max-w-xl animate-fade-up overflow-hidden">
+          <h1 className="mb-5 text-center text-xl font-semibold tracking-tight text-foreground sm:mb-6 sm:text-2xl">
+            Hello {displayName}, this is Blayer!
           </h1>
 
+          {/* Brand glow — violet, stepped per theme rather than reused at one opacity */}
           <div
-            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220px] w-[90vw] max-w-[1100px] -translate-x-1/2 -translate-y-1/2 dark:hidden sm:h-[420px]"
+            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[200px] w-[90vw] max-w-[1100px] -translate-x-1/2 -translate-y-1/2 dark:hidden sm:h-[420px]"
             style={{
-              background: 'radial-gradient(ellipse at center, rgba(251, 113, 133, 0.45) 0%, rgba(244, 63, 94, 0.22) 40%, transparent 70%)',
+              background: 'radial-gradient(ellipse at center, rgba(168, 85, 247, 0.40) 0%, rgba(147, 51, 234, 0.20) 40%, transparent 70%)',
               filter: 'blur(52px)',
             }}
           />
           <div
-            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 hidden h-[220px] w-[90vw] max-w-[1100px] -translate-x-1/2 -translate-y-1/2 dark:block sm:h-[420px]"
+            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 hidden h-[200px] w-[90vw] max-w-[1100px] -translate-x-1/2 -translate-y-1/2 dark:block sm:h-[420px]"
             style={{
-              background: 'radial-gradient(ellipse at center, rgba(220, 38, 38, 0.30) 0%, rgba(185, 28, 28, 0.14) 45%, transparent 70%)',
+              background: 'radial-gradient(ellipse at center, rgba(168, 85, 247, 0.30) 0%, rgba(126, 34, 206, 0.16) 45%, transparent 70%)',
               filter: 'blur(60px)',
             }}
           />
 
           {inputBar}
+
+          {agentSwitch && (
+            <div className="mt-4 flex justify-center">{agentSwitch}</div>
+          )}
         </div>
       </div>
     )
@@ -284,32 +309,49 @@ export default function ChatView({ conversationId }: Props) {
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-card md:bg-background">
       {agentSwitch && (
-        <div className="hidden shrink-0 justify-end px-4 py-3 md:flex">
+        <div className="flex shrink-0 justify-end px-3 py-2 sm:px-4 md:py-3">
           {agentSwitch}
         </div>
       )}
-      <div className="flex-1 overflow-y-auto px-4 py-6 pb-28" onScroll={handleMessagesScroll}>
-        <div className="mx-auto max-w-2xl space-y-4">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-3 py-4 pb-28 sm:px-4 sm:py-6"
+        onScroll={handleMessagesScroll}
+      >
+        <div className="mx-auto max-w-2xl space-y-3 sm:space-y-4" aria-live="polite" aria-busy={isStreaming}>
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div
+              key={msg.id}
+              className={`flex animate-message-in ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
               <div
-                className={`max-w-[85%] sm:max-w-lg rounded-2xl px-4 py-2.5 text-rem-90 leading-relaxed ${
+                className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-rem-90 leading-relaxed break-words sm:max-w-lg sm:px-4 ${
                   msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
                 }`}
               >
                 {msg.role === 'assistant' ? (
                   <>
                     {msg.content && (
-                      <div className="text-rem-90 leading-relaxed [&_p]:my-2 [&_p]:leading-relaxed [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_h4]:font-semibold [&_h4]:mt-2 [&_strong]:font-semibold [&_em]:italic [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_li]:leading-relaxed [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_blockquote]:opacity-75 [&_code:not(pre_>_code)]:font-mono [&_code:not(pre_>_code)]:text-[0.85em] [&_code:not(pre_>_code)]:bg-black/20 [&_code:not(pre_>_code)]:dark:bg-black/40 [&_code:not(pre_>_code)]:text-orange-400 [&_code:not(pre_>_code)]:px-1.5 [&_code:not(pre_>_code)]:py-0.5 [&_code:not(pre_>_code)]:rounded [&_pre]:bg-black/30 [&_pre]:dark:bg-black/60 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:font-mono [&_pre]:text-sm [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 [&_hr]:border-border [&_hr]:my-3">
+                      <div className="text-rem-90 leading-relaxed [&_p]:my-2 [&_p]:leading-relaxed [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_h4]:font-semibold [&_h4]:mt-2 [&_strong]:font-semibold [&_em]:italic [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_li]:leading-relaxed [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_blockquote]:opacity-75 [&_code:not(pre_>_code)]:font-mono [&_code:not(pre_>_code)]:text-[0.85em] [&_code:not(pre_>_code)]:bg-foreground/10 [&_code:not(pre_>_code)]:dark:bg-black/40 [&_code:not(pre_>_code)]:text-iris [&_code:not(pre_>_code)]:px-1.5 [&_code:not(pre_>_code)]:py-0.5 [&_code:not(pre_>_code)]:rounded [&_pre]:bg-foreground/[0.07] [&_pre]:dark:bg-black/60 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:font-mono [&_pre]:text-sm [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 [&_hr]:border-border [&_hr]:my-3">
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
                     )}
-                    {msg.streaming && (
-                      <div className={`flex items-center gap-1 ${msg.content ? 'mt-2' : 'py-0.5'}`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:0ms]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:150ms]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:300ms]" />
+                    {msg.streaming && !msg.content && (
+                      <div className="flex items-center gap-1 py-0.5" aria-label="Blayer is typing">
+                        {[0, 1, 2].map((i) => (
+                          <span
+                            key={i}
+                            className="h-1.5 w-1.5 animate-dot-bounce rounded-full bg-current"
+                            style={{ animationDelay: `${i * 160}ms` }}
+                          />
+                        ))}
                       </div>
+                    )}
+                    {msg.streaming && msg.content && (
+                      <span
+                        aria-hidden="true"
+                        className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] animate-pulse rounded-full bg-current align-baseline"
+                      />
                     )}
                   </>
                 ) : (
@@ -323,7 +365,7 @@ export default function ChatView({ conversationId }: Props) {
       </div>
 
       <div
-        className={`absolute inset-x-0 bottom-0 bg-transparent px-4 py-4 transition-transform duration-300 ease-in-out ${
+        className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-card px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 transition-transform duration-300 ease-in-out md:from-background sm:px-4 ${
           isInputBarVisible ? 'translate-y-0' : 'translate-y-full'
         }`}
       >

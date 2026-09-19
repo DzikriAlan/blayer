@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import {
   PanelLeft,
@@ -10,7 +10,7 @@ import {
   Settings,
   MessageSquarePlus,
 } from 'lucide-react'
-import chaplinLogo from '@/shared/assets/chaplin.png'
+import blayerLogo from '@/shared/assets/blayer.png'
 import { useUIStates } from '@/shared/states/uiStates'
 import ThemeToggle from './ThemeToggle'
 import ConversationHistory from '@/features/chat/components/ConversationHistory'
@@ -31,7 +31,7 @@ function NavItem({ href, icon, label, collapsed, isActive, onClick }: Readonly<N
 
   if (href) {
     return (
-      <Link href={href} title={collapsed ? undefined : label} className={baseClass}>
+      <Link href={href} title={collapsed ? label : undefined} className={baseClass}>
         {icon}
         {!collapsed && <span className="text-rem-90 font-sans font-semibold truncate">{label}</span>}
       </Link>
@@ -39,7 +39,7 @@ function NavItem({ href, icon, label, collapsed, isActive, onClick }: Readonly<N
   }
 
   return (
-    <button type="button" onClick={onClick} title={collapsed ? undefined : label} className={baseClass}>
+    <button type="button" onClick={onClick} title={collapsed ? label : undefined} className={baseClass}>
       {icon}
       {!collapsed && <span className="text-rem-90 font-sans font-semibold truncate">{label}</span>}
     </button>
@@ -48,12 +48,48 @@ function NavItem({ href, icon, label, collapsed, isActive, onClick }: Readonly<N
 
 const userName = process.env.NEXT_PUBLIC_USER_NAME ?? 'User'
 const userInitials = userName.slice(0, 2).toUpperCase()
+const MOBILE_BREAKPOINT_PX = 768
 
 export default function Sidebar() {
   const router = useRouter()
   const { data: session } = useSession()
-  const { sidebarOpen, toggleSidebar } = useUIStates()
+  const { sidebarOpen, toggleSidebar, setSidebarOpen } = useUIStates()
   const [showSettings, setShowSettings] = useState(false)
+  const settingsRef = useRef<HTMLDivElement>(null)
+
+  // On mobile the drawer covers the page, so leaving it open after a navigation
+  // hides the thing you just navigated to. Route change is the right hook: it
+  // also covers the conversation links, not just the two nav items.
+  useEffect(() => {
+    const close = () => {
+      if (window.innerWidth < MOBILE_BREAKPOINT_PX) setSidebarOpen(false)
+    }
+    router.events.on('routeChangeComplete', close)
+    return () => router.events.off('routeChangeComplete', close)
+  }, [router.events, setSidebarOpen])
+
+  // Dismiss the settings popover on an outside click or Escape.
+  useEffect(() => {
+    if (!showSettings) return
+
+    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettings(false)
+      }
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowSettings(false)
+    }
+
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('touchstart', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('touchstart', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [showSettings])
   const displayName = session?.user?.name ?? userName
   const displayInitials = session?.user?.name
     ? session.user.name.slice(0, 2).toUpperCase()
@@ -72,7 +108,7 @@ export default function Sidebar() {
       <div className="flex h-14 shrink-0 items-center justify-between px-3 overflow-hidden">
         {sidebarOpen ? (
           <>
-            <Image src={chaplinLogo} alt="Chaplin" height={28} className="select-none dark:invert" />
+            <Image src={blayerLogo} alt="Blayer" height={28} className="select-none dark:invert" />
             <button
               type="button"
               onClick={toggleSidebar}
@@ -84,7 +120,7 @@ export default function Sidebar() {
           </>
         ) : (
           <div className="group flex w-full justify-center">
-            <Image src={chaplinLogo} alt="Chaplin" height={24} className="select-none group-hover:hidden dark:invert" />
+            <Image src={blayerLogo} alt="Blayer" height={24} className="select-none group-hover:hidden dark:invert" />
             <button
               type="button"
               onClick={toggleSidebar}
@@ -122,9 +158,10 @@ export default function Sidebar() {
       {/* User footer */}
       <div className="px-2 py-3 shrink-0">
         {sidebarOpen ? (
-          <div className="relative">
+          <div ref={settingsRef} className="relative">
             <button
               type="button"
+              aria-expanded={showSettings}
               onClick={() => setShowSettings(!showSettings)}
               className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-muted transition-colors w-full"
             >
@@ -144,7 +181,7 @@ export default function Sidebar() {
             </button>
 
             {showSettings && (
-              <div className="absolute bottom-full left-2 right-2 mb-2 rounded-xl border bg-card shadow-xl z-30 py-1">
+              <div className="absolute bottom-full left-2 right-2 z-30 mb-2 animate-scale-in overflow-hidden rounded-xl border border-border bg-card py-1 shadow-popup">
                 <ThemeToggle collapsed={false} />
                 {session ? (
                   <button
@@ -169,7 +206,7 @@ export default function Sidebar() {
             )}
           </div>
         ) : (
-          <div className="relative flex flex-col items-center gap-3">
+          <div ref={settingsRef} className="relative flex flex-col items-center gap-3">
             {displayImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={displayImage} alt={displayName} className="h-8 w-8 rounded-full object-cover" referrerPolicy="no-referrer" />
@@ -187,7 +224,7 @@ export default function Sidebar() {
             </button>
 
             {showSettings && (
-              <div className="fixed bottom-12 left-20 rounded-xl border bg-card shadow-xl z-50 py-1 whitespace-nowrap">
+              <div className="fixed bottom-12 left-20 z-50 animate-scale-in overflow-hidden whitespace-nowrap rounded-xl border border-border bg-card py-1 shadow-popup">
                 <ThemeToggle collapsed={false} />
                 {session ? (
                   <button

@@ -1,25 +1,22 @@
-# Chaplin
+# Next Starter
 
-AI chat & agents platform — build custom AI agents with their own personality, chat with them in real time, and embed them on any website. Built fullstack on Next.js 14, React 18, TypeScript, Prisma ORM, and PostgreSQL.
+Production-ready template for building modern fullstack web applications with Next.js 14, React 18, TypeScript, Prisma ORM, and PostgreSQL.
 
 ## 🎯 Overview
 
-**Chaplin** lets you create AI agents, chat with them with real-time streamed responses, and embed a chat widget on any external site:
+**Next Starter** is a comprehensive web application template that combines modern frontend with backend capabilities:
 - **Frontend**: Next.js 14 (Pages Router) + React 18 + TypeScript with Tailwind CSS & Shadcn/UI components
-- **Backend**: Built-in Next.js API routes for chat streaming, agent CRUD, and auth — no separate backend service
-- **Database**: Prisma ORM + PostgreSQL for agents, chat sessions/history, and users
-- **Auth**: NextAuth (Google sign-in), session-based — no separate token exchange
-- **AI**: DeepSeek (OpenAI-compatible) for chat completions and AI-assisted agent generation
+- **Backend**: Built-in API routes for server-side logic and database operations
+- **Database**: Prisma ORM + PostgreSQL for robust data management
 - **State Management**: Zustand for client state, TanStack Query for server state
 - **Forms**: React Hook Form + Zod for form handling and validation
-- **File Storage**: Supabase Storage for agent avatar uploads
+- **Internationalization**: i18next for multi-language support
+- **Animations**: Framer Motion for smooth user interactions
 
-Core features:
-- Create, edit, and delete AI agents with a custom personality (system prompt), avatar, and optional embed script
-- Real-time streamed chat (SSE) with conversation history, rename, and delete
-- AI-assisted agent generation — describe an agent in plain language and get a name, description, and system prompt
-- Public embeddable chat widget (`public/widget.js` + `/embed/chat`) for use on any external website
-- Fully responsive UI — usable on mobile, tablet, and desktop
+Use this starter for:
+- Fullstack web applications with server-side rendering
+- Rapid prototyping and MVP development
+- Teams wanting React ecosystem best practices built-in
 
 ---
 
@@ -32,11 +29,10 @@ Core features:
 | Server State | TanStack Query (@tanstack/react-query) |
 | Client State | Zustand |
 | Forms | React Hook Form + Zod |
-| Auth | NextAuth (Google provider) |
 | ORM | Prisma |
 | Database Driver | PostgreSQL (pg) |
-| AI | OpenAI SDK (pointed at DeepSeek's chat-completions API) |
-| File Storage | Supabase Storage |
+| Internationalization | i18next + react-i18next |
+| Animations | Framer Motion |
 | Icons | Lucide React |
 | Node Version | v20+ |
 
@@ -47,9 +43,6 @@ Core features:
 - **Node.js**: v20 or higher
 - **npm**: v10+ or yarn/pnpm
 - **PostgreSQL**: v12+ (local or cloud)
-- **Google Cloud OAuth credentials**: for sign-in (Client ID & Secret)
-- **DeepSeek API key**: for chat completions and AI agent generation
-- **Supabase project**: for agent avatar image storage
 - **Git**: for version control
 
 ---
@@ -60,7 +53,7 @@ Core features:
 
 ```bash
 git clone <repository-url>
-cd chaplin
+cd next-starter
 ```
 
 ### 2. Install Dependencies
@@ -82,22 +75,11 @@ cp .env.example .env.local
 Edit `.env.local` with your values:
 ```env
 # Database
-DATABASE_URL="postgresql://username:password@localhost:5432/chaplin"
+DATABASE_URL="postgresql://username:password@localhost:5432/next_starter"
 
 # Authentication
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-key-here"
-GOOGLE_CLIENT_ID="your-google-oauth-client-id"
-GOOGLE_CLIENT_SECRET="your-google-oauth-client-secret"
-
-# AI
-DEEPSEEK_API_KEY="your-deepseek-api-key"
-
-# File storage
-SUPABASE_URL="your-supabase-project-url"
-SUPABASE_SERVICE_KEY="your-supabase-service-key"
-NEXT_PUBLIC_SUPABASE_URL="your-supabase-project-url"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
 ```
 
 > Generate `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
@@ -124,37 +106,34 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 ```
 src/
 ├── pages/                    # Next.js Pages Router
-│   ├── _app.tsx             # App wrapper (Auth, TanStack Query providers)
+│   ├── _app.tsx             # App wrapper (TanStack Query provider)
 │   ├── _document.tsx        # HTML document setup
-│   ├── index.tsx            # Landing page
-│   ├── home.tsx             # New chat
-│   ├── agents.tsx           # Agents list/create/preview
-│   ├── chat/                # Chat routes ([id] resumes a conversation)
-│   ├── embed/chat.tsx       # Public embeddable chat widget page
-│   └── api/                 # API routes (auth, agent, chat, users)
+│   └── index.tsx            # Home page
 ├── features/
-│   ├── landing/              # Marketing hero + sign-in
-│   ├── agent/                # Agent CRUD, AI-generate, preview, switcher
-│   │   ├── types/            # TypeScript interfaces & types
-│   │   ├── states/           # Zustand stores
-│   │   ├── services/         # API call functions
-│   │   ├── controllers/      # TanStack Query hooks
-│   │   └── components/       # React components
-│   └── chat/                  # Streaming chat + conversation history
-│       └── ...                # same layered structure as above
+│   └── {folderName}/        # kebab-case, derived from endpoint (see standards/FECODE.md)
+│       ├── types/           # {fileName}Types.ts — TypeScript interfaces & types
+│       ├── states/          # {fileName}States.ts — Zustand stores
+│       ├── services/        # {fileName}Services.ts — API call functions
+│       ├── controllers/     # {fileName}Controllers.ts — TanStack Query hooks
+│       └── components/      # {fileName}{Action}.tsx — React components
 ├── shared/
-│   ├── components/
-│   │   └── ui/               # Shadcn/UI primitives
 │   ├── lib/
-│   │   ├── prisma.ts         # Prisma client singleton
-│   │   ├── auth.ts           # NextAuth configuration
-│   │   ├── api.ts            # Client fetch helper (RESPONSE.md envelope)
-│   │   ├── apiResponse.ts    # Server-side response helpers
-│   │   ├── chatStream.ts     # Shared SSE chat streaming logic
-│   │   └── utils.ts          # cn() utility & helper functions
-│   └── styles/
-│       └── globals.css       # Tailwind base, theme tokens & fonts
-└── public/                  # Static files, widget.js
+│   │   ├── prisma.ts       # Prisma client singleton
+│   │   └── utils.ts        # cn() utility & helper functions
+│   ├── styles/
+│   │   └── globals.css     # Tailwind base & CSS variables
+│   └── locales/
+│       ├── en.json         # English translations
+│       └── id.json         # Indonesian translations
+└── public/                 # Static files
+
+server/                       # Backend (see standards/BECODE.md)
+├── config/                  # Env configuration
+├── routes/                  # Mount feature routers
+├── api/
+│   └── features/
+│       └── {folder-name}/   # dto, entities, repositories, services, controllers, module.ts
+└── shared/                  # prisma, middlewares, filters, interceptors, queues, services, utils
 ```
 
 ---
@@ -172,18 +151,75 @@ src/
 
 ---
 
+## 🧭 Next Steps: Building on This Starter
+
+After the Quick Start, every new feature must follow the documents in the [standards/](./standards) folder. Read them before writing code.
+
+| Step | What to do | Standard |
+|------|-----------|----------|
+| 1 | Define the endpoint and derive names from the URL (drop base URL, `api`, `v{n}`, and dynamic segments) → `folderName`, `fileName`, `resourceName` | [FECODE.md](./standards/FECODE.md#penamaan-folder--file) |
+| 2 | Design the API response contract (`success`, `data`, `error`, `pagination`, `message`) and HTTP status codes | [RESPONSE.md](./standards/RESPONSE.md) |
+| 3 | Build the backend feature in `server/api/features/{folder-name}/`: DTO → Entity → Repository → Service → Controller → `module.ts`, then mount it in `server/routes/index.ts` | [BECODE.md](./standards/BECODE.md) |
+| 4 | Build the frontend feature in `src/features/{folderName}/`: Types → States → Services → Controllers → Components | [FECODE.md](./standards/FECODE.md) |
+| 5 | Verify: `npm run lint` and `npx tsc --noEmit` pass, and no function name uses a prefix outside the convention | [FECODE.md](./standards/FECODE.md#final-rules), [BECODE.md](./standards/BECODE.md#final-rules) |
+
+### Frontend flow (FECODE)
+
+```txt
+src/features/{folderName}/
+├── types/{fileName}Types.ts
+├── states/{fileName}States.ts
+├── services/{fileName}Services.ts
+├── controllers/{fileName}Controllers.ts
+└── components/{fileName}{Action}.tsx
+```
+
+### Backend flow (BECODE)
+
+```txt
+server/api/features/{folder-name}/
+├── dto/{fileName}.dto.ts
+├── entities/{fileName}.entity.ts
+├── repositories/{fileName}.repository.ts
+├── services/{fileName}.service.ts
+├── controllers/{fileName}.controller.ts
+└── module.ts
+```
+
+### Function prefixes per layer
+
+| Layer | Prefixes |
+|-------|----------|
+| FE Service | `get` `post` `update` `patch` `delete` |
+| FE Controller | `fetch` `store` `modify` `remove` |
+| FE Component / emit | `load` `submit` `edit` `clear` |
+| BE Repository | `get` `post` `update` `patch` `delete` |
+| BE Service | `fetch` `store` `change` `remove` |
+| BE Controller | `load` `save` `modify` `destroy` |
+
+> Do not introduce prefixes outside these lists (e.g. `create`, `find`, `handle`, `process`).
+
+---
+
 ## 🏗️ Architecture Guide
 
-Complete documentation for architecture, naming conventions, and best practices is available in [CODE.md](./CODE.md) [RESPONSE.md](./RESPONSE.md).
+Complete documentation for architecture, naming conventions, and best practices lives in the [standards/](./standards) folder:
+
+| Document | Scope |
+|----------|-------|
+| [FECODE.md](./standards/FECODE.md) | Frontend architecture, naming, Types/States/Services/Controllers/Components rules |
+| [BECODE.md](./standards/BECODE.md) | Backend architecture, layer boundaries, error handling, Redis/queue, testing |
+| [RESPONSE.md](./standards/RESPONSE.md) | Standard API response and HTTP status codes |
 
 **Key Topics:**
 - Naming conventions (functions, files, folders)
-- Layer structure (Types, States, Services, Controllers, Components)
+- Layer structure (FE: Types, States, Services, Controllers, Components; BE: DTO, Entity, Repository, Service, Controller, Module)
 - React component best practices
 - TanStack Query (React Query) patterns
 - Zustand store management
 - Zod validation schema
 - API integration patterns
+- Standard API response format
 
 ---
 

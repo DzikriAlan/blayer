@@ -7,10 +7,10 @@ const AgentsPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Agents — Chaplin</title>
+        <title>Agents — Blayer</title>
       </Head>
       <Layout noPadding>
-        <div className="h-full overflow-auto px-4 py-6 flex flex-col">
+        <div className="flex h-full flex-col overflow-auto px-3 py-5 sm:px-4 sm:py-6">
           <AgentList />
         </div>
       </Layout>

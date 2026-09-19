@@ -151,30 +151,32 @@ export default function AgentList() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
+    <div className="mx-auto w-full max-w-5xl space-y-5">
       <div className="text-center space-y-2">
         <div className="flex justify-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <Bot className="h-7 w-7 text-primary" />
           </div>
         </div>
-        <h1 className="text-rem-150 font-bold text-foreground tracking-tight">AI Agents</h1>
-        <p className="text-rem-95 text-muted-foreground">Kelola agent AI Anda dengan personalisasi dan knowledge base</p>
+        <h1 className="text-rem-130 font-bold tracking-tight text-foreground sm:text-rem-150">AI Agents</h1>
+        <p className="text-rem-85 text-muted-foreground sm:text-rem-95">Kelola agent AI Anda dengan personalisasi dan knowledge base</p>
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="relative flex-1">
+        <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari agent..." className="pl-10 pr-8 rounded-xl h-auto py-2.5" />
+          <Input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari agent..." className="pl-10 pr-8 h-auto py-2.5" />
           {search && <button type="button" onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>}
         </div>
-        <Button type="button" onClick={() => { setEditAgent(null); setPrefillData(undefined); setViewMode('create') }} className="gap-1.5 rounded-xl shrink-0">
-          <Plus className="h-4 w-4" /> Buat Agent
+        <Button type="button" onClick={() => { setEditAgent(null); setPrefillData(undefined); setViewMode('create') }} className="shrink-0 gap-1.5 px-3 sm:px-4">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Buat Agent</span>
+          <span className="sm:hidden">Buat</span>
         </Button>
       </div>
 
       {agentList.status === 'loading' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {skeletonIds.map((id) => (
             <div key={id} className="rounded-xl border bg-card p-5 animate-pulse">
               <div className="flex items-start gap-3 mb-3">
@@ -211,10 +213,11 @@ export default function AgentList() {
       )}
 
       {agentList.status !== 'loading' && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {filtered.map((agent) => (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((agent, i) => (
             <AgentCard
               key={agent.id}
+              index={i}
               agent={agent}
               onEdit={(a) => { setEditAgent(a); setViewMode('create') }}
               onPreview={loadPreview}

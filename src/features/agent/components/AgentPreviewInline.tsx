@@ -95,10 +95,10 @@ export default function AgentPreviewInline({ agent }: Readonly<Props>) {
               const isUser = msg.role === 'user'
               const isLast = msg.id === messages.at(-1)?.id
               if (isUser) {
-                return <div key={msg.id} className="flex justify-end"><div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-sm bg-muted px-4 py-2.5 text-rem-90 text-foreground">{msg.content}</div></div>
+                return <div key={msg.id} className="flex animate-message-in justify-end"><div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-sm bg-muted px-4 py-2.5 text-rem-90 text-foreground">{msg.content}</div></div>
               }
               return (
-                <div key={msg.id} className="flex gap-3">
+                <div key={msg.id} className="flex animate-message-in gap-3">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden mt-0.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {agent.image ? <img src={agent.image} alt={agent.name} className="h-full w-full object-cover" /> : <Bot className="h-4 w-4 text-primary" />}
