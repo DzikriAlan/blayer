@@ -26,14 +26,14 @@ curl -X POST http://localhost:3002/api/v1/auth/login \
 ```json
 {
   "success": true,
-  "status": 200,
-  "message": "Berhasil masuk",
   "data": {
     "token": "blas_…",
     "username": "admin",
     "expiresAt": "2026-09-20T00:53:35.499Z",
     "isDefaultCredentials": true
-  }
+  },
+  "message": "Berhasil masuk",
+  "meta": { "requestId": "…", "timestamp": "…" }
 }
 ```
 
@@ -86,8 +86,6 @@ curl -X POST http://localhost:3002/api/v1/agents/$AGENT_ID/run \
 ```json
 {
   "success": true,
-  "status": 200,
-  "message": "Agent berhasil dijalankan",
   "data": {
     "runId": "clz…",
     "agentId": "clz…",
@@ -101,10 +99,13 @@ curl -X POST http://localhost:3002/api/v1/agents/$AGENT_ID/run \
     "latencyMs": 2140,
     "inputTokens": 1000,
     "outputTokens": 500,
-    "costUsd": 0.0175
+    "costUsd": 0.0175,
+    "status": "SUCCEEDED",
+    "toolCalls": [],
+    "pendingToolCall": null
   },
-  "meta": { "request_id": "…", "timestamp": "…", "version": "v1" },
-  "errors": null
+  "message": "Agent berhasil dijalankan",
+  "meta": { "requestId": "…", "timestamp": "…" }
 }
 ```
 
@@ -280,7 +281,8 @@ terlihat sempurna.
 | `SLUG_TAKEN` | 409 | Slug sudah dipakai |
 | `AGENT_NOT_PUBLISHED` | 409 | Agent belum punya versi production |
 | `PROVIDER_KEY_MISSING` | 409 | Project belum punya kunci provider di environment itu |
-| `INVALID_INPUT` | 400 | Validasi badan permintaan gagal; `field` menyebut isiannya |
+| `VALIDATION_ERROR` | 422 | Validasi gagal; `error.details` memuat pesan per field |
+| `METHOD_NOT_ALLOWED` | 405 | Method tidak dilayani rute itu |
 | `AGENT_REFUSED` | 422 | Model menolak permintaan |
 | `RATE_LIMITED` | 429 | Melewati batas laju |
 | `PROVIDER_UNAUTHORIZED` | 502 | Kunci provider ditolak vendornya |

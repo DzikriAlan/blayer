@@ -256,12 +256,20 @@ Rincian tiap rute ada di [docs/AGENT_API.md](./docs/AGENT_API.md).
 
 ```
 src/
-├── pages/                 # Rute halaman & API (Pages Router)
+├── server/                # Backend berlapis (standards/BECODE.md)
+│   ├── features/<fitur>/
+│   │   ├── dto/           # Skema validasi + kontrak masukan/keluaran
+│   │   ├── entities/      # Bentuk data domain, tanpa logic
+│   │   ├── repositories/  # Satu-satunya tempat query Prisma
+│   │   ├── services/      # Business logic
+│   │   ├── controllers/   # Lapis HTTP: baca req, tulis res
+│   │   └── module.ts      # Wiring controller ke rutenya
+│   └── shared/            # Lintas feature: route, response, error, auth,
+│                          # runtime agent, tool executor, provider
+├── pages/                 # Rute halaman & mount API (Pages Router)
 │   ├── index.tsx          # Landing page
 │   ├── console/           # Console operator (project, agent, playground)
-│   └── api/
-│       ├── health.ts      # Kesiapan layanan
-│       └── v1/            # Agent API — satu amplop jawaban untuk semuanya
+│   └── api/               # Tiap berkas hanya memasang module feature
 ├── features/console/      # Login operator dan gerbang sesinya
 ├── features/integrations/ # Integration dan kontrak tool
 ├── features/knowledge/    # Dokumen pengetahuan project
@@ -283,8 +291,16 @@ src/
     └── styles/            # Tailwind + token desain
 ```
 
-Fitur baru mengikuti jalur `types → states → services → controllers → components`
-supaya penambahannya tidak menyusun ulang pola dari nol.
+Frontend mengikuti `types → states → services → controllers → components`
+(standards/FECODE.md) dan backend mengikuti
+`dto → entity → repository → service → controller → module`
+(standards/BECODE.md). Prefix nama fungsi tiap lapis ditentukan standar itu:
+repository `get/post/update/patch/delete`, service `fetch/store/change/remove`,
+controller HTTP `load/save/modify/destroy`, controller frontend
+`fetch/store/modify/remove`.
+
+Aturan yang dijaga: controller tidak memanggil repository, service tidak
+menyentuh Prisma, dan seluruh query Prisma hidup di repository.
 
 ### Tumpukan teknologi
 
@@ -371,6 +387,7 @@ Estimasi dan metrik suksesnya ada di [PRD.md](./PRD.md).
 - **[sdk/README.md](./sdk/README.md)** — klien TypeScript untuk memanggil agent dari aplikasimu
 - **[eval/README.md](./eval/README.md)** — harness regresi sebelum menaikkan versi agent
 - **[docs/API_RESPONSE.md](./docs/API_RESPONSE.md)** — bentuk amplop jawaban yang dipakai semua rute
+- **[standards/](./standards)** — standar kode backend (BECODE), frontend (FECODE), dan bentuk response (RESPONSE)
 - **[PRD.md](./PRD.md)** — rencana produk, metrik sukses, dan batasan arsitekturnya
 
 ## Kontribusi
