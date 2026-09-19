@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AgentEnvironment, AgentProvider } from '@prisma/client'
 
-import keysHandler from '@/pages/api/v1/projects/[projectId]/keys'
-import credentialsHandler from '@/pages/api/v1/projects/[projectId]/credentials'
+import { projectsModule } from '@server/features/projects/module'
 import { decryptSecret, hashToken } from '@server/shared/utils/crypto.util'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
+
+const keysHandler = projectsModule.keys
+const credentialsHandler = projectsModule.credentials
 
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: {

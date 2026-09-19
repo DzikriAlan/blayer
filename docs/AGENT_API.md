@@ -283,6 +283,7 @@ terlihat sempurna.
 | `PROVIDER_KEY_MISSING` | 409 | Project belum punya kunci provider di environment itu |
 | `VALIDATION_ERROR` | 422 | Validasi gagal; `error.details` memuat pesan per field |
 | `METHOD_NOT_ALLOWED` | 405 | Method tidak dilayani rute itu |
+| `ROUTE_NOT_FOUND` | 404 | Alamat tidak terdaftar di tabel rute |
 | `AGENT_REFUSED` | 422 | Model menolak permintaan |
 | `RATE_LIMITED` | 429 | Melewati batas laju |
 | `PROVIDER_UNAUTHORIZED` | 502 | Kunci provider ditolak vendornya |

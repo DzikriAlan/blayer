@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import handler from '@/pages/api/health'
+import { healthModule } from '@server/features/health/module'
+
+const handler = healthModule.status
 
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: { $queryRaw: vi.fn() },

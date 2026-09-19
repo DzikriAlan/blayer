@@ -19,7 +19,7 @@ export type RouteMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export const SLOW_REQUEST_MS = Number(process.env.SLOW_REQUEST_MS ?? 1_000)
 
-const getRequestId = () =>
+export const getRequestId = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
 // Pengganti error middleware Express: satu pintu terakhir yang menerjemahkan

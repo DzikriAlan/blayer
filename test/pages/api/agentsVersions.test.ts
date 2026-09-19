@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AgentEffort, AgentProvider } from '@prisma/client'
 
-import versionsHandler from '@/pages/api/v1/agents/[agentId]/versions'
-import publishHandler from '@/pages/api/v1/agents/[agentId]/publish'
+import { agentsModule } from '@server/features/agents/module'
 import { createAdminSession } from '@server/shared/utils/session.util'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
+
+const versionsHandler = agentsModule.versions
+const publishHandler = agentsModule.publish
 
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: {

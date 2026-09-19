@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import loginHandler from '@/pages/api/v1/auth/login'
-import agentsHandler from '@/pages/api/v1/agents'
+import { authModule } from '@server/features/auth/module'
+import { agentsModule } from '@server/features/agents/module'
+
 import { resetRateLimit } from '@server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
+
+const loginHandler = authModule.login
+const agentsHandler = agentsModule.collection
 
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: { agent: { findMany: vi.fn() } },

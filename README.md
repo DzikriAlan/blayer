@@ -256,6 +256,7 @@ Rincian tiap rute ada di [docs/AGENT_API.md](./docs/AGENT_API.md).
 
 ```
 server/                    # Backend berlapis (standards/BECODE.md)
+├── routes/index.ts        # Tabel rute: memasang module feature ke alamatnya
 ├── features/<fitur>/
 │   ├── dto/               # Skema validasi + kontrak masukan/keluaran
 │   ├── entities/          # Bentuk data domain, tanpa logic
@@ -267,10 +268,10 @@ server/                    # Backend berlapis (standards/BECODE.md)
                            # logger, runtime agent, tool executor, provider
 
 src/
-├── pages/                 # Rute halaman & mount API (Pages Router)
+├── pages/                 # Halaman (Pages Router)
 │   ├── index.tsx          # Landing page
 │   ├── console/           # Console operator (project, agent, playground)
-│   └── api/               # Tiap berkas hanya memasang module feature
+│   └── api/[...path].ts   # Satu adaptor: menyerahkan semua ke server/routes
 ├── features/console/      # Login operator dan gerbang sesinya
 ├── features/integrations/ # Integration dan kontrak tool
 ├── features/knowledge/    # Dokumen pengetahuan project
@@ -300,6 +301,11 @@ controller HTTP `load/save/modify/destroy`, controller frontend
 
 Aturan yang dijaga: controller tidak memanggil repository, service tidak
 menyentuh Prisma, dan seluruh query Prisma hidup di repository.
+
+Seluruh API hidup di `server/`. Next.js hanya mengenali endpoint dari berkas di
+`pages/api`, jadi tersisa satu adaptor `pages/api/[...path].ts` yang tidak
+memuat logika apa pun — ia menyerahkan tiap permintaan ke tabel rute di
+`server/routes/index.ts`.
 
 ### Tumpukan teknologi
 

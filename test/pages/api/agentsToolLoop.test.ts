@@ -8,11 +8,15 @@ import {
   ToolPermission,
 } from '@prisma/client'
 
-import runHandler from '@/pages/api/v1/agents/[agentId]/run'
-import confirmHandler from '@/pages/api/v1/runs/[runId]/confirm'
+import { agentsModule } from '@server/features/agents/module'
+import { runsModule } from '@server/features/runs/module'
+
 import { encryptSecret } from '@server/shared/utils/crypto.util'
 import { resetRateLimit } from '@server/shared/services/rateLimit.service'
 import { getTestRequest, getTestResponse, muteLogger } from '../../helpers/apiTest'
+
+const runHandler = agentsModule.run
+const confirmHandler = runsModule.confirm
 
 const { adapterMock, executeToolMock, prismaMock } = vi.hoisted(() => ({
   adapterMock: vi.fn(),
