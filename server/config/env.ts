@@ -98,6 +98,23 @@ const withPassword = (url: string) => {
     : url
 }
 
+// Mode transaksi (port 6543) tidak menyimpan state antar perintah, sehingga
+// prepared statement milik Prisma bentrok dengan koneksi lain dan gagal dengan
+// 42P05 — hanya saat ada beberapa permintaan bersamaan, jadi gampang lolos uji
+// manual. Connection string yang disalin dari dashboard tidak memuat parameter
+// ini, jadi ditambahkan di sini.
+const withPoolerParams = (url: string) => {
+  if (!url || !/:6543(\/|\?|$)/.test(url)) return url
+
+  const [base, query = ''] = url.split('?')
+  const params = new URLSearchParams(query)
+
+  if (!params.has('pgbouncer')) params.set('pgbouncer', 'true')
+  if (!params.has('connection_limit')) params.set('connection_limit', '1')
+
+  return `${base}?${params.toString()}`
+}
+
 // Pooler memanggil project dengan ref-nya (20 huruf), bukan nama yang terbaca
 // manusia. SUPABASE_PROJECT sering diisi nama, jadi ref-nya dicari juga dari
 // alamat project dan dari connection string — keduanya memuat ref yang sama.
@@ -134,9 +151,10 @@ const getPoolerUrl = () => {
   if (!project || !password || !host) return ''
 
   const port = getValue('SUPABASE_POOLER_PORT') || '6543'
-  const query = port === '6543' ? '?pgbouncer=true&connection_limit=1' : ''
 
-  return `postgresql://postgres.${project}:${encodeURIComponent(password)}@${host}:${port}/postgres${query}`
+  return withPoolerParams(
+    `postgresql://postgres.${project}:${encodeURIComponent(password)}@${host}:${port}/postgres`
+  )
 }
 
 /**
@@ -146,7 +164,7 @@ const getPoolerUrl = () => {
  * serverless yang hanya punya IPv4; untuk migrasi ada getDirectDatabaseUrl.
  */
 export const getDatabaseUrl = () =>
-  asDatabaseUrl(withPassword(getValue('DATABASE_URL'))) ||
+  withPoolerParams(asDatabaseUrl(withPassword(getValue('DATABASE_URL')))) ||
   getPoolerUrl() ||
   asDatabaseUrl(withPassword(getValue('SUPABASE_DIRECT_CONNECTION_STRING')))
 

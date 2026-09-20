@@ -91,6 +91,32 @@ describe('alamat basis data', () => {
     expect(getDatabaseUrl()).toBe('')
   })
 
+  it('TC-86k memasang parameter pgbouncer pada alamat mode transaksi', () => {
+    process.env.DATABASE_URL =
+      'postgresql://postgres.aomfloxezgbgkazzzsuq:sandi@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres'
+
+    // Tanpa parameter ini, prepared statement Prisma bentrok di mode transaksi
+    // dan gagal dengan 42P05 hanya saat ada permintaan bersamaan.
+    expect(getDatabaseUrl()).toContain('pgbouncer=true')
+    expect(getDatabaseUrl()).toContain('connection_limit=1')
+  })
+
+  it('TC-86l tidak menimpa parameter yang sudah ditulis sendiri', () => {
+    process.env.DATABASE_URL =
+      'postgresql://postgres.aomfloxezgbgkazzzsuq:sandi@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=5'
+
+    expect(getDatabaseUrl()).toContain('connection_limit=5')
+  })
+
+  it('TC-86m membiarkan alamat mode sesi apa adanya', () => {
+    process.env.DATABASE_URL =
+      'postgresql://postgres:sandi@db.aomfloxezgbgkazzzsuq.supabase.co:5432/postgres'
+
+    expect(getDatabaseUrl()).toBe(
+      'postgresql://postgres:sandi@db.aomfloxezgbgkazzzsuq.supabase.co:5432/postgres'
+    )
+  })
+
   it('TC-86g mencari ref project dari alamat Supabase saat SUPABASE_PROJECT berisi nama', () => {
     process.env.SUPABASE_PROJECT = 'blayer'
     process.env.SUPABASE_URL = 'https://aomfloxezgbgkazzzsuq.supabase.co'
