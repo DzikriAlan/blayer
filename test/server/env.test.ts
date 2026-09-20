@@ -58,6 +58,14 @@ describe('alamat basis data', () => {
     )
   })
 
+  it('TC-86j mengisi sandi yang masih berupa penanda dari contoh', () => {
+    process.env.DATABASE_URL =
+      'postgresql://postgres.aomfloxezgbgkazzzsuq:<password>@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres'
+    process.env.SUPABASE_PASSWORD = 'sandi-sungguhan'
+
+    expect(getDatabaseUrl()).toContain(':sandi-sungguhan@')
+  })
+
   it('TC-86d tidak menimpa sandi yang memang sudah terisi', () => {
     process.env.SUPABASE_DIRECT_CONNECTION_STRING =
       'postgresql://postgres:sandi-asli@db.abc.supabase.co:5432/postgres'

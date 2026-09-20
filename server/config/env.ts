@@ -72,9 +72,19 @@ const asDatabaseUrl = (url: string) => {
   return ''
 }
 
-// Dashboard Supabase menyalin connection string dengan sandi masih berupa
-// penanda [YOUR-PASSWORD]. Kalau begitu bentuknya, sandinya diisikan dari
-// SUPABASE_PASSWORD dan di-encode agar karakter seperti "@" tidak memotong URL.
+// Sandi dalam connection string kerap masih berupa penanda: [YOUR-PASSWORD]
+// dari dashboard Supabase, atau <password> dari contoh yang ditempel apa adanya.
+// Bentuk seperti itu tidak mungkin jadi sandi sungguhan, jadi lebih baik diisi
+// daripada dikirim ke server dan gagal dengan sebab yang membingungkan.
+export const isPasswordPlaceholder = (password: string) =>
+  !password ||
+  /^[[<{(].*[\]>})]$/.test(password) ||
+  ['YOUR-PASSWORD', 'YOUR_PASSWORD', 'PASSWORD', 'SUPABASE_PASSWORD'].includes(
+    password.toUpperCase()
+  )
+
+// Sandinya diisikan dari SUPABASE_PASSWORD dan di-encode agar karakter seperti
+// "@" tidak memotong URL.
 const withPassword = (url: string) => {
   if (!url) return ''
 
@@ -83,10 +93,9 @@ const withPassword = (url: string) => {
 
   if (!match || !password) return url
 
-  const [, prefix, current, rest] = match
-  const isPlaceholder = !current || /[[\]]/.test(current) || current.toUpperCase() === 'YOUR-PASSWORD'
-
-  return isPlaceholder ? `${prefix}${encodeURIComponent(password)}${rest}` : url
+  return isPasswordPlaceholder(match[2])
+    ? `${match[1]}${encodeURIComponent(password)}${match[3]}`
+    : url
 }
 
 // Pooler memanggil project dengan ref-nya (20 huruf), bukan nama yang terbaca
