@@ -1,0 +1,12 @@
+{
+  "title": "Dokumentasi",
+  "root": true,
+  "pages": [
+    "index",
+    "instalasi",
+    "agent-pertama",
+    "panggil-dari-aplikasi",
+    "tool-dan-knowledge",
+    "self-hosting"
+  ]
+}

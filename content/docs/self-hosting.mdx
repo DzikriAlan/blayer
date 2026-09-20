@@ -1,0 +1,89 @@
+---
+title: Self-hosting
+description: Docker Compose, variabel yang wajib, dan syarat khusus di serverless.
+---
+
+## Docker Compose
+
+```bash
+cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up -d --build
+docker compose exec app npx prisma migrate deploy
+```
+
+Aplikasi berjalan di **http://localhost:3002**.
+
+| Layanan | Isinya |
+| --- | --- |
+| `db` | PostgreSQL 16, data di volume `blayer-db` |
+| `app` | Blayer, build standalone dari `Dockerfile` |
+
+## Tanpa Docker
+
+```bash
+npm ci
+npm run db:generate
+npm run db:deploy
+npm run build
+npm run start
+```
+
+Butuh Node.js 20.9+ dan PostgreSQL 14+.
+
+## Variabel yang wajib
+
+| Variabel | Gunanya |
+| --- | --- |
+| `DATABASE_URL` | Koneksi PostgreSQL |
+| `BLAYER_ENCRYPTION_KEY` | 32 byte acak base64; membuka kredensial provider dan integration |
+
+Isian tiap variabel beserta asalnya ada di `.env.example`, dan
+`npm run db:check` memeriksa hasilnya tanpa pernah mencetak kata sandi.
+
+## Di serverless
+
+Host koneksi langsung Supabase (`db.<ref>.supabase.co`) hanya punya alamat IPv6,
+sedangkan function di Vercel dan Lambda keluar lewat IPv4. Alamat basis datanya
+karena itu harus menunjuk pooler mode transaksi
+(`aws-0-<region>.pooler.supabase.com:6543`).
+
+Blayer memasang sendiri `pgbouncer=true&connection_limit=1` pada alamat port
+6543. Tanpa parameter itu Prisma memakai prepared statement, yang di mode
+transaksi bentrok dengan koneksi lain dan gagal dengan `42P05` — hanya saat ada
+beberapa permintaan bersamaan, jadi gampang lolos uji manual.
+
+Migrasi tetap butuh mode sesi di port 5432; `npm run db:deploy` sudah
+memilihkannya sendiri.
+
+## Di balik proxy
+
+```ini
+TRUST_PROXY_HOPS=1
+```
+
+Setel sesuai jumlah proxy tepercaya di depan aplikasi. Tanpa itu rate limit
+membaca IP proxy, bukan IP pemanggil, dan seluruh trafik terhitung sebagai satu
+sumber.
+
+## Rate limit lintas instance
+
+Bawaannya memakai PostgreSQL yang sudah dipakai aplikasi
+(`RATE_LIMIT_STORE=postgres`), jadi batasnya berlaku lintas instance tanpa
+layanan tambahan. Redis (Upstash REST) dipakai kalau kredensialnya tersedia.
+
+## Memperbarui
+
+```bash
+git pull
+docker compose --env-file .env.docker up -d --build
+docker compose exec app npx prisma migrate deploy
+```
+
+Migrasi selalu maju lewat `prisma migrate deploy`; `db push` sengaja diblokir
+supaya tiap perubahan skema punya jejak dan bisa diputar balik.
+
+<Callout type="warn" title="Satu kunci, satu instance">
+  Kalau `BLAYER_ENCRYPTION_KEY` berbeda antara instance lama dan baru, kredensial
+  provider yang sudah tersimpan tidak bisa dibuka dan eksekusi agent menjawab
+  `503 CONFIG_MISSING`.
+</Callout>

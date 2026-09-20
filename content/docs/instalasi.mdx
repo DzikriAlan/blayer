@@ -1,0 +1,112 @@
+---
+title: Pasang dan jalankan
+description: Dari git clone sampai Console terbuka di browser.
+---
+
+## Prasyarat
+
+- [Node.js](https://nodejs.org) v20.9+ (`node --version`)
+- PostgreSQL v14+, lokal atau terkelola — Supabase termasuk
+- npm, ikut terpasang bersama Node.js
+
+## 1. Pasang dependensi
+
+```bash
+git clone https://github.com/DzikriAlan/blayer.git
+cd blayer
+npm install
+```
+
+## 2. Siapkan environment
+
+```bash
+cp .env.example .env
+```
+
+Dua hal yang wajib terisi: alamat basis data dan kunci enkripsi.
+
+```ini
+DATABASE_URL="postgresql://user:password@localhost:5432/blayer"
+BLAYER_ENCRYPTION_KEY="$(openssl rand -base64 32)"
+```
+
+<Callout type="warn" title="Kunci enkripsi tidak boleh berganti">
+  `BLAYER_ENCRYPTION_KEY` membuka kredensial provider yang sudah tersimpan.
+  Menggantinya membuat kredensial lama tidak bisa dibaca lagi dan eksekusi agent
+  menjawab `503 CONFIG_MISSING`. Simpan seperti rahasia produksi lain, dan pakai
+  nilai yang sama di lokal maupun di platform deploy.
+</Callout>
+
+### Kalau basis datanya Supabase
+
+Nama variabel dari dashboard Supabase bisa dipakai apa adanya:
+
+```ini
+SUPABASE_DIRECT_CONNECTION_STRING="postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres"
+SUPABASE_PASSWORD="kata-sandi-basis-data"
+SUPABASE_REGION="ap-northeast-2"
+```
+
+Penanda `[YOUR-PASSWORD]` yang ikut tersalin dari dashboard boleh dibiarkan —
+nilainya diisi dari `SUPABASE_PASSWORD` dan di-encode, jadi kata sandi dengan
+karakter seperti `@` tidak memotong URL.
+
+<Callout type="warn" title="Di serverless wajib lewat pooler">
+  Host koneksi langsung Supabase (`db.<ref>.supabase.co`) hanya punya alamat
+  IPv6, sedangkan function di Vercel keluar lewat IPv4. Pakai alamat pooler
+  (`aws-0-<region>.pooler.supabase.com:6543`), atau isi `SUPABASE_REGION` dan
+  biarkan Blayer menyusunnya sendiri.
+</Callout>
+
+## 3. Siapkan basis data
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+Keduanya membungkus Prisma CLI supaya alamat basis data dibaca dengan aturan
+yang sama seperti aplikasinya. `npm run db:push` sengaja diblokir — perubahan
+skema harus lewat migrasi supaya punya jejak dan bisa diputar balik.
+
+Kalau ada yang tidak beres:
+
+```bash
+npm run db:check
+```
+
+Perintah itu menjawab per lapis: variabel mana yang terbaca, alamat apa yang
+tersusun darinya (kata sandinya disamarkan), apakah host-nya punya alamat IPv4,
+dan apakah basis datanya benar-benar menjawab.
+
+## 4. Jalankan
+
+```bash
+npm run dev
+```
+
+Aplikasi berjalan di **http://localhost:3002**. Periksa kesiapannya:
+
+```bash
+curl http://localhost:3002/api/health
+```
+
+Jawaban `503` dengan kode `DATABASE_UNAVAILABLE` berarti alamat basis datanya
+belum menunjuk basis data yang hidup.
+
+## 5. Masuk Console
+
+Buka **http://localhost:3002/console** dan masuk dengan `admin` / `admin123`.
+Console memasang spanduk peringatan selama kredensial bawaan masih dipakai —
+gantilah sebelum instance-nya dijangkau siapa pun selain kamu:
+
+```ini
+BLAYER_ADMIN_USERNAME="operator"
+BLAYER_ADMIN_PASSWORD="kata-sandi-yang-panjang"
+BLAYER_SESSION_SECRET="$(openssl rand -base64 32)"
+```
+
+Sesinya berlaku 12 jam, disimpan di browser itu saja, dan dikirim sebagai header
+`Authorization` — tidak ada sesi yang disimpan di server.
+
+Lanjut ke [agent pertama](/docs/agent-pertama).

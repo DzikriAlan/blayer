@@ -1,0 +1,80 @@
+---
+title: Agent pertama
+description: Project, kunci provider, agent, pratinjau, lalu terbitkan versinya.
+---
+
+Urutan di halaman ini sama persis dengan menu di Console, jadi yang kamu baca di
+sini adalah yang kamu temui di layar.
+
+## 1. Buat project
+
+Project adalah wadah agent, API key, dan kredensial provider. Pemisahan itu yang
+menjaga satu project tidak memakai kunci project lain.
+
+Di Console: **Semua project → Project baru**, isi nama, lalu simpan. Slug-nya
+ikut nama kalau tidak disunting sendiri.
+
+## 2. Simpan kunci provider
+
+Menu **Kredensial** di sisi kiri. Pilih provider dan environment, lalu tempel
+kunci providermu.
+
+<Callout>
+  Tanpa kunci di environment yang dipakai, eksekusi menjawab
+  `409 PROVIDER_KEY_MISSING` — bukan gagal diam-diam.
+</Callout>
+
+Kuncinya disimpan terenkripsi AES-256-GCM. Yang terbaca kembali di layar hanya
+petunjuk empat karakter terakhirnya, misal `****1234`.
+
+## 3. Rancang agent sambil dicoba
+
+Menu **Agent → Buat agent** membuka halaman dua panel:
+
+- **Kolom kiri** — identitas (nama, slug), perilaku (provider, model, effort,
+  batas token, instruksi), lalu tool dan dokumen yang ikut dipasang.
+- **Panel kanan** — pratinjau yang menjalankan persis isian di sebelah kiri.
+
+Pratinjau memakai kunci provider project ini, tapi **tidak menyimpan apa pun**:
+tidak ada agent, versi, maupun baris eksekusi yang dibuat. Karena itu pratinjau
+juga tidak muncul di riwayat dan tidak terhitung di angka observability.
+
+<Callout type="warn" title="Tool tulis tidak jalan di pratinjau">
+  Persetujuan tool yang mengubah data butuh baris eksekusi sebagai tempat
+  menyimpan keputusan, dan pratinjau tidak punya itu. Jawabannya berhenti dengan
+  `stopReason: "preview_write_blocked"`.
+</Callout>
+
+Kalau instruksi atau modelnya berubah setelah jawaban terakhir, panelnya
+mengatakan jawaban di layar sudah ketinggalan — kirim lagi untuk melihat hasil
+yang baru.
+
+## 4. Simpan, lalu uji di Playground
+
+Menekan **Simpan agent** melahirkan agent beserta **draf versi 1**. Halaman
+agent punya tiga bagian: builder, Playground, dan riwayat eksekusi.
+
+Berbeda dengan pratinjau, eksekusi di Playground memakai versi yang tersimpan
+dan tercatat di riwayat lengkap dengan token, biaya, dan lamanya.
+
+## 5. Terbitkan versinya
+
+Menyimpan perubahan konfigurasi selalu membuat **draf bernomor berikutnya** —
+versi yang sedang melayani production tidak pernah berubah diam-diam.
+
+Menekan **Terbitkan** memindahkan production ke versi yang dipilih dan
+mengarsipkan yang lama. Rollback karena itu cukup menerbitkan versi sebelumnya
+kembali.
+
+<Callout>
+  API key project selalu menjalankan versi yang sedang production. Menunjuk versi
+  tertentu adalah kewenangan Playground, dan permintaan dari API key project yang
+  menyebut `versionId` ditolak dengan `403 VERSION_NOT_ALLOWED`.
+</Callout>
+
+## 6. Terbitkan API key
+
+Menu **API Key → Key baru**. Token penuhnya hanya ditampilkan sekali, saat
+dibuat; yang tersimpan setelah itu hanya prefix dan sidik jarinya.
+
+Lanjut ke [memanggilnya dari aplikasi](/docs/panggil-dari-aplikasi).

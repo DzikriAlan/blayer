@@ -1,0 +1,47 @@
+---
+title: Mulai dari sini
+description: Apa itu Blayer, apa yang diaturnya, dan apa yang tetap tinggal di aplikasimu.
+---
+
+Blayer adalah **AI Agent Platform yang kamu jalankan sendiri**. Ia mengatur
+prompt, model, versi, tool, dan pengetahuan agentmu — sementara data bisnisnya
+tetap tinggal di aplikasimu dan hanya dipanggil saat dibutuhkan.
+
+## Yang diatur Blayer
+
+| Bagian | Isinya |
+| --- | --- |
+| **Agent & versi** | Instruksi, model, effort, dan batas token sebagai konfigurasi bernomor |
+| **Playground & pratinjau** | Mencoba agent sebelum dipakai orang lain — pratinjau bahkan jalan sebelum agentnya disimpan |
+| **Tool** | Kontrak endpoint milikmu: nama, method, path, dan skema masukannya |
+| **Knowledge** | Dokumen rujukan yang dipasang per versi agent |
+| **Observability** | Tiap eksekusi tercatat lengkap dengan token, biaya, dan lamanya |
+
+## Yang tidak pindah ke Blayer
+
+- **Data bisnismu.** Yang tersimpan hanya kontrak toolnya; yang menjalankan
+  tetap endpoint milik projectmu.
+- **Kunci provider.** Tersimpan terenkripsi di basis data instance-mu sendiri,
+  dipisah per project dan environment. Tidak ada server pusat yang menerimanya.
+- **Keputusan mengubah data.** Tool yang mengubah data berhenti menunggu
+  persetujuan manusia.
+
+## Jalur tercepat
+
+<Cards>
+  <Card title="Pasang dan jalankan" href="/docs/instalasi" description="Dari git clone sampai halaman Console terbuka." />
+  <Card title="Agent pertama" href="/docs/agent-pertama" description="Project, kunci provider, agent, pratinjau, lalu terbitkan." />
+  <Card title="Panggil dari aplikasi" href="/docs/panggil-dari-aplikasi" description="SDK TypeScript atau cURL, dengan API key project." />
+  <Card title="Self-hosting" href="/docs/self-hosting" description="Docker Compose, variabel wajib, dan syarat di serverless." />
+</Cards>
+
+## Yang belum ada
+
+Halaman ini tidak menjanjikan apa yang belum dibangun:
+
+- Console masih satu kredensial operator — tim, peran, dan audit per pengguna
+  belum ada.
+- Eksekusi menjawab sekali jadi; streaming token per token belum ada.
+
+Sisanya, termasuk yang sudah jalan, terbaca di
+[halaman depan](/#status).

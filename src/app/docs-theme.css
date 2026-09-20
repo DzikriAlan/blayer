@@ -1,0 +1,45 @@
+/*
+ * Warna Fumadocs disetel ulang ke palet Blayer.
+ *
+ * Yang diimpor sebelum berkas ini, fumadocs-ui/style.css, adalah keluaran
+ * Tailwind v4 yang sudah jadi — dipakai apa adanya supaya Tailwind v3 milik
+ * aplikasi ini tidak perlu ikut berubah. Yang perlu disamakan tinggal
+ * variabelnya.
+ */
+
+:root,
+.dark {
+  --color-fd-background: hsl(240 6% 4%);
+  --color-fd-foreground: hsl(0 0% 96%);
+  --color-fd-muted: hsl(240 5% 10%);
+  --color-fd-muted-foreground: hsl(240 5% 65%);
+  --color-fd-popover: hsl(240 5% 7%);
+  --color-fd-popover-foreground: hsl(0 0% 96%);
+  --color-fd-card: hsl(240 5% 7%);
+  --color-fd-card-foreground: hsl(0 0% 96%);
+  --color-fd-border: hsl(240 5% 16%);
+  --color-fd-primary: hsl(270 100% 55%);
+  --color-fd-primary-foreground: hsl(0 0% 100%);
+  --color-fd-secondary: hsl(240 5% 10%);
+  --color-fd-secondary-foreground: hsl(0 0% 96%);
+  --color-fd-accent: hsl(240 5% 12%);
+  --color-fd-accent-foreground: hsl(0 0% 96%);
+  --color-fd-ring: hsl(270 100% 55%);
+}
+
+body {
+  background-color: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Sudut kartu dan blok kode mengikuti radius 5px yang dipakai seluruh aplikasi. */
+#nd-docs-layout :is(pre, .fd-codeblock, figure) {
+  border-radius: 5px;
+}

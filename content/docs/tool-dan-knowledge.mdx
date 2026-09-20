@@ -1,0 +1,71 @@
+---
+title: Tool dan knowledge
+description: Mendaftarkan endpoint milikmu sebagai tool, dan memasang dokumen rujukan.
+---
+
+## Integration dan tool
+
+Tool hidup di bawah sebuah **Integration** — satu koneksi ke API milik project,
+berisi base URL dan kredensialnya. Yang tersimpan di Blayer hanya kontraknya:
+nama, deskripsi, method, path, dan skema masukannya.
+
+```text
+Integration  →  https://app.easyaccounting.id/api   (+ kredensial, terenkripsi)
+   └─ Tool   →  get_profit_loss   GET  /ai/tools/profit-loss   READ
+   └─ Tool   →  create_refund     POST /ai/tools/refund        WRITE
+```
+
+Di Console: menu **Integration → Integration baru**, lalu buka integration-nya
+untuk menambahkan tool.
+
+### Permission menentukan perlakuannya
+
+| Permission | Perlakuan saat eksekusi |
+| --- | --- |
+| `READ` | Dijalankan langsung, hasilnya dikembalikan ke model |
+| `WRITE` | Eksekusi berhenti, menunggu persetujuan manusia lebih dulu |
+
+<Callout type="warn">
+  Tandai `WRITE` untuk apa pun yang mengubah data. Salah menandainya sebagai
+  `READ` berarti agent boleh mengubah data tanpa bertanya.
+</Callout>
+
+### Yang diharapkan dari endpoint-mu
+
+Blayer memanggil endpoint itu dengan kredensial yang kamu simpan di
+integration-nya, lalu meneruskan **badan jawabannya apa adanya** ke model. Jadi
+yang kamu kembalikan sebaiknya ringkas dan sudah terstruktur:
+
+```json
+{ "period": "2026-08", "profit": 12480000, "currency": "IDR" }
+```
+
+## Knowledge
+
+Dokumen rujukan disimpan terpisah dari prompt, lalu dipasang per versi agent.
+Isinya ikut dikirim sebagai rujukan di system prompt, dengan batas total 24.000
+karakter per eksekusi.
+
+Di Console: menu **Knowledge → Dokumen baru**, lalu centang dokumennya saat
+menyusun versi agent.
+
+<Callout>
+  Dokumen yang dipasang di satu versi tidak ikut berpindah sendiri ke versi
+  berikutnya — tiap versi menyebut sendiri dokumen mana yang dipakainya.
+</Callout>
+
+## Guardrail yang selalu ikut
+
+Tiap eksekusi membawa aturan yang tidak bisa dimatikan dari Console:
+
+- Jangan mengarang angka, tanggal, nama, atau status. Kalau datanya tidak ada di
+  percakapan, hasil tool, atau pengetahuan yang diberikan — katakan tidak tahu.
+- Panggil tool yang tersedia untuk mengambil data; jangan menebak isinya.
+- Tool yang mengubah data hanya dijalankan setelah dikonfirmasi manusia.
+- Jawab dalam bahasa yang dipakai penanya.
+
+## Batas putaran tool
+
+Satu eksekusi memanggil tool paling banyak **enam putaran**. Setelah itu
+eksekusinya berhenti dengan `stopReason: "max_tool_steps"` — batas itu yang
+menjaga model yang salah paham tidak menghabiskan token dan biaya.

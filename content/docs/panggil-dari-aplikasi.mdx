@@ -1,0 +1,102 @@
+---
+title: Panggil dari aplikasi
+description: SDK TypeScript, cURL, dan bentuk jawaban yang dipakai seluruh API.
+---
+
+Aplikasi pemanggil tidak perlu tahu model, prompt, atau versi mana yang
+berjalan. Semua itu diatur di Blayer dan bisa berganti tanpa mengubah kode ini.
+
+## Dua jenis kredensial
+
+| Kredensial | Bentuk | Boleh apa |
+| --- | --- | --- |
+| **API key project** | `blr_…`, dibuat di Console | Menjalankan agent yang sedang production di environment kuncinya |
+| **Sesi pengelolaan** | Token login Console, `blas_…` | Mengelola project, agent, versi, tool, dan dokumen |
+
+Keduanya dikirim sebagai `Authorization: Bearer …`.
+
+## SDK TypeScript
+
+```ts title="app/laporan.ts"
+import { BlayerClient } from '@blayer/sdk'
+
+const blayer = new BlayerClient({ apiKey: process.env.BLAYER_API_KEY })
+
+const run = await blayer.agents.run({
+  agentId: 'accounting-assistant',
+  input: 'Berapa laba bulan lalu?',
+})
+
+run.output   // "Laba bulan lalu Rp12.480.000."
+run.costUsd  // 0.0182
+```
+
+## cURL
+
+```bash
+curl -X POST http://localhost:3002/api/v1/agents/$AGENT_ID/run \
+  -H "Authorization: Bearer $BLAYER_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{ "input": "Berapa laba bulan lalu?" }'
+```
+
+## Bentuk jawaban
+
+Seluruh API memakai satu amplop yang sama.
+
+```json title="berhasil"
+{
+  "success": true,
+  "data": { "output": "Laba bulan lalu Rp12.480.000.", "costUsd": 0.0182 },
+  "message": "Agent berhasil dijalankan",
+  "meta": { "requestId": "mu91g71g-ngih0u", "timestamp": "2026-09-20T00:00:00.000Z" }
+}
+```
+
+```json title="gagal"
+{
+  "success": false,
+  "error": { "code": "PROVIDER_KEY_MISSING", "message": "Project ini belum punya kunci ANTHROPIC untuk environment PRODUCTION.", "details": null },
+  "meta": { "requestId": "mu91g71g-ngih0u", "timestamp": "2026-09-20T00:00:00.000Z" }
+}
+```
+
+`meta.requestId` muncul di jawaban **dan** di log server, jadi satu kode itu
+cukup untuk menelusuri satu permintaan.
+
+## Ingatan antar permintaan
+
+Tanpa sesi, tiap permintaan berdiri sendiri. Buat sesi kalau agentnya perlu
+mengingat percakapan sebelumnya:
+
+```ts
+const session = await blayer.agents.createSession({ agentId })
+
+await blayer.agents.run({ agentId, sessionId: session.id, input: 'Bulan sebelumnya?' })
+```
+
+## Tool yang mengubah data
+
+Eksekusi berhenti dengan `status: "PENDING_CONFIRMATION"` dan membawa
+`pendingToolCall`. Tidak ada data yang berubah sampai kamu memutuskannya:
+
+```ts
+await blayer.runs.confirm({
+  runId: run.runId,
+  toolCallId: run.pendingToolCall.id,
+  decision: 'CONFIRM', // atau 'REJECT'
+})
+```
+
+## Kode kesalahan yang sering muncul
+
+| Kode | Status | Artinya |
+| --- | --- | --- |
+| `UNAUTHORIZED` | 401 | Kunci atau sesinya tidak dikenali |
+| `AGENT_NOT_PUBLISHED` | 409 | Agentnya belum punya versi production |
+| `PROVIDER_KEY_MISSING` | 409 | Project belum punya kunci provider di environment itu |
+| `CONFIG_MISSING` | 503 | `BLAYER_ENCRYPTION_KEY` berbeda dengan saat kredensialnya disimpan |
+| `DATABASE_UNAVAILABLE` | 503 | Basis datanya tidak bisa dihubungi |
+
+Daftar rute lengkapnya ada di
+[docs/AGENT_API.md](https://github.com/DzikriAlan/blayer/blob/main/docs/AGENT_API.md).
