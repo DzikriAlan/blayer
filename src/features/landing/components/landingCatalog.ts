@@ -1,14 +1,27 @@
 import {
-  Boxes,
+  BookOpen,
   GitBranch,
   KeyRound,
   LineChart,
   PlayCircle,
-  Server,
+  Plug,
   ShieldCheck,
   SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react'
+
+export interface LandingNavLink {
+  href: string
+  label: string
+}
+
+export interface LandingProduct {
+  id: string
+  title: string
+  description: string
+  icon: LucideIcon
+  points: string[]
+}
 
 export interface LandingStep {
   id: string
@@ -17,26 +30,124 @@ export interface LandingStep {
   icon: LucideIcon
 }
 
-export interface LandingFeature {
+export interface LandingBlueprint {
   id: string
   title: string
   description: string
-  icon: LucideIcon
-  isReady: boolean
-  // Lebar kartu di kisi bento: 1, 2, atau 3 kolom.
-  span: 1 | 2 | 3
+  parts: string[]
+  isWide: boolean
 }
 
-export interface LandingStat {
-  key: string
-  label: string
-  value: string
-  icon: LucideIcon
+export interface LandingStatus {
+  id: string
+  title: string
+  description: string
+  state: 'jalan' | 'belum'
 }
 
-// Empat langkah dari agent kosong sampai dipanggil aplikasi lain. Urutannya
-// sama dengan alur di Console, jadi yang dibaca di halaman depan persis yang
-// ditemui setelah masuk.
+export interface LandingQuestion {
+  id: string
+  question: string
+  answer: string
+}
+
+export interface LandingFooterColumn {
+  title: string
+  links: LandingNavLink[]
+}
+
+export const REPO_URL = 'https://github.com/DzikriAlan/blayer'
+
+export const LANDING_NAV: LandingNavLink[] = [
+  { href: '/#produk', label: 'Produk' },
+  { href: '/#cara-kerja', label: 'Cara kerja' },
+  { href: '/#sdk', label: 'SDK' },
+  { href: '/#status', label: 'Status' },
+  { href: `${REPO_URL}/blob/main/docs/AGENT_API.md`, label: 'Dokumentasi' },
+]
+
+// Tujuh bagian produk yang benar-benar ada di dalam Console dan API-nya.
+export const LANDING_PRODUCTS: LandingProduct[] = [
+  {
+    id: 'agent',
+    title: 'Agent & versi',
+    description:
+      'Instruksi, model, effort, dan batas token tersimpan sebagai konfigurasi bernomor — bukan prompt yang tercecer di kode tiap project.',
+    icon: SlidersHorizontal,
+    points: [
+      'Tiap perubahan lahir sebagai draf',
+      'Versi production tidak berubah diam-diam',
+      'Rollback cukup menerbitkan versi lama',
+      'Dua provider, tiga environment',
+    ],
+  },
+  {
+    id: 'playground',
+    title: 'Playground & pratinjau',
+    description:
+      'Coba agent sebelum dipakai orang lain. Pratinjau bahkan berjalan sebelum agentnya disimpan.',
+    icon: PlayCircle,
+    points: [],
+  },
+  {
+    id: 'tools',
+    title: 'Tool lewat integration',
+    description:
+      'Blayer menyimpan kontraknya — nama, method, path, skema. Yang menjalankan tetap endpoint milik projectmu.',
+    icon: Plug,
+    points: [],
+  },
+  {
+    id: 'knowledge',
+    title: 'Knowledge',
+    description:
+      'Dokumen rujukan disimpan terpisah dari prompt, lalu dipasang per versi agent.',
+    icon: BookOpen,
+    points: [],
+  },
+  {
+    id: 'guardrail',
+    title: 'Konfirmasi tool tulis',
+    description:
+      'Agent boleh meminta, tapi tidak memutuskan. Eksekusi berhenti dan menunggu persetujuan sebelum data berubah.',
+    icon: ShieldCheck,
+    points: [],
+  },
+  {
+    id: 'observability',
+    title: 'Observability',
+    description:
+      'Tiap eksekusi tercatat — termasuk yang gagal. Success rate, latency, token, dan biayanya angka sebenarnya.',
+    icon: LineChart,
+    points: [],
+  },
+  {
+    id: 'keys',
+    title: 'Kunci & environment',
+    description:
+      'Kredensial provider terenkripsi di instance-mu, dipisah per project dan environment. API key project punya prefix dan bisa dicabut.',
+    icon: KeyRound,
+    points: [],
+  },
+]
+
+// Yang dipakai membangun Blayer. Bukan daftar pelanggan — belum ada yang bisa
+// disebut, dan halaman ini tidak mengarang satu pun.
+export const LANDING_STACK = [
+  'Next.js',
+  'TypeScript',
+  'Prisma',
+  'PostgreSQL',
+  'Tailwind CSS',
+  'TanStack Query',
+  'Zustand',
+  'Zod',
+  'Anthropic',
+  'OpenAI',
+  'Docker',
+  'Vitest',
+]
+
 export const LANDING_STEPS: LandingStep[] = [
   {
     id: 'build',
@@ -46,14 +157,14 @@ export const LANDING_STEPS: LandingStep[] = [
   },
   {
     id: 'test',
-    title: 'Uji di Playground',
-    description: 'Jawaban, token, biaya, dan lamanya langsung terlihat.',
+    title: 'Coba jawabannya',
+    description: 'Pratinjau jalan bahkan sebelum agentnya disimpan.',
     icon: PlayCircle,
   },
   {
     id: 'publish',
-    title: 'Publikasikan versinya',
-    description: 'Versi lama diarsipkan, bukan ditimpa — rollback sekali klik.',
+    title: 'Terbitkan versinya',
+    description: 'Versi lama diarsipkan, bukan ditimpa.',
     icon: GitBranch,
   },
   {
@@ -64,68 +175,175 @@ export const LANDING_STEPS: LandingStep[] = [
   },
 ]
 
-export const LANDING_STATS: LandingStat[] = [
-  { key: 'provider', label: 'PROVIDER', value: '02', icon: Boxes },
-  { key: 'environment', label: 'ENVIRONMENT', value: '03', icon: Server },
-  { key: 'license', label: 'LISENSI', value: 'MIT', icon: ShieldCheck },
+// Pola yang bisa disusun sendiri di Console memakai bagian yang sudah ada.
+// Bukan berkas siap unduh — tidak ada template yang dijanjikan di sini.
+export const LANDING_BLUEPRINTS: LandingBlueprint[] = [
+  {
+    id: 'accounting',
+    title: 'Asisten akuntansi',
+    description:
+      'Menjawab pertanyaan laporan dari API akuntansimu sendiri, tanpa menyalin datanya ke mana pun.',
+    parts: ['Tool READ', 'Knowledge kebijakan', 'Environment terpisah'],
+    isWide: true,
+  },
+  {
+    id: 'support',
+    title: 'Triase dukungan',
+    description:
+      'Membaca tiket masuk, merangkum, dan mengusulkan tindakan — yang mengubah status tetap menunggu persetujuan.',
+    parts: ['Tool READ + WRITE', 'Konfirmasi manusia', 'Sesi percakapan'],
+    isWide: true,
+  },
+  {
+    id: 'invoice',
+    title: 'Pembaca faktur',
+    description: 'Menarik angka dari dokumen lalu mengembalikannya terstruktur.',
+    parts: ['Knowledge', 'Batas token'],
+    isWide: false,
+  },
+  {
+    id: 'internal',
+    title: 'Tanya jawab internal',
+    description: 'Menjawab dari dokumen perusahaan, bukan dari ingatan model.',
+    parts: ['Knowledge', 'Guardrail'],
+    isWide: false,
+  },
+  {
+    id: 'ops',
+    title: 'Operasi harian',
+    description: 'Memanggil beberapa tool berurutan dalam satu permintaan.',
+    parts: ['Tool loop', 'Observability'],
+    isWide: false,
+  },
+  {
+    id: 'embed',
+    title: 'Agent di produkmu',
+    description: 'Dipanggil aplikasi lain lewat satu API key per environment.',
+    parts: ['SDK TypeScript', 'API key'],
+    isWide: false,
+  },
 ]
 
-// Yang sudah jalan dan yang belum dibedakan terang-terangan. Halaman depan
-// tidak menjanjikan apa yang belum ada di dalam.
-export const LANDING_FEATURES: LandingFeature[] = [
+// Terang-terangan: yang sudah jalan dan yang belum, tanpa dipoles.
+export const LANDING_STATUS: LandingStatus[] = [
   {
-    id: 'builder',
-    title: 'Agent Builder',
+    id: 'core',
+    title: 'Agent, versi, dan eksekusi',
     description:
-      'Instruksi, pilihan model, effort, dan batas token tersimpan sebagai konfigurasi — bukan prompt mentah yang tercecer di kode tiap project.',
-    icon: SlidersHorizontal,
-    isReady: true,
-    span: 2,
-  },
-  {
-    id: 'versioning',
-    title: 'Versioning',
-    description:
-      'Tiap perubahan lahir sebagai draf. Versi yang melayani production tidak pernah berubah diam-diam, dan kembali ke versi sebelumnya cukup satu langkah.',
-    icon: GitBranch,
-    isReady: true,
-    span: 1,
-  },
-  {
-    id: 'playground',
-    title: 'Playground',
-    description:
-      'Coba agent sebelum dipakai orang lain. Jawaban, pemakaian token, biaya, dan lamanya tercatat di eksekusi yang sama.',
-    icon: PlayCircle,
-    isReady: true,
-    span: 1,
-  },
-  {
-    id: 'observability',
-    title: 'Observability',
-    description:
-      'Tiap eksekusi tercatat — termasuk yang gagal. Success rate, rata-rata latency, token, dan biaya terbaca per agent.',
-    icon: LineChart,
-    isReady: true,
-    span: 1,
-  },
-  {
-    id: 'keys',
-    title: 'Kunci terpisah',
-    description:
-      'Kredensial provider tersimpan terenkripsi di instance-mu sendiri, dipisah per project dan per environment. Tidak ada server pusat yang menerimanya.',
-    icon: KeyRound,
-    isReady: true,
-    span: 1,
+      'Project, API key, agent beserta versinya, eksekusi lewat API, Playground, dan riwayat eksekusi sudah jalan penuh.',
+    state: 'jalan',
   },
   {
     id: 'tools',
-    title: 'Tool & Knowledge',
+    title: 'Tool, knowledge, dan memory',
     description:
-      'Blayer menyimpan kontrak toolnya; yang menjalankan tetap endpoint milik projectmu. Bagian ini sedang dibangun.',
-    icon: Boxes,
-    isReady: false,
-    span: 3,
+      'Integration beserta kontrak toolnya, dokumen pengetahuan, sesi percakapan, dan konfirmasi tool tulis sudah jalan.',
+    state: 'jalan',
+  },
+  {
+    id: 'selfhost',
+    title: 'Self-host',
+    description:
+      'Docker Compose, migrasi Prisma, rate limit lintas instance, dan kredensial terenkripsi AES-256-GCM.',
+    state: 'jalan',
+  },
+  {
+    id: 'multiuser',
+    title: 'Banyak pengguna',
+    description:
+      'Console masih satu kredensial operator. Tim, peran, dan audit per pengguna belum dibangun.',
+    state: 'belum',
+  },
+  {
+    id: 'streaming',
+    title: 'Jawaban mengalir',
+    description:
+      'Eksekusi menjawab sekali jadi. Streaming token per token belum ada.',
+    state: 'belum',
+  },
+]
+
+export const LANDING_QUESTIONS: LandingQuestion[] = [
+  {
+    id: 'data',
+    question: 'Data bisnis saya ikut tersimpan di Blayer?',
+    answer:
+      'Tidak. Yang tersimpan adalah konfigurasi agent dan kontrak toolnya. Data bisnismu tetap di API milikmu, dan Blayer memanggilnya saat dibutuhkan.',
+  },
+  {
+    id: 'key',
+    question: 'Kunci provider saya disimpan di mana?',
+    answer:
+      'Di basis data instance-mu sendiri, terenkripsi AES-256-GCM dengan kunci yang hanya ada di environment-mu. Tidak ada server pusat yang menerimanya.',
+  },
+  {
+    id: 'write',
+    question: 'Bagaimana kalau agent salah mengubah data?',
+    answer:
+      'Tool yang mengubah data berhenti menunggu persetujuan. Tanpa konfirmasi, tidak ada yang berubah — termasuk di pratinjau, yang memang tidak menjalankannya sama sekali.',
+  },
+  {
+    id: 'model',
+    question: 'Model apa saja yang didukung?',
+    answer:
+      'Anthropic dan OpenAI, dengan katalog model beserta harga dan kemampuannya. Endpoint sebentuk Chat Completions lain bisa dipakai lewat OPENAI_BASE_URL.',
+  },
+  {
+    id: 'cost',
+    question: 'Biayanya dari mana?',
+    answer:
+      'Blayer tidak menagih apa pun. Yang berbiaya adalah pemakaian provider dengan kuncimu sendiri, dan angkanya terbaca per eksekusi.',
+  },
+  {
+    id: 'license',
+    question: 'Lisensinya apa?',
+    answer:
+      'MIT. Boleh dipakai, diubah, dan dijalankan di infrastruktur siapa pun tanpa izin tambahan.',
+  },
+]
+
+export const LANDING_PROPERTIES = [
+  'Kredensial terenkripsi AES-256-GCM',
+  'API key project bisa dicabut',
+  'Rate limit lintas instance',
+  'Lisensi MIT',
+]
+
+export const LANDING_FOOTER: LandingFooterColumn[] = [
+  {
+    title: 'Produk',
+    links: [
+      { href: '/#produk', label: 'Bagian produk' },
+      { href: '/#cara-kerja', label: 'Cara kerja' },
+      { href: '/#sdk', label: 'SDK' },
+      { href: '/#pola', label: 'Pola agent' },
+      { href: '/#status', label: 'Status' },
+    ],
+  },
+  {
+    title: 'Dokumentasi',
+    links: [
+      { href: `${REPO_URL}/blob/main/docs/AGENT_API.md`, label: 'Agent API' },
+      { href: `${REPO_URL}/blob/main/docs/API_RESPONSE.md`, label: 'Bentuk jawaban' },
+      { href: `${REPO_URL}/blob/main/docs/SELF_HOSTING.md`, label: 'Self-hosting' },
+      { href: `${REPO_URL}/blob/main/README.md`, label: 'Mulai dari nol' },
+    ],
+  },
+  {
+    title: 'Proyek',
+    links: [
+      { href: REPO_URL, label: 'Repositori' },
+      { href: `${REPO_URL}/issues`, label: 'Laporkan masalah' },
+      { href: `${REPO_URL}/blob/main/PRD.md`, label: 'Rencana produk' },
+      { href: `${REPO_URL}/blob/main/LICENSE`, label: 'Lisensi MIT' },
+    ],
+  },
+  {
+    title: 'Platform',
+    links: [
+      { href: '/console', label: 'Console' },
+      { href: '/api/health', label: 'Status layanan' },
+    ],
   },
 ]
 

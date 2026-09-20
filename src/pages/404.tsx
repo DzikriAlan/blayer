@@ -11,9 +11,9 @@ const NOT_FOUND_LINKS = [
     description: 'Kelola project, agent, dan API key dari satu tempat.',
   },
   {
-    href: '/#fitur',
-    label: 'Fitur platform',
-    description: 'Lihat apa saja yang sudah bisa dipakai hari ini.',
+    href: '/#status',
+    label: 'Status platform',
+    description: 'Lihat apa yang sudah jalan dan apa yang belum.',
   },
 ]
 

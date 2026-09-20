@@ -1,132 +1,161 @@
 import Link from 'next/link'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import LandingHero from './landingHero'
 import LandingBento from './landingBento'
-import LandingFlow from './landingFlow'
-import LandingFeature from './landingFeature'
-import { LANDING_MARQUEE } from './landingCatalog'
+import LandingBlueprints from './landingBlueprints'
+import LandingCommunity from './landingCommunity'
+import LandingConsole from './landingConsole'
+import LandingCta from './landingCta'
+import LandingHero from './landingHero'
+import LandingOpen from './landingOpen'
+import LandingSdk from './landingSdk'
+import LandingStack from './landingStack'
+import LandingStatus from './landingStatus'
+import { LANDING_STEPS, REPO_URL } from './landingCatalog'
 
-const PROMISES = [
-  'Kunci provider terenkripsi di instance-mu, dipisah per project dan environment.',
-  'Tool yang mengubah data tidak pernah jalan tanpa konfirmasi.',
-  'Tiap eksekusi tercatat lengkap dengan token, biaya, dan lamanya.',
-  'Lisensi MIT, tanpa server pusat yang menyimpan data agentmu.',
-]
+const SECTION = 'mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24'
 
 export default function LandingContent() {
   return (
     <>
       <LandingHero />
 
-      <section className="mx-auto w-full max-w-4xl px-5 py-20 text-center sm:px-8 sm:py-24">
-        <p className="text-balance text-xl leading-relaxed text-muted-foreground sm:text-2xl">
-          Blayer adalah <span className="text-foreground">AI Agent Platform</span>{' '}
-          yang kamu jalankan sendiri. Ia mengatur{' '}
-          <span className="text-primary">prompt, model, versi, tool, dan
-          pengetahuan</span>{' '}
-          agentmu — sementara data bisnisnya tetap tinggal di aplikasimu, tidak
-          ikut pindah ke mana-mana.
+      <section id="produk" className={`${SECTION} scroll-mt-20`}>
+        <LandingBento />
+
+        <p className="mt-10 text-sm text-muted-foreground">
+          Pakai satu atau semuanya. Tiap bagian berdiri sendiri, tapi dipasang
+          sebagai satu platform.
         </p>
       </section>
 
-      <div
-        aria-hidden
-        className="overflow-hidden border-y border-border bg-card/40 py-3"
-      >
-        <div className="marquee flex w-max items-center gap-10 pl-10">
-          {[...LANDING_MARQUEE, ...LANDING_MARQUEE].map((word, index) => (
-            <span
-              key={`${word}-${index}`}
-              className="flex shrink-0 items-center gap-10 text-xs uppercase tracking-[0.16em] text-muted-foreground"
-            >
-              {word}
-              <span className="text-primary">✳</span>
-            </span>
-          ))}
+      <section className="border-t border-border">
+        <div className={SECTION}>
+          <LandingStack />
         </div>
-      </div>
-
-      <section className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
-        <LandingBento />
       </section>
 
       <section id="cara-kerja" className="scroll-mt-20 border-t border-border">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
-          <LandingFlow />
+        <div className={SECTION}>
+          <h2 className="max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+            Rancang, coba, dan awasi agent
+            <br className="hidden sm:block" /> tanpa keluar dari Console
+          </h2>
+
+          <div className="mt-10">
+            <LandingConsole />
+          </div>
+
+          <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {LANDING_STEPS.map((step, index) => (
+              <li key={step.id} className="rounded-xl border border-border bg-card p-5">
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <step.icon className="h-4 w-4 text-primary" />
+                  Langkah {String(index + 1).padStart(2, '0')}
+                </span>
+                <p className="mt-3 text-sm font-medium">{step.title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      <section id="fitur" className="scroll-mt-20 border-t border-border">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section id="sdk" className="scroll-mt-20 border-t border-border">
+        <div className={SECTION}>
+          <div className="grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:items-center">
             <div>
-              <span className="pixel-label text-primary">Yang sudah jalan</span>
-              <h2 className="mt-4 max-w-xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-                Yang bisa dipakai hari ini.
+              <h2 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+                Panggil Blayer
+                <br className="hidden sm:block" /> dari kodemu
               </h2>
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                Aplikasi pemanggil tidak perlu tahu model, prompt, atau versi
+                mana yang berjalan. Semua itu diatur di Blayer dan bisa berganti
+                tanpa mengubah kode ini.
+              </p>
             </div>
+
+            <LandingSdk />
+          </div>
+        </div>
+      </section>
+
+      <section id="pola" className="scroll-mt-20 border-t border-border">
+        <div className={SECTION}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <h2 className="max-w-xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Mulai dari pola yang sudah terbukti
+            </h2>
+
+            <Link
+              href={`${REPO_URL}/blob/main/docs/AGENT_API.md`}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Baca dokumentasinya
+            </Link>
+          </div>
+
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Bukan berkas siap unduh — ini susunan bagian yang tinggal kamu rakit
+            sendiri di Console.
+          </p>
+
+          <div className="mt-10">
+            <LandingBlueprints />
+          </div>
+        </div>
+      </section>
+
+      <section id="status" className="scroll-mt-20 border-t border-border">
+        <div className={SECTION}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <h2 className="max-w-xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Apa yang sudah jalan, apa yang belum
+            </h2>
             <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
               Yang belum selesai ditandai terang-terangan — halaman ini tidak
               menjanjikan apa yang belum ada di dalam.
             </p>
           </div>
 
-          <div className="mt-12">
-            <LandingFeature />
+          <div className="mt-10">
+            <LandingStatus />
           </div>
         </div>
       </section>
 
       <section className="border-t border-border">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
+        <div className={SECTION}>
           <div className="flex flex-col items-center text-center">
-            <span className="pixel-label text-primary">Open source selamanya</span>
-            <h2 className="mt-4 max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-              Jalankan di infrastrukturmu sendiri.
+            <h2 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Pertanyaan yang biasanya muncul duluan
             </h2>
+            <Button asChild variant="secondary" className="mt-7">
+              <Link href={`${REPO_URL}/issues`}>
+                Tanya di GitHub <ArrowRight />
+              </Link>
+            </Button>
           </div>
 
-          <div className="mt-14 grid gap-4 lg:grid-cols-2">
-            <div className="relative overflow-hidden rounded-xl border border-border p-8">
-              <span aria-hidden className="mesh absolute inset-0" />
-              <span aria-hidden className="noise absolute inset-0 opacity-50" />
-
-              <div className="relative flex h-full flex-col justify-between gap-10">
-                <p className="text-2xl font-semibold leading-tight tracking-tight text-white">
-                  Satu perintah, instance-mu sendiri.
-                </p>
-
-                <pre className="code border-white/15 bg-black/40 text-white/90">
-                  <code>{`docker compose up -d
-docker compose exec app npx prisma migrate deploy`}</code>
-                </pre>
-              </div>
-            </div>
-
-            <ul className="flex flex-col gap-3">
-              {PROMISES.map((promise) => (
-                <li
-                  key={promise}
-                  className="flex items-start gap-3 rounded-xl border border-border bg-card px-5 py-4"
-                >
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm leading-relaxed text-muted-foreground">
-                    {promise}
-                  </span>
-                </li>
-              ))}
-
-              <li className="mt-2">
-                <Button asChild size="lg">
-                  <Link href="/console">
-                    Mulai dari Console <ArrowRight />
-                  </Link>
-                </Button>
-              </li>
-            </ul>
+          <div className="mt-12">
+            <LandingCommunity />
           </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border">
+        <div className={SECTION}>
+          <LandingOpen />
+        </div>
+      </section>
+
+      <section className="border-t border-border">
+        <div className={SECTION}>
+          <LandingCta />
         </div>
       </section>
     </>

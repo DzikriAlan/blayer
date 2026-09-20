@@ -51,8 +51,8 @@ export default function ErrorView({
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href="/#fitur">
-              <LayoutGrid /> Lihat Fitur
+            <Link href="/#produk">
+              <LayoutGrid /> Lihat Produk
             </Link>
           </Button>
           {children}
