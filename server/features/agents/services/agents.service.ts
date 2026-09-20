@@ -11,6 +11,7 @@ import type {
   AgentsVersionsResponseDto,
   CreateAgentsDto,
   CreateAgentsPublishDto,
+  CreateAgentsPreviewDto,
   CreateAgentsRunDto,
   CreateAgentsVersionsDto,
   UpdateAgentsDto,
@@ -280,6 +281,22 @@ export class AgentsService {
       sessionId: dto.sessionId ?? null,
       versionId: scope.versionId,
       scopedProjectId: scope.scopedProjectId,
+    })
+  }
+
+  async storeAgentsPreview(dto: CreateAgentsPreviewDto) {
+    return this.agentRuntimeService.storeAgentsPreview({
+      projectId: dto.projectId,
+      environment: dto.environment,
+      provider: dto.provider,
+      model: dto.model,
+      effort: dto.effort,
+      maxTokens: dto.maxTokens,
+      temperature: dto.temperature,
+      instructions: dto.instructions,
+      toolIds: dto.toolIds,
+      documentIds: dto.documentIds,
+      messages: dto.messages,
     })
   }
 

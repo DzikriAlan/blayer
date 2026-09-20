@@ -36,6 +36,7 @@ const routes: Route[] = [
   { path: 'v1/projects/:projectId/knowledge', handler: knowledgeModule.byProject },
 
   { path: 'v1/agents', handler: agentsModule.collection },
+  { path: 'v1/agents/preview', handler: agentsModule.preview },
   { path: 'v1/agents/:agentId', handler: agentsModule.detail },
   { path: 'v1/agents/:agentId/versions', handler: agentsModule.versions },
   { path: 'v1/agents/:agentId/publish', handler: agentsModule.publish },

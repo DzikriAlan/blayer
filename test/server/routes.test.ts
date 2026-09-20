@@ -82,6 +82,15 @@ describe('tabel rute', () => {
     expect(detail.body.error?.code).toBe('PROJECT_NOT_FOUND')
   })
 
+  it('TC-84h mendahulukan alamat tetap atas parameter yang bentuknya sama', async () => {
+    // 'preview' bisa terbaca sebagai id agent kalau urutannya salah; POST-nya
+    // sampai ke pratinjau, bukan ke detail agent yang tidak melayani POST.
+    const res = await call({ path: ['v1', 'agents', 'preview'], method: 'POST' })
+
+    expect(res.statusCode).toBe(422)
+    expect(res.body.error?.code).toBe('VALIDATION_ERROR')
+  })
+
   it('TC-84f tetap menolak tanpa kredensial walau alamatnya benar', async () => {
     const res = await call({ path: ['v1', 'projects'], token: '' })
 

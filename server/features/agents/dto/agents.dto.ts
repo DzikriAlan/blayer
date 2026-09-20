@@ -93,6 +93,39 @@ export const createAgentsRunValidation = z.object({
   sessionId: z.string().trim().min(1).optional(),
 })
 
+// Pratinjau dipakai sambil agentnya masih disusun, jadi instruksinya boleh
+// masih kosong dan percakapannya dikirim utuh dari Console — tidak ada sesi
+// yang menyimpannya di sini.
+export const createAgentsPreviewValidation = withKnownModel(
+  configValidation
+    .extend({
+      instructions: z
+        .string()
+        .trim()
+        .max(20_000, 'Instruksi maksimal 20.000 karakter.')
+        .default(''),
+    })
+    .extend({
+      projectId: z.string().trim().min(1, 'Project wajib dipilih.'),
+      environment: z
+        .nativeEnum(AgentEnvironment)
+        .default(AgentEnvironment.DEVELOPMENT),
+      messages: z
+        .array(
+          z.object({
+            role: z.enum(['user', 'assistant']),
+            content: z
+              .string()
+              .trim()
+              .min(1, 'Isi pesan wajib diisi.')
+              .max(20_000, 'Isi pesan maksimal 20.000 karakter.'),
+          })
+        )
+        .min(1, 'Percakapan wajib berisi minimal satu pesan.')
+        .max(40, 'Percakapan pratinjau maksimal 40 pesan.'),
+    })
+)
+
 export const createAgentsSessionsValidation = z.object({
   environment: z.nativeEnum(AgentEnvironment).optional(),
 })
@@ -104,6 +137,9 @@ export type CreateAgentsVersionsDto = z.infer<
 >
 export type CreateAgentsPublishDto = z.infer<typeof createAgentsPublishValidation>
 export type CreateAgentsRunDto = z.infer<typeof createAgentsRunValidation>
+export type CreateAgentsPreviewDto = z.infer<
+  typeof createAgentsPreviewValidation
+>
 export type CreateAgentsSessionsDto = z.infer<
   typeof createAgentsSessionsValidation
 >

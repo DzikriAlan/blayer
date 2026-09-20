@@ -7,6 +7,7 @@ import { getQueryNumber, getQueryValue, parseDto } from '../../../shared/route'
 import { authService } from '../../../shared/services/auth.service'
 import { enforceRateLimit } from '../../../shared/services/rateLimit.service'
 import {
+  createAgentsPreviewValidation,
   createAgentsPublishValidation,
   createAgentsRunValidation,
   createAgentsSessionsValidation,
@@ -172,6 +173,26 @@ export class AgentsController {
           versionId: actor.kind === 'admin' ? (dto.versionId ?? null) : null,
         }
       ),
+    })
+  }
+
+  async saveAgentsPreview(req: NextApiRequest, res: NextApiResponse) {
+    authService.fetchAuthAdmin(req)
+
+    // Pratinjau memanggil provider sungguhan dan ikut menghabiskan token, jadi
+    // batasnya lebih rapat daripada eksekusi biasa.
+    await enforceRateLimit(req, {
+      name: 'agents-preview',
+      limit: 30,
+      windowMs: 60_000,
+      scope: 'admin',
+    })
+
+    const dto = parseDto(createAgentsPreviewValidation, req.body)
+
+    return sendSuccess(res, {
+      message: 'Pratinjau agent berhasil dijalankan',
+      data: await this.agentsService.storeAgentsPreview(dto),
     })
   }
 

@@ -26,6 +26,10 @@ export const agentsModule = {
     POST: (req, res) => agentsController.saveAgentsRun(req, res),
   }),
 
+  preview: createRoute('agents-preview', {
+    POST: (req, res) => agentsController.saveAgentsPreview(req, res),
+  }),
+
   runs: createRoute('agents-runs', {
     GET: (req, res) => agentsController.loadAgentsRunsList(req, res),
   }),

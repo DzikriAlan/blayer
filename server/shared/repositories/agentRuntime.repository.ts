@@ -165,6 +165,31 @@ export class AgentRuntimeRepository {
     }
   }
 
+  // Pratinjau memakai konfigurasi yang belum tersimpan, jadi tool dan dokumennya
+  // diambil lewat id apa adanya — tetap dikurung projectId supaya pratinjau satu
+  // project tidak bisa meminjam milik project lain.
+  async getAgentRuntimeToolMany(projectId: string, ids: string[]) {
+    try {
+      return await prismaService.toolDefinition.findMany({
+        where: { id: { in: ids }, integration: { projectId } },
+        include: { integration: true },
+      })
+    } catch (error) {
+      throw handlePrismaError(error, 'tool')
+    }
+  }
+
+  async getAgentRuntimeDocumentMany(projectId: string, ids: string[]) {
+    try {
+      return await prismaService.knowledgeDocument.findMany({
+        where: { id: { in: ids }, projectId },
+        select: { title: true, content: true },
+      })
+    } catch (error) {
+      throw handlePrismaError(error, 'dokumen')
+    }
+  }
+
   async getAgentRuntimeToolCall(toolCallId: string, runId: string) {
     try {
       return await prismaService.agentToolCall.findFirst({

@@ -1,4 +1,5 @@
 import {
+  AgentEffort,
   AgentEnvironment,
   AgentRunStatus,
   ToolCallStatus,
@@ -57,6 +58,31 @@ export interface StoreAgentsRunDto {
   scopedProjectId?: string | null
 }
 
+export interface StoreAgentsPreviewDto {
+  projectId: string
+  environment: AgentEnvironment
+  provider: 'ANTHROPIC' | 'OPENAI'
+  model: string
+  effort: AgentEffort
+  maxTokens: number
+  temperature: number | null
+  instructions: string
+  toolIds: string[]
+  documentIds: string[]
+  messages: { role: 'user' | 'assistant'; content: string }[]
+}
+
+export interface AgentPreviewResponseDto {
+  status: AgentRunStatus
+  output: string
+  stopReason: string
+  latencyMs: number
+  inputTokens: number
+  outputTokens: number
+  costUsd: number | null
+  toolCalls: AgentRunToolCallDto[]
+}
+
 export interface StoreRunsConfirmDto {
   runId: string
   toolCallId: string
@@ -99,7 +125,9 @@ export interface AgentRunResponseDto {
 }
 
 interface LoopContext {
-  runId: string
+  // Kosong saat pratinjau: tidak ada baris run yang bisa dirujuk, jadi tidak ada
+  // yang disimpan.
+  runId: string | null
   apiKey: string
   model: string
   provider: 'ANTHROPIC' | 'OPENAI'
@@ -455,6 +483,84 @@ export class AgentRuntimeService {
     }
   }
 
+  /**
+   * Menjalankan konfigurasi yang belum disimpan.
+   *
+   * Console memakainya untuk mencoba agent sambil menyusunnya, jadi tidak ada
+   * agent, versi, maupun baris run yang dibuat — termasuk tidak ada jejak
+   * eksekusi. Yang tetap berlaku: kunci provider diambil dari project yang
+   * sama, dan tool tulis tidak dijalankan karena persetujuannya tidak punya
+   * tempat disimpan.
+   */
+  async storeAgentsPreview({
+    projectId,
+    environment,
+    provider,
+    model,
+    effort,
+    maxTokens,
+    temperature,
+    instructions,
+    toolIds,
+    documentIds,
+    messages,
+  }: StoreAgentsPreviewDto): Promise<AgentPreviewResponseDto> {
+    const apiKey = await this.getProviderKey(projectId, provider, environment)
+
+    const tools = toolIds.length
+      ? await this.agentRuntimeRepository.getAgentRuntimeToolMany(
+          projectId,
+          toolIds
+        )
+      : []
+
+    const documents = documentIds.length
+      ? await this.agentRuntimeRepository.getAgentRuntimeDocumentMany(
+          projectId,
+          documentIds
+        )
+      : []
+
+    const context: LoopContext = {
+      runId: null,
+      apiKey,
+      model,
+      provider,
+      instructions: this.getSystemPrompt(instructions, documents),
+      tools,
+      maxTokens,
+      effort: getEffortLevel(effort),
+      temperature,
+    }
+
+    const startedAt = Date.now()
+
+    try {
+      const result = await this.runLoop(
+        context,
+        messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        }))
+      )
+
+      return {
+        status: result.status,
+        output: result.text,
+        stopReason: result.stopReason,
+        latencyMs: Date.now() - startedAt,
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+        costUsd: getRunCostUsd(model, result.inputTokens, result.outputTokens),
+        toolCalls: result.toolCalls,
+      }
+    } catch (error) {
+      const failure = this.getProviderFailure(error)
+
+      throw new HttpError(failure.status, failure.code, failure.message)
+    }
+  }
+
   // Satu putaran percakapan: model menjawab, atau meminta tool. Tool baca
   // dijalankan langsung; tool tulis berhenti di sini dan menunggu konfirmasi.
   private async runLoop(
@@ -508,6 +614,32 @@ export class AgentRuntimeService {
       )
 
       if (writeCall) {
+        // Tool tulis butuh persetujuan yang tersimpan, dan pratinjau tidak
+        // punya tempat menyimpannya. Berhenti di sini dan katakan apa adanya,
+        // daripada menjalankan perubahan data tanpa jejak.
+        if (!context.runId) {
+          return {
+            status: AgentRunStatus.PENDING_CONFIRMATION,
+            text: result.text,
+            stopReason: 'preview_write_blocked',
+            inputTokens,
+            outputTokens,
+            toolCalls: [
+              ...toolCalls,
+              {
+                id: '',
+                name: writeCall.name,
+                permission: ToolPermission.WRITE,
+                status: ToolCallStatus.PENDING_CONFIRMATION,
+                input: writeCall.input,
+                output:
+                  'Tool yang mengubah data tidak dijalankan di pratinjau. Simpan agentnya dulu, lalu jalankan dari Playground.',
+              },
+            ],
+            pending: null,
+          }
+        }
+
         const definition = context.tools.find(
           (tool) => tool.name === writeCall.name
         )
@@ -601,19 +733,24 @@ export class AgentRuntimeService {
       input: call.input,
     })
 
-    const record = await this.agentRuntimeRepository.postAgentRuntimeToolCall({
-      runId: context.runId,
-      toolDefinitionId: definition.id,
-      name: definition.name,
-      permission: definition.permission,
-      status: executed.isOk ? ToolCallStatus.SUCCEEDED : ToolCallStatus.FAILED,
-      input: call.input as Prisma.InputJsonValue,
-      output: executed.isOk ? executed.output : null,
-      errorMessage: executed.isOk ? null : executed.output,
-      latencyMs: executed.latencyMs,
-      providerCallId: call.id,
-      resolvedAt: new Date(),
-    })
+    // Pratinjau tidak punya baris run, jadi pemanggilannya tidak dicatat.
+    const record = context.runId
+      ? await this.agentRuntimeRepository.postAgentRuntimeToolCall({
+          runId: context.runId,
+          toolDefinitionId: definition.id,
+          name: definition.name,
+          permission: definition.permission,
+          status: executed.isOk
+            ? ToolCallStatus.SUCCEEDED
+            : ToolCallStatus.FAILED,
+          input: call.input as Prisma.InputJsonValue,
+          output: executed.isOk ? executed.output : null,
+          errorMessage: executed.isOk ? null : executed.output,
+          latencyMs: executed.latencyMs,
+          providerCallId: call.id,
+          resolvedAt: new Date(),
+        })
+      : { id: '' }
 
     return {
       record: {
