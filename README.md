@@ -417,6 +417,8 @@ npm run db:generate  # Regenerasi Prisma Client
 npm run db:migrate   # Buat & terapkan migrasi (pengembangan)
 npm run db:deploy    # Terapkan migrasi tertunda (produksi)
 npm run db:studio    # Prisma Studio
+npm run db:status    # Migrasi yang sudah dan belum diterapkan
+npm run db:check     # Periksa alamat basis data lapis per lapis
 npm run sdk:build    # Build paket @blayer/sdk
 npm run eval         # Uji regresi agent terhadap instance yang hidup
 ```
@@ -442,6 +444,18 @@ branch yang merah.
 Estimasi dan metrik suksesnya ada di [PRD.md](./PRD.md).
 
 ## Dokumentasi
+
+Situs dokumentasinya ada di dalam aplikasi ini, di **`/docs`** — dibangun dengan
+[Fumadocs](https://fumadocs.dev) dan berisi jalur pemula dari pasang sampai
+memanggil agent dari aplikasi lain. Isinya ditulis sebagai MDX di
+[`content/docs/`](./content/docs), jadi menambah halaman cukup membuat satu
+berkas dan mendaftarkannya di `meta.json`.
+
+```bash
+npm run dev     # http://localhost:3002/docs
+```
+
+Berkas rujukan yang lebih dalam tetap di repositori:
 
 - **[docs/AGENT_API.md](./docs/AGENT_API.md)** — rute Agent API, kredensial, tool, konfirmasi, contoh permintaan, dan kode kesalahannya
 - **[docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)** — menjalankan Blayer sendiri lewat Docker Compose atau tanpa Docker

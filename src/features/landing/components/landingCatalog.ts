@@ -63,7 +63,7 @@ export const LANDING_NAV: LandingNavLink[] = [
   { href: '/#cara-kerja', label: 'Cara kerja' },
   { href: '/#sdk', label: 'SDK' },
   { href: '/#status', label: 'Status' },
-  { href: `${REPO_URL}/blob/main/docs/AGENT_API.md`, label: 'Dokumentasi' },
+  { href: '/docs', label: 'Dokumentasi' },
 ]
 
 // Tujuh bagian produk yang benar-benar ada di dalam Console dan API-nya.
@@ -323,10 +323,11 @@ export const LANDING_FOOTER: LandingFooterColumn[] = [
   {
     title: 'Dokumentasi',
     links: [
-      { href: `${REPO_URL}/blob/main/docs/AGENT_API.md`, label: 'Agent API' },
-      { href: `${REPO_URL}/blob/main/docs/API_RESPONSE.md`, label: 'Bentuk jawaban' },
-      { href: `${REPO_URL}/blob/main/docs/SELF_HOSTING.md`, label: 'Self-hosting' },
-      { href: `${REPO_URL}/blob/main/README.md`, label: 'Mulai dari nol' },
+      { href: '/docs', label: 'Mulai dari sini' },
+      { href: '/docs/instalasi', label: 'Pasang dan jalankan' },
+      { href: '/docs/agent-pertama', label: 'Agent pertama' },
+      { href: '/docs/panggil-dari-aplikasi', label: 'Panggil dari aplikasi' },
+      { href: '/docs/self-hosting', label: 'Self-hosting' },
     ],
   },
   {

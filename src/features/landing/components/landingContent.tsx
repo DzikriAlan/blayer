@@ -92,7 +92,7 @@ export default function LandingContent() {
             </h2>
 
             <Link
-              href={`${REPO_URL}/blob/main/docs/AGENT_API.md`}
+              href="/docs"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Baca dokumentasinya

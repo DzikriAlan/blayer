@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { LANDING_PROPERTIES, REPO_URL } from './landingCatalog'
+import { LANDING_PROPERTIES } from './landingCatalog'
 
 export default function LandingCta() {
   return (
@@ -17,9 +17,7 @@ export default function LandingCta() {
           <Link href="/console">Masuk Console</Link>
         </Button>
         <Button asChild size="lg" variant="secondary">
-          <Link href={`${REPO_URL}/blob/main/docs/SELF_HOSTING.md`}>
-            Jalankan sendiri
-          </Link>
+          <Link href="/docs/self-hosting">Jalankan sendiri</Link>
         </Button>
       </div>
 

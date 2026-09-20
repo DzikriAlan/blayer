@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { REPO_URL } from './landingCatalog'
 
 export default function LandingHero() {
   return (
@@ -33,7 +32,7 @@ export default function LandingHero() {
                 <Link href="/console">Masuk Console</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href={`${REPO_URL}/blob/main/docs/AGENT_API.md`}>
+                <Link href="/docs">
                   Baca dokumentasi <ArrowRight />
                 </Link>
               </Button>
