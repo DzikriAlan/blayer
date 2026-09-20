@@ -9,6 +9,7 @@ import {
   getAgentsRuns,
   postAgents,
   postAgentsConfirm,
+  postAgentsPreview,
   postAgentsPublish,
   postAgentsRun,
   postAgentsVersion,
@@ -16,6 +17,7 @@ import {
 import type {
   PayloadPostAgents,
   PayloadPostAgentsConfirm,
+  PayloadPostAgentsPreview,
   PayloadPostAgentsPublish,
   PayloadPostAgentsRun,
   PayloadPostAgentsVersion,
@@ -71,6 +73,12 @@ export const useAgentsControllers = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agentsDetail'] })
     },
+  })
+
+  // Pratinjau tidak menyentuh agent yang tersimpan, jadi tidak ada query yang
+  // perlu disegarkan setelahnya.
+  const storeAgentsPreview = useMutation({
+    mutationFn: (payload: PayloadPostAgentsPreview) => postAgentsPreview(payload),
   })
 
   const storeAgentsRun = useMutation({
@@ -146,6 +154,7 @@ export const useAgentsControllers = () => {
     fetchAgentsModels,
     storeAgents,
     storeAgentsVersion,
+    storeAgentsPreview,
     storeAgentsPublish,
     storeAgentsRun,
   }

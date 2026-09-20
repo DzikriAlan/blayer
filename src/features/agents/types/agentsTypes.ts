@@ -164,6 +164,28 @@ export interface PayloadPostAgentsRun {
   environment: AgentsEnvironment
 }
 
+export interface PayloadPostAgentsPreview extends AgentsConfigValue {
+  projectId: string
+  environment: AgentsEnvironment
+  messages: AgentsPreviewMessage[]
+}
+
+export interface AgentsPreviewMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface DataAgentsPreviewResult {
+  status: AgentsRunStatusResult
+  output: string
+  stopReason: string
+  latencyMs: number
+  inputTokens: number
+  outputTokens: number
+  costUsd: number | null
+  toolCalls: DataAgentsToolCall[]
+}
+
 export interface AgentsDetail {
   status: string
   statusTitle: string

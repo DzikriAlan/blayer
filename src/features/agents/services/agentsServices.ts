@@ -7,6 +7,8 @@ import type {
   DataAgentsRunResult,
   PayloadGetAgentsDetail,
   PayloadPostAgents,
+  DataAgentsPreviewResult,
+  PayloadPostAgentsPreview,
   PayloadPostAgentsPublish,
   PayloadPostAgentsRun,
   PayloadPostAgentsVersion,
@@ -47,6 +49,12 @@ export const postAgentsPublish = ({
 
 export const postAgentsRun = ({ agentId, ...payload }: PayloadPostAgentsRun) =>
   consoleFetch<DataAgentsRunResult>(`/agents/${agentId}/run`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+
+export const postAgentsPreview = (payload: PayloadPostAgentsPreview) =>
+  consoleFetch<DataAgentsPreviewResult>('/agents/preview', {
     method: 'POST',
     body: JSON.stringify(payload),
   })
