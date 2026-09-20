@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit",
     "eval": "node eval/run.mjs",
     "sdk:build": "npm --prefix sdk run build",
-    "db:status": "node scripts/prisma.mjs migrate status"
+    "db:status": "node scripts/prisma.mjs migrate status",
+    "db:check": "node scripts/dbCheck.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
