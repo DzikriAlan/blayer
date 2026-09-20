@@ -62,6 +62,7 @@ basis data adalah hash SHA-256 dan dua belas karakter awalnya.
 | `/api/v1/agents/{agentId}` | GET, PUT, DELETE | pengelolaan | Agent beserta seluruh versinya |
 | `/api/v1/agents/{agentId}/versions` | GET, POST | pengelolaan | Riwayat versi & pembuatan draf |
 | `/api/v1/agents/{agentId}/publish` | POST | pengelolaan | Menaikkan satu versi ke production |
+| `/api/v1/agents/preview` | POST | pengelolaan | Mencoba konfigurasi yang belum disimpan |
 | `/api/v1/agents/{agentId}/run` | POST | pengelolaan **atau** API key project | Menjalankan agent |
 | `/api/v1/agents/{agentId}/sessions` | GET, POST | pengelolaan **atau** API key project | Sesi percakapan (ingatan antar permintaan) |
 | `/api/v1/agents/{agentId}/runs` | GET | pengelolaan | Riwayat eksekusi & ringkasannya |
@@ -142,6 +143,42 @@ Agent lahir bersama draf versi 1. Menyimpan perubahan konfigurasi lewat
 melayani production tidak pernah berubah diam-diam. `POST /publish` memindahkan
 production ke versi yang dipilih dan mengarsipkan yang lama, jadi rollback cukup
 mempublikasikan versi sebelumnya kembali.
+
+## Mencoba sebelum disimpan
+
+Console memakai rute ini untuk panel pratinjau di sebelah kolom pembuatan agent:
+konfigurasi yang sedang disusun dijalankan apa adanya.
+
+```bash
+curl -X POST http://localhost:3002/api/v1/agents/preview \
+  -H "Authorization: Bearer $BLAYER_ADMIN_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "projectId": "'"$PROJECT_ID"'",
+        "environment": "DEVELOPMENT",
+        "provider": "ANTHROPIC",
+        "model": "claude-opus-5",
+        "effort": "HIGH",
+        "maxTokens": 16000,
+        "instructions": "Jawab pertanyaan akuntansi hanya dari hasil tool.",
+        "toolIds": [],
+        "documentIds": [],
+        "messages": [{ "role": "user", "content": "berapa laba bulan lalu?" }]
+      }'
+```
+
+Yang perlu diketahui sebelum memakainya:
+
+- **Tidak ada yang tersimpan** — tidak ada agent, versi, maupun baris eksekusi.
+  Karena itu pratinjau juga tidak muncul di riwayat dan tidak terhitung di
+  angka observability.
+- **Kunci providernya sungguhan**, diambil dari project dan environment yang
+  disebut. Token yang terpakai tetap ditagih provider seperti biasa.
+- **Tool yang mengubah data tidak dijalankan.** Persetujuannya butuh baris
+  eksekusi sebagai tempat menyimpan keputusan, dan pratinjau tidak punya itu;
+  jawabannya berhenti dengan `stopReason: "preview_write_blocked"`.
+- **Percakapannya dikirim penuh** setiap kali, maksimal 40 pesan. Tidak ada
+  sesi yang menyimpannya di server.
 
 ## Tool
 

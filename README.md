@@ -281,11 +281,19 @@ Buka **http://localhost:3002/console** dan masuk dengan `admin` / `admin123`
 browser itu saja, dan dikirim sebagai header `Authorization` — tidak ada sesi
 yang disimpan di server.
 
-1. **Buat project.** Wadah agent, API key, dan kredensial provider.
-2. **Simpan kunci provider** untuk environment yang akan dipakai. Tanpa itu
-   eksekusi menjawab `409 PROVIDER_KEY_MISSING`, bukan gagal diam-diam.
-3. **Buat agent** beserta instruksi dan modelnya. Agent lahir sebagai draf v1.
-4. **Uji di Playground.** Jawaban, token, biaya, dan lamanya langsung terlihat.
+1. **Buat project.** Wadah agent, API key, dan kredensial provider. Isinya
+   terbagi per menu: Ringkasan, Agent, API Key, Kredensial, Integration, dan
+   Knowledge.
+2. **Simpan kunci provider** untuk environment yang akan dipakai, di menu
+   Kredensial. Tanpa itu eksekusi menjawab `409 PROVIDER_KEY_MISSING`, bukan
+   gagal diam-diam.
+3. **Buat agent** di halaman dua panel: kolom di kiri menyusun instruksi, model,
+   tool, dan dokumen; panel di kanan menjalankannya langsung memakai isian yang
+   sedang kamu ketik — tanpa menyimpan agent, versi, atau jejak eksekusi. Begitu
+   disimpan, agent lahir sebagai draf v1.
+4. **Uji di Playground.** Berbeda dengan pratinjau, eksekusi di sini memakai
+   versi yang tersimpan dan tercatat di riwayat lengkap dengan token, biaya, dan
+   lamanya.
 5. **Publikasikan versinya.** Baru setelah itu API key project bisa memanggilnya.
 6. **Terbitkan API key project**, lalu panggil dari aplikasi lain:
 
