@@ -244,6 +244,18 @@ supaya alamat basis data dibaca dengan aturan yang sama seperti aplikasi —
 termasuk nama-nama variabel Supabase. `npm run db:status` menampilkan migrasi
 yang sudah dan belum diterapkan.
 
+Kalau ada yang tidak beres, `npm run db:check` menjawabnya per lapis: variabel
+mana yang terbaca, alamat apa yang tersusun darinya (kata sandinya disamarkan),
+apakah host-nya punya alamat IPv4, dan apakah basis datanya benar-benar
+menjawab — lengkap dengan terjemahan sebab kegagalan yang paling sering.
+
+```
+Jawaban basis data
+
+status                 hidup, menjawab dalam 1393 ms
+tabel di public        20
+```
+
 `db:push` sengaja diblokir — perubahan skema harus lewat migrasi supaya punya
 jejak dan bisa diputar balik.
 

@@ -49,6 +49,9 @@ project-nya diambil dari `SUPABASE_URL`. Aturannya ada di satu tempat,
 `server/config/env.ts`, dan Prisma CLI memakai aturan yang sama lewat
 `npm run db:deploy`.
 
+Isian tiap variabel beserta asalnya ada di `.env.example`, dan
+`npm run db:check` memeriksa hasilnya tanpa pernah mencetak kata sandi.
+
 ## Di serverless
 
 Host koneksi langsung Supabase (`db.<ref>.supabase.co`) hanya punya alamat IPv6,
