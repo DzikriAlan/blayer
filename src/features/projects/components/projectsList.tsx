@@ -8,6 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { LoadData } from '@/shared/components/load-data'
 import { useProjectsStates } from '../states/projectsStates'
 import { useProjectsControllers } from '../controllers/projectsControllers'
@@ -72,46 +81,71 @@ export default function ProjectsList() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
-      <div className="mesh-soft relative overflow-hidden rounded-2xl border border-border px-6 py-10 sm:px-10">
-        <span aria-hidden className="noise pointer-events-none absolute inset-0 opacity-40" />
-        <div className="relative">
-          <span className="pixel-label text-primary">Console</span>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">Project</h1>
-          <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
-            Tiap project punya agent, API key, dan kredensial provider sendiri.
-            Pemisahan itu yang menjaga satu project tidak memakai kunci project
-            lain.
+    <div className="flex flex-col">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border px-5 py-4 sm:px-8">
+        <div>
+          <h1 className="text-base font-medium">Project</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Wadah agent, API key, dan kredensial provider
           </p>
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          {projects.data.length} project
+        </p>
       </div>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-6 px-5 py-8 sm:px-8 lg:grid-cols-[1.4fr_1fr]">
         <LoadData response={data} minHeight="20vh">
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {projects.data.map((project) => (
-              <li key={project.id}>
-                <Link
-                  href={`/console/projects/${project.id}`}
-                  className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-muted/30"
-                >
-                  <span className="text-xs text-muted-foreground">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Nama</TableHeader>
+                <TableHeader>Slug</TableHeader>
+                <TableHeader className="text-right">Agent</TableHeader>
+                <TableHeader className="text-right">API key</TableHeader>
+                <TableHeader />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {projects.data.map((project) => (
+                <TableRow key={project.id}>
+                  <TableCell>
+                    <Link
+                      href={`/console/projects/${project.id}`}
+                      className="transition-colors hover:text-primary"
+                    >
+                      {project.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
                     {project.slug}
-                  </span>
-                  <span className="mt-2 text-lg font-medium tracking-tight">
-                    {project.name}
-                  </span>
-                  <span className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                    {project.description || 'Tanpa deskripsi.'}
-                  </span>
-                  <span className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
-                    {project.totalAgents} agent · {project.totalApiKeys} key
-                    <ArrowRight className="h-3.5 w-3.5 transition-colors group-hover:text-primary" />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                  </TableCell>
+                  <TableCell className="text-right text-xs text-muted-foreground">
+                    {project.totalAgents}
+                  </TableCell>
+                  <TableCell className="text-right text-xs text-muted-foreground">
+                    {project.totalApiKeys}
+                  </TableCell>
+                  <TableCell className="w-10 text-right">
+                    <Link
+                      href={`/console/projects/${project.id}`}
+                      aria-label={`Buka ${project.name}`}
+                      className="inline-flex text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              {!projects.data.length ? (
+                <TableEmpty colSpan={5}>
+                  Belum ada project. Buat satu untuk mulai.
+                </TableEmpty>
+              ) : null}
+            </TableBody>
+          </Table>
         </LoadData>
 
         <form

@@ -5,6 +5,15 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { SELECT_CLASS } from '@/features/agents/components/agentsConfigFields'
 import { useProjectsStates } from '../states/projectsStates'
 import { useProjectsControllers } from '../controllers/projectsControllers'
@@ -63,29 +72,47 @@ export default function ProjectsKeys() {
           </div>
         ) : null}
 
-        <ul className="mt-5 flex flex-col gap-3">
-          {project.apiKeys.map((apiKey) => (
-            <li
-              key={apiKey.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
-            >
-              <span className="text-sm">
-                {apiKey.name}
-                <span className="text-muted-foreground"> · {apiKey.prefix}…</span>
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {apiKey.environment}
-                {apiKey.isRevoked ? ' · DICABUT' : ''}
-              </span>
-            </li>
-          ))}
-          {!project.apiKeys.length ? (
-            <li className="text-sm text-muted-foreground">
-              Belum ada API key. Project consumer butuh satu kunci untuk
-              memanggil agent.
-            </li>
-          ) : null}
-        </ul>
+        <Table className="mt-5">
+          <TableHead>
+            <TableRow>
+              <TableHeader>Nama</TableHeader>
+              <TableHeader>Prefix</TableHeader>
+              <TableHeader>Environment</TableHeader>
+              <TableHeader>Status</TableHeader>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {project.apiKeys.map((apiKey) => (
+              <TableRow key={apiKey.id}>
+                <TableCell>{apiKey.name}</TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">
+                  {apiKey.prefix}…
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {apiKey.environment}
+                </TableCell>
+                <TableCell className="text-xs">
+                  <span
+                    className={
+                      apiKey.isRevoked
+                        ? 'rounded border border-border px-2 py-0.5 text-muted-foreground'
+                        : 'rounded border border-primary/40 px-2 py-0.5 text-primary'
+                    }
+                  >
+                    {apiKey.isRevoked ? 'dicabut' : 'aktif'}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+
+            {!project.apiKeys.length ? (
+              <TableEmpty colSpan={4}>
+                Belum ada API key. Project consumer butuh satu kunci untuk
+                memanggil agent.
+              </TableEmpty>
+            ) : null}
+          </TableBody>
+        </Table>
       </div>
 
       <form

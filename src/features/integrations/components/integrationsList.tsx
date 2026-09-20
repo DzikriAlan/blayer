@@ -7,6 +7,15 @@ import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { LoadData } from '@/shared/components/load-data'
 import { SELECT_CLASS } from '@/features/agents/components/agentsConfigFields'
 import { useIntegrationsStates } from '../states/integrationsStates'
@@ -107,28 +116,55 @@ export default function IntegrationsList({ projectId }: Props) {
 
         <div className="mt-5">
           <LoadData response={state} minHeight="12vh">
-            <ul className="flex flex-col gap-3">
-              {integrations.data.map((integration) => (
-                <li key={integration.id}>
-                  <Link
-                    href={`/console/integrations/${integration.id}`}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
-                  >
-                    <span className="text-sm">
-                      {integration.name}
-                      <span className="text-muted-foreground">
-                        {' '}
-                        · {integration.baseUrl}
-                      </span>
-                    </span>
-                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {integration.totalTools} tool · {integration.auth}
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Nama</TableHeader>
+                  <TableHeader>Base URL</TableHeader>
+                  <TableHeader>Autentikasi</TableHeader>
+                  <TableHeader className="text-right">Tool</TableHeader>
+                  <TableHeader />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {integrations.data.map((integration) => (
+                  <TableRow key={integration.id}>
+                    <TableCell>
+                      <Link
+                        href={`/console/integrations/${integration.id}`}
+                        className="transition-colors hover:text-primary"
+                      >
+                        {integration.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="max-w-[16rem] truncate font-mono text-xs text-muted-foreground">
+                      {integration.baseUrl}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {integration.auth}
+                    </TableCell>
+                    <TableCell className="text-right text-xs text-muted-foreground">
+                      {integration.totalTools}
+                    </TableCell>
+                    <TableCell className="w-10 text-right">
+                      <Link
+                        href={`/console/integrations/${integration.id}`}
+                        aria-label={`Buka ${integration.name}`}
+                        className="inline-flex text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {!integrations.data.length ? (
+                  <TableEmpty colSpan={5}>
+                    Belum ada integration di project ini.
+                  </TableEmpty>
+                ) : null}
+              </TableBody>
+            </Table>
           </LoadData>
         </div>
       </div>

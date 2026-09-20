@@ -5,6 +5,15 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { SELECT_CLASS } from '@/features/agents/components/agentsConfigFields'
 import { useProjectsStates } from '../states/projectsStates'
 import { useProjectsControllers } from '../controllers/projectsControllers'
@@ -55,28 +64,43 @@ export default function ProjectsCredentials() {
           bersangkutan.
         </p>
 
-        <ul className="mt-5 flex flex-col gap-3">
-          {project.providerKeys.map((credential) => (
-            <li
-              key={credential.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
-            >
-              <span className="text-sm">
-                {credential.provider}
-                <span className="text-muted-foreground"> · {credential.hint}</span>
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {credential.environment}
-              </span>
-            </li>
-          ))}
-          {!project.providerKeys.length ? (
-            <li className="text-sm text-muted-foreground">
-              Belum ada kredensial. Agent tidak bisa dijalankan sebelum
-              providernya punya kunci di environment yang dipakai.
-            </li>
-          ) : null}
-        </ul>
+        <Table className="mt-5">
+          <TableHead>
+            <TableRow>
+              <TableHeader>Provider</TableHeader>
+              <TableHeader>Environment</TableHeader>
+              <TableHeader>Petunjuk</TableHeader>
+              <TableHeader>Diperbarui</TableHeader>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {project.providerKeys.map((credential) => (
+              <TableRow key={credential.id}>
+                <TableCell>{credential.provider}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {credential.environment}
+                </TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">
+                  {credential.hint}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {new Date(credential.updatedAt).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </TableCell>
+              </TableRow>
+            ))}
+
+            {!project.providerKeys.length ? (
+              <TableEmpty colSpan={4}>
+                Belum ada kredensial. Agent tidak bisa dijalankan sebelum
+                providernya punya kunci di environment yang dipakai.
+              </TableEmpty>
+            ) : null}
+          </TableBody>
+        </Table>
       </div>
 
       <form

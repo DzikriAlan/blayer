@@ -47,10 +47,7 @@ interface Props {
 
 export default function ProjectsMenu({ projectId, active }: Props) {
   return (
-    <nav
-      aria-label="Menu project"
-      className="-mx-5 flex gap-1 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0 lg:flex-col lg:overflow-visible lg:pb-0"
-    >
+    <nav aria-label="Menu project" className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
       {PROJECTS_MENUS.map((menu) => {
         const isActive = menu.key === active
         const Icon = menu.icon
@@ -62,10 +59,10 @@ export default function ProjectsMenu({ projectId, active }: Props) {
             shallow
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex shrink-0 items-center gap-2.5 rounded-md border px-3 py-2 text-sm transition-colors lg:w-full',
+              'flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors lg:w-full',
               isActive
-                ? 'border-primary/40 bg-primary/10 text-foreground'
-                : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                ? 'bg-primary/10 text-foreground ring-1 ring-inset ring-primary/30'
+                : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
             )}
           >
             <Icon className={cn('h-4 w-4 shrink-0', isActive && 'text-primary')} />

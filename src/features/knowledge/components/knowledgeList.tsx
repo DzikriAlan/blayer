@@ -6,6 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { LoadData } from '@/shared/components/load-data'
 import { useKnowledgeStates } from '../states/knowledgeStates'
 import { useKnowledgeControllers } from '../controllers/knowledgeControllers'
@@ -58,18 +67,26 @@ export default function KnowledgeList({ projectId }: Props) {
 
         <div className="mt-5">
           <LoadData response={state} minHeight="12vh">
-            <ul className="flex flex-col gap-3">
-              {knowledge.data.map((document) => (
-                <li
-                  key={document.id}
-                  className="rounded-lg border border-border bg-card px-4 py-3"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span className="text-sm">{document.title}</span>
-                    <span className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">
-                        {document.totalChars.toLocaleString('id-ID')} karakter
-                      </span>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Judul</TableHeader>
+                  <TableHeader>Cuplikan</TableHeader>
+                  <TableHeader className="text-right">Karakter</TableHeader>
+                  <TableHeader />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {knowledge.data.map((document) => (
+                  <TableRow key={document.id}>
+                    <TableCell className="align-top">{document.title}</TableCell>
+                    <TableCell className="max-w-[22rem] align-top text-xs leading-relaxed text-muted-foreground">
+                      <span className="line-clamp-2">{document.preview}</span>
+                    </TableCell>
+                    <TableCell className="align-top text-right text-xs text-muted-foreground">
+                      {document.totalChars.toLocaleString('id-ID')}
+                    </TableCell>
+                    <TableCell className="w-20 align-top text-right">
                       <Button
                         type="button"
                         size="sm"
@@ -79,14 +96,17 @@ export default function KnowledgeList({ projectId }: Props) {
                       >
                         Hapus
                       </Button>
-                    </span>
-                  </div>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                    {document.preview}
-                  </p>
-                </li>
-              ))}
-            </ul>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {!knowledge.data.length ? (
+                  <TableEmpty colSpan={4}>
+                    Belum ada dokumen di project ini.
+                  </TableEmpty>
+                ) : null}
+              </TableBody>
+            </Table>
           </LoadData>
         </div>
       </div>
