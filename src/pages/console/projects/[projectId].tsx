@@ -6,7 +6,7 @@ import { useRouter } from 'next/router'
 import ConsoleShell from '@/components/console-shell'
 import ConsoleGate from '@/features/console/components/consoleGate'
 import ProjectsDetail from '@/features/projects/components/projectsDetail'
-import AgentsCreate from '@/features/agents/components/agentsCreate'
+import { getProjectsMenu } from '@/features/projects/components/projectsMenu'
 import IntegrationsList from '@/features/integrations/components/integrationsList'
 import KnowledgeList from '@/features/knowledge/components/knowledgeList'
 import { useIntegrationsControllers } from '@/features/integrations/controllers/integrationsControllers'
@@ -18,6 +18,7 @@ import { useAgentsControllers } from '@/features/agents/controllers/agentsContro
 const ProjectDetailPage: NextPage = () => {
   const router = useRouter()
   const projectId = typeof router.query.projectId === 'string' ? router.query.projectId : ''
+  const menu = getProjectsMenu(router.query.menu)
 
   const { setGetProjectsDetail } = useProjectsStates()
 
@@ -38,16 +39,14 @@ const ProjectDetailPage: NextPage = () => {
       </Head>
       <ConsoleShell backHref="/console" backLabel="Semua project">
         <ConsoleGate>
-          <ProjectsDetail>
-            {projectId ? <AgentsCreate projectId={projectId} /> : null}
-          </ProjectsDetail>
-
-          {projectId ? (
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 pb-16 sm:px-8">
+          <ProjectsDetail menu={menu}>
+            {projectId && menu === 'integrations' ? (
               <IntegrationsList projectId={projectId} />
+            ) : null}
+            {projectId && menu === 'knowledge' ? (
               <KnowledgeList projectId={projectId} />
-            </div>
-          ) : null}
+            ) : null}
+          </ProjectsDetail>
         </ConsoleGate>
       </ConsoleShell>
     </>
