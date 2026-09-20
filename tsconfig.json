@@ -25,6 +25,9 @@
       "@/*": [
         "./src/*"
       ],
+      "@/.source": [
+        "./.source/index.ts"
+      ],
       "@blayer/sdk": [
         "./sdk/src/index.ts"
       ],
@@ -38,7 +41,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

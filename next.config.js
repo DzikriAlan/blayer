@@ -1,3 +1,5 @@
+const { createMDX } = require('fumadocs-mdx/next')
+
 const getContentSecurityPolicy = () => {
   const supabase = (
     process.env.SUPABASE_URL ||
@@ -36,6 +38,22 @@ const securityHeaders = [
   },
 ]
 
+// Halaman dokumentasi dibangun App Router, yang menyisipkan data render sebagai
+// script sebaris. CSP ketat aplikasi tidak mengizinkannya, jadi pelonggarannya
+// dibatasi pada /docs saja — isinya MDX yang ditulis di repositori ini, tanpa
+// masukan dari pengguna.
+const docsHeaders = securityHeaders.map((header) =>
+  header.key === 'Content-Security-Policy'
+    ? {
+        key: header.key,
+        value: header.value.replace(
+          "script-src 'self'",
+          "script-src 'self' 'unsafe-inline'"
+        ),
+      }
+    : header
+)
+
 const nextConfig = {
   // Image Docker memakai keluaran standalone supaya runtime-nya tidak perlu
   // seluruh node_modules. Platform lain tetap memakai keluaran biasa.
@@ -53,8 +71,16 @@ const nextConfig = {
     ],
   },
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    // Urutannya penting: aturan yang belakangan menimpa yang sebelumnya untuk
+    // kunci header yang sama, jadi pelonggaran /docs ditaruh paling akhir.
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      { source: '/docs', headers: docsHeaders },
+      { source: '/docs/:path*', headers: docsHeaders },
+    ]
   },
 }
 
-module.exports = nextConfig
+const withMDX = createMDX()
+
+module.exports = withMDX(nextConfig)

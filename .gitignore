@@ -46,3 +46,9 @@ next-env.d.ts
 # editor
 .vscode
 .next-verify
+
+# Berkas yang dibangkitkan fumadocs-mdx dari content/docs.
+.source
+
+# Stylesheet Fumadocs yang disalin saat install.
+public/vendor

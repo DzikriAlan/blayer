@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/copyDocsStyles.mjs && next dev",
+    "build": "node scripts/copyDocsStyles.mjs && next build",
     "start": "next start",
     "lint": "eslint .",
     "db:generate": "node scripts/prisma.mjs generate",
@@ -12,7 +12,7 @@
     "db:migrate": "node scripts/prisma.mjs migrate dev",
     "db:deploy": "node scripts/prisma.mjs migrate deploy",
     "db:studio": "node scripts/prisma.mjs studio",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && fumadocs-mdx && node scripts/copyDocsStyles.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -37,6 +37,9 @@
     "@tanstack/react-query-devtools": "^5.101.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "fumadocs-core": "^15.8.5",
+    "fumadocs-mdx": "^11.6.10",
+    "fumadocs-ui": "^15.8.5",
     "lucide-react": "^1.31.0",
     "next": "^16.3.1",
     "prisma": "^6.19.3",
@@ -64,5 +67,16 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "vitest": "^3.2.7"
+  },
+  "overrides": {
+    "fumadocs-mdx": {
+      "next": "$next"
+    },
+    "fumadocs-ui": {
+      "next": "$next"
+    },
+    "fumadocs-core": {
+      "next": "$next"
+    }
   }
 }
