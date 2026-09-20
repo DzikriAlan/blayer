@@ -31,8 +31,15 @@ const IntegrationDetailPage: NextPage = () => {
         <meta name="robots" content="noindex" />
       </Head>
       <ConsoleShell
-        backHref={projectId ? `/console/projects/${projectId}` : '/console'}
-        backLabel="Project"
+        breadcrumb={[
+          {
+            label: 'Project',
+            href: projectId
+              ? `/console/projects/${projectId}?menu=integrations`
+              : '/console',
+          },
+          { label: integrationsDetail.data?.name ?? 'Integration' },
+        ]}
       >
         <ConsoleGate>
           <IntegrationsDetail />

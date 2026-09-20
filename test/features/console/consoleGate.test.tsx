@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+import ConsoleShell from '@/components/console-shell'
 import ConsoleGate from '@/features/console/components/consoleGate'
 import { useConsoleStates } from '@/features/console/states/consoleStates'
 
@@ -28,9 +29,11 @@ const renderGate = () => {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <ConsoleGate>
-        <p>daftar project</p>
-      </ConsoleGate>
+      <ConsoleShell breadcrumb={[{ label: 'Semua project' }]}>
+        <ConsoleGate>
+          <p>daftar project</p>
+        </ConsoleGate>
+      </ConsoleShell>
     </QueryClientProvider>
   )
 }
@@ -109,7 +112,6 @@ describe('gerbang console', () => {
     renderGate()
 
     expect(await screen.findByText('daftar project')).toBeInTheDocument()
-    expect(screen.getByText(/Masuk sebagai/)).toBeInTheDocument()
     expect(screen.getByText('admin')).toBeInTheDocument()
   })
 

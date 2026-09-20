@@ -12,7 +12,7 @@ const ConsolePage: NextPage = () => {
         <title>Console — BLAYER</title>
         <meta name="robots" content="noindex" />
       </Head>
-      <ConsoleShell backHref="/" backLabel="Halaman depan">
+      <ConsoleShell breadcrumb={[{ label: 'Semua project' }]}>
         <ConsoleGate>
           <ProjectsList />
         </ConsoleGate>

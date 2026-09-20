@@ -44,8 +44,13 @@ const AgentDetailPage: NextPage = () => {
         <meta name="robots" content="noindex" />
       </Head>
       <ConsoleShell
-        backHref={agent ? `/console/projects/${agent.projectId}` : '/console'}
-        backLabel="Project"
+        breadcrumb={[
+          {
+            label: agent?.projectName ?? 'Project',
+            href: agent ? `/console/projects/${agent.projectId}?menu=agent` : '/console',
+          },
+          { label: agent?.name ?? 'Agent', badge: agent?.slug },
+        ]}
       >
         <ConsoleGate>
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-12 sm:px-8 sm:py-16">

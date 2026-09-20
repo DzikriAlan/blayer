@@ -54,36 +54,41 @@ const AgentCreatePage: NextPage = () => {
         <meta name="robots" content="noindex" />
       </Head>
       <ConsoleShell
-        backHref={projectId ? `/console/projects/${projectId}?menu=agent` : '/console'}
-        backLabel="Project"
+        breadcrumb={[
+          {
+            label: 'Project',
+            href: projectId ? `/console/projects/${projectId}?menu=agent` : '/console',
+          },
+          { label: 'Agent baru' },
+        ]}
       >
         <ConsoleGate>
-          <div className="mx-auto w-full max-w-[110rem] px-5 py-10 sm:px-8">
-            <div className="border-b border-border pb-6">
-              <span className="pixel-label text-primary">Agent baru</span>
-              <h1 className="mt-3 text-2xl font-semibold tracking-tight">
-                Susun sambil dicoba
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                Kolom di kiri menentukan perilaku agent. Panel di kanan
-                menjalankannya memakai kunci provider project ini — tanpa
-                menyimpan agent, versi, maupun jejak eksekusi.
-              </p>
+          <div className="flex flex-col">
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border px-5 py-4 sm:px-8">
+              <div>
+                <h1 className="text-base font-medium">Agent baru</h1>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Kolom di kiri menentukan perilakunya; panel di kanan
+                  menjalankannya tanpa menyimpan apa pun
+                </p>
+              </div>
             </div>
 
+            <div className="px-5 py-8 sm:px-8">
             {projectId ? (
-              <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-start">
+              <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
                 <AgentsCreate
                   projectId={projectId}
                   config={config}
                   onChange={editConfig}
                 />
 
-                <div className="lg:sticky lg:top-24">
+                <div className="lg:sticky lg:top-20">
                   <AgentsPreview projectId={projectId} config={config} />
                 </div>
               </div>
             ) : null}
+            </div>
           </div>
         </ConsoleGate>
       </ConsoleShell>
