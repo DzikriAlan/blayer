@@ -17,7 +17,7 @@ const getContentSecurityPolicy = () => {
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' data: blob: https://images.unsplash.com ${supabase}`.trim(),
     "font-src 'self' data:",
-    `connect-src 'self' ${supabase}`.trim(),
+    `connect-src 'self' https://api.github.com ${supabase}`.trim(),
     'upgrade-insecure-requests',
   ].join('; ')
 }
