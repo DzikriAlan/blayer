@@ -8,10 +8,10 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>BLAYER — Satu tempat atur semua agent</title>
+        <title>Blayer — Dari client brief sampai commit</title>
         <meta
           name="description"
-          content="Blayer adalah AI Agent Platform yang bisa kamu jalankan sendiri: rancang agent, uji di Playground, publikasikan versinya, lalu panggil lewat satu API."
+          content="Blayer adalah kumpulan portable SKILL.md yang memandu alur kerja perangkat lunak dari permintaan klien sampai commit. Dipakai seperti slash command di Claude Code."
         />
       </Head>
       <LandingShell>

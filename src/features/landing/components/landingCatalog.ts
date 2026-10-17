@@ -1,357 +1,92 @@
-import {
-  BookOpen,
-  GitBranch,
-  KeyRound,
-  LineChart,
-  PlayCircle,
-  Plug,
-  ShieldCheck,
-  SlidersHorizontal,
-  type LucideIcon,
-} from 'lucide-react'
+export type LandingLocale = 'id' | 'en'
 
-export interface LandingNavLink {
-  href: string
-  label: string
-}
-
-export interface LandingProduct {
+export interface LandingOverviewColumn {
   id: string
   title: string
-  description: string
-  icon: LucideIcon
-  points: string[]
+  items: string[]
 }
 
-export interface LandingStep {
-  id: string
-  title: string
-  description: string
-  icon: LucideIcon
+export interface LandingCopy {
+  eyebrow: string
+  headlinePrefix: string
+  headlineHighlight: string
+  headlineSuffix: string
+  overview: LandingOverviewColumn[]
 }
 
-export interface LandingBlueprint {
-  id: string
-  title: string
-  description: string
-  parts: string[]
-  isWide: boolean
-}
-
-export interface LandingStatus {
-  id: string
-  title: string
-  description: string
-  state: 'jalan' | 'belum'
-}
-
-export interface LandingQuestion {
-  id: string
-  question: string
-  answer: string
-}
-
-export interface LandingFooterColumn {
-  title: string
-  links: LandingNavLink[]
-}
-
-export const REPO_URL = 'https://github.com/DzikriAlan/blayer'
-
-export const LANDING_NAV: LandingNavLink[] = [
-  { href: '/#produk', label: 'Produk' },
-  { href: '/#cara-kerja', label: 'Cara kerja' },
-  { href: '/#sdk', label: 'SDK' },
-  { href: '/#status', label: 'Status' },
-  { href: '/docs', label: 'Dokumentasi' },
-]
-
-// Tujuh bagian produk yang benar-benar ada di dalam Console dan API-nya.
-export const LANDING_PRODUCTS: LandingProduct[] = [
-  {
-    id: 'agent',
-    title: 'Agent & versi',
-    description:
-      'Instruksi, model, effort, dan batas token tersimpan sebagai konfigurasi bernomor — bukan prompt yang tercecer di kode tiap project.',
-    icon: SlidersHorizontal,
-    points: [
-      'Tiap perubahan lahir sebagai draf',
-      'Versi production tidak berubah diam-diam',
-      'Rollback cukup menerbitkan versi lama',
-      'Dua provider, tiga environment',
+// Teks hero + grid ringkasan, dalam dua bahasa. Strukturnya sama persis;
+// hanya isinya yang diterjemahkan. Headline-nya menegaskan AI cuma bantu
+// menerjemahkan brief — keputusan dan kontrol tetap di tangan engineer,
+// bukan diserahkan penuh ke AI.
+export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
+  id: {
+    eyebrow: 'Membantu Software Engineer',
+    headlinePrefix: 'Miliki langkah kerja yang terstruktur, dengan',
+    headlineHighlight: 'kendali dan keputusan tetap di tanganmu',
+    headlineSuffix: '.',
+    overview: [
+      {
+        id: 'masalah',
+        title: 'Masalah',
+        items: [
+          'Brief dari klien sering kurang lengkap dan berubah di tengah jalan.',
+          'Data tercecer di banyak spreadsheet yang tidak saling terhubung.',
+          'Laporan hasil kerja masih dibuat manual dan telat dikirim.',
+        ],
+      },
+      {
+        id: 'keuntungan',
+        title: 'Keuntungan',
+        items: [
+          'Langkah lebih konsisten, lebih sedikit kerja berulang.',
+          'Instruksi kerja lebih terstruktur dan mudah diikuti.',
+          'Konteks brief tersimpan lewat tautan Google Sheets di .blayer/brief.md.',
+        ],
+      },
+      {
+        id: 'target-pengguna',
+        title: 'Target pengguna',
+        items: [
+          'Developer yang memakai Claude Code dan coding agent lain.',
+          'Tech lead yang ingin menjaga kualitas dan konsistensi.',
+          'Tim produk dan tim engineering yang bekerja dari brief klien.',
+        ],
+      },
     ],
   },
-  {
-    id: 'playground',
-    title: 'Playground & pratinjau',
-    description:
-      'Coba agent sebelum dipakai orang lain. Pratinjau bahkan berjalan sebelum agentnya disimpan.',
-    icon: PlayCircle,
-    points: [],
-  },
-  {
-    id: 'tools',
-    title: 'Tool lewat integration',
-    description:
-      'Blayer menyimpan kontraknya — nama, method, path, skema. Yang menjalankan tetap endpoint milik projectmu.',
-    icon: Plug,
-    points: [],
-  },
-  {
-    id: 'knowledge',
-    title: 'Knowledge',
-    description:
-      'Dokumen rujukan disimpan terpisah dari prompt, lalu dipasang per versi agent.',
-    icon: BookOpen,
-    points: [],
-  },
-  {
-    id: 'guardrail',
-    title: 'Konfirmasi tool tulis',
-    description:
-      'Agent boleh meminta, tapi tidak memutuskan. Eksekusi berhenti dan menunggu persetujuan sebelum data berubah.',
-    icon: ShieldCheck,
-    points: [],
-  },
-  {
-    id: 'observability',
-    title: 'Observability',
-    description:
-      'Tiap eksekusi tercatat — termasuk yang gagal. Success rate, latency, token, dan biayanya angka sebenarnya.',
-    icon: LineChart,
-    points: [],
-  },
-  {
-    id: 'keys',
-    title: 'Kunci & environment',
-    description:
-      'Kredensial provider terenkripsi di instance-mu, dipisah per project dan environment. API key project punya prefix dan bisa dicabut.',
-    icon: KeyRound,
-    points: [],
-  },
-]
-
-// Yang dipakai membangun Blayer. Bukan daftar pelanggan — belum ada yang bisa
-// disebut, dan halaman ini tidak mengarang satu pun.
-export const LANDING_STACK = [
-  'Next.js',
-  'TypeScript',
-  'Prisma',
-  'PostgreSQL',
-  'Tailwind CSS',
-  'TanStack Query',
-  'Zustand',
-  'Zod',
-  'Anthropic',
-  'OpenAI',
-  'Docker',
-  'Vitest',
-]
-
-export const LANDING_STEPS: LandingStep[] = [
-  {
-    id: 'build',
-    title: 'Rancang agentnya',
-    description: 'Instruksi, model, dan batas tokennya di satu tempat.',
-    icon: SlidersHorizontal,
-  },
-  {
-    id: 'test',
-    title: 'Coba jawabannya',
-    description: 'Pratinjau jalan bahkan sebelum agentnya disimpan.',
-    icon: PlayCircle,
-  },
-  {
-    id: 'publish',
-    title: 'Terbitkan versinya',
-    description: 'Versi lama diarsipkan, bukan ditimpa.',
-    icon: GitBranch,
-  },
-  {
-    id: 'call',
-    title: 'Panggil lewat API',
-    description: 'Satu endpoint, satu API key, per project dan environment.',
-    icon: KeyRound,
-  },
-]
-
-// Pola yang bisa disusun sendiri di Console memakai bagian yang sudah ada.
-// Bukan berkas siap unduh — tidak ada template yang dijanjikan di sini.
-export const LANDING_BLUEPRINTS: LandingBlueprint[] = [
-  {
-    id: 'accounting',
-    title: 'Asisten akuntansi',
-    description:
-      'Menjawab pertanyaan laporan dari API akuntansimu sendiri, tanpa menyalin datanya ke mana pun.',
-    parts: ['Tool READ', 'Knowledge kebijakan', 'Environment terpisah'],
-    isWide: true,
-  },
-  {
-    id: 'support',
-    title: 'Triase dukungan',
-    description:
-      'Membaca tiket masuk, merangkum, dan mengusulkan tindakan — yang mengubah status tetap menunggu persetujuan.',
-    parts: ['Tool READ + WRITE', 'Konfirmasi manusia', 'Sesi percakapan'],
-    isWide: true,
-  },
-  {
-    id: 'invoice',
-    title: 'Pembaca faktur',
-    description: 'Menarik angka dari dokumen lalu mengembalikannya terstruktur.',
-    parts: ['Knowledge', 'Batas token'],
-    isWide: false,
-  },
-  {
-    id: 'internal',
-    title: 'Tanya jawab internal',
-    description: 'Menjawab dari dokumen perusahaan, bukan dari ingatan model.',
-    parts: ['Knowledge', 'Guardrail'],
-    isWide: false,
-  },
-  {
-    id: 'ops',
-    title: 'Operasi harian',
-    description: 'Memanggil beberapa tool berurutan dalam satu permintaan.',
-    parts: ['Tool loop', 'Observability'],
-    isWide: false,
-  },
-  {
-    id: 'embed',
-    title: 'Agent di produkmu',
-    description: 'Dipanggil aplikasi lain lewat satu API key per environment.',
-    parts: ['SDK TypeScript', 'API key'],
-    isWide: false,
-  },
-]
-
-// Terang-terangan: yang sudah jalan dan yang belum, tanpa dipoles.
-export const LANDING_STATUS: LandingStatus[] = [
-  {
-    id: 'core',
-    title: 'Agent, versi, dan eksekusi',
-    description:
-      'Project, API key, agent beserta versinya, eksekusi lewat API, Playground, dan riwayat eksekusi sudah jalan penuh.',
-    state: 'jalan',
-  },
-  {
-    id: 'tools',
-    title: 'Tool, knowledge, dan memory',
-    description:
-      'Integration beserta kontrak toolnya, dokumen pengetahuan, sesi percakapan, dan konfirmasi tool tulis sudah jalan.',
-    state: 'jalan',
-  },
-  {
-    id: 'selfhost',
-    title: 'Self-host',
-    description:
-      'Docker Compose, migrasi Prisma, rate limit lintas instance, dan kredensial terenkripsi AES-256-GCM.',
-    state: 'jalan',
-  },
-  {
-    id: 'multiuser',
-    title: 'Banyak pengguna',
-    description:
-      'Console masih satu kredensial operator. Tim, peran, dan audit per pengguna belum dibangun.',
-    state: 'belum',
-  },
-  {
-    id: 'streaming',
-    title: 'Jawaban mengalir',
-    description:
-      'Eksekusi menjawab sekali jadi. Streaming token per token belum ada.',
-    state: 'belum',
-  },
-]
-
-export const LANDING_QUESTIONS: LandingQuestion[] = [
-  {
-    id: 'data',
-    question: 'Data bisnis saya ikut tersimpan di Blayer?',
-    answer:
-      'Tidak. Yang tersimpan adalah konfigurasi agent dan kontrak toolnya. Data bisnismu tetap di API milikmu, dan Blayer memanggilnya saat dibutuhkan.',
-  },
-  {
-    id: 'key',
-    question: 'Kunci provider saya disimpan di mana?',
-    answer:
-      'Di basis data instance-mu sendiri, terenkripsi AES-256-GCM dengan kunci yang hanya ada di environment-mu. Tidak ada server pusat yang menerimanya.',
-  },
-  {
-    id: 'write',
-    question: 'Bagaimana kalau agent salah mengubah data?',
-    answer:
-      'Tool yang mengubah data berhenti menunggu persetujuan. Tanpa konfirmasi, tidak ada yang berubah — termasuk di pratinjau, yang memang tidak menjalankannya sama sekali.',
-  },
-  {
-    id: 'model',
-    question: 'Model apa saja yang didukung?',
-    answer:
-      'Anthropic dan OpenAI, dengan katalog model beserta harga dan kemampuannya. Endpoint sebentuk Chat Completions lain bisa dipakai lewat OPENAI_BASE_URL.',
-  },
-  {
-    id: 'cost',
-    question: 'Biayanya dari mana?',
-    answer:
-      'Blayer tidak menagih apa pun. Yang berbiaya adalah pemakaian provider dengan kuncimu sendiri, dan angkanya terbaca per eksekusi.',
-  },
-  {
-    id: 'license',
-    question: 'Lisensinya apa?',
-    answer:
-      'MIT. Boleh dipakai, diubah, dan dijalankan di infrastruktur siapa pun tanpa izin tambahan.',
-  },
-]
-
-export const LANDING_PROPERTIES = [
-  'Kredensial terenkripsi AES-256-GCM',
-  'API key project bisa dicabut',
-  'Rate limit lintas instance',
-  'Lisensi MIT',
-]
-
-export const LANDING_FOOTER: LandingFooterColumn[] = [
-  {
-    title: 'Produk',
-    links: [
-      { href: '/#produk', label: 'Bagian produk' },
-      { href: '/#cara-kerja', label: 'Cara kerja' },
-      { href: '/#sdk', label: 'SDK' },
-      { href: '/#pola', label: 'Pola agent' },
-      { href: '/#status', label: 'Status' },
+  en: {
+    eyebrow: 'Helping Software Engineer',
+    headlinePrefix: 'Have a structured workflow, with',
+    headlineHighlight: 'control and decisions staying in your hands',
+    headlineSuffix: '.',
+    overview: [
+      {
+        id: 'masalah',
+        title: 'Problem',
+        items: [
+          'Client briefs are often incomplete and keep changing midway.',
+          'Data is scattered across spreadsheets that don’t connect to each other.',
+          'Work reports are still put together manually and sent late.',
+        ],
+      },
+      {
+        id: 'keuntungan',
+        title: 'Benefits',
+        items: [
+          'More consistent steps, less repeated work.',
+          'Work instructions are more structured and easier to follow.',
+          'Brief context is kept via the Google Sheets link in .blayer/brief.md.',
+        ],
+      },
+      {
+        id: 'target-pengguna',
+        title: 'Who it is for',
+        items: [
+          'Developers who use Claude Code and other coding agents.',
+          'Tech leads who want to maintain quality and consistency.',
+          'Product and engineering teams working from client briefs.',
+        ],
+      },
     ],
   },
-  {
-    title: 'Dokumentasi',
-    links: [
-      { href: '/docs', label: 'Mulai dari sini' },
-      { href: '/docs/instalasi', label: 'Pasang dan jalankan' },
-      { href: '/docs/agent-pertama', label: 'Agent pertama' },
-      { href: '/docs/panggil-dari-aplikasi', label: 'Panggil dari aplikasi' },
-      { href: '/docs/self-hosting', label: 'Self-hosting' },
-    ],
-  },
-  {
-    title: 'Proyek',
-    links: [
-      { href: REPO_URL, label: 'Repositori' },
-      { href: `${REPO_URL}/issues`, label: 'Laporkan masalah' },
-      { href: `${REPO_URL}/blob/main/PRD.md`, label: 'Rencana produk' },
-      { href: `${REPO_URL}/blob/main/LICENSE`, label: 'Lisensi MIT' },
-    ],
-  },
-  {
-    title: 'Platform',
-    links: [
-      { href: '/console', label: 'Console' },
-      { href: '/api/health', label: 'Status layanan' },
-    ],
-  },
-]
-
-export const LANDING_MARQUEE = [
-  'AGENT BUILDER',
-  'VERSIONING',
-  'PLAYGROUND',
-  'OBSERVABILITY',
-  'SELF-HOSTED',
-]
+}
