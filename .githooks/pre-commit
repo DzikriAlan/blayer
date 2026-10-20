@@ -1,0 +1,30 @@
+#!/bin/sh
+# Menolak commit yang membawa kredensial. Aktifkan sekali per clone:
+#   git config core.hooksPath .githooks
+# Kalau yakin itu bukan rahasia (mis. data uji), lewati dengan: git commit --no-verify
+
+status=0
+
+# 1. File .env asli tidak boleh ikut, kecuali contoh *.example
+env_files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(^|/)\.env' | grep -vE '\.example$')
+if [ -n "$env_files" ]; then
+  echo "✖ File env berisi rahasia ikut di-stage:"
+  echo "$env_files" | sed 's/^/    /'
+  echo "  Keluarkan dengan: git restore --staged <file>"
+  status=1
+fi
+
+# 2. Baris baru yang terlihat seperti kredensial asli
+patterns='postgres(ql)?://[^:/@ "'"'"']+:[^@ "'"'"']{4,}@[^ "'"'"']*(supabase\.(co|com)|neon\.tech|rds\.amazonaws\.com)|sk-ant-[A-Za-z0-9_-]{30,}|sk-(proj-)?[A-Za-z0-9]{32,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}'
+# Penanda contoh yang sah di dalam connection string
+placeholders=':(\[YOUR-PASSWORD\]|<password>|<sandi>|password|pass|sandi|sandi-asli|rahasia|sandi%20rahasia|sandi%40kuat|\$\{[A-Z_]+[^}]*\})@'
+
+hits=$(git diff --cached -U0 --diff-filter=ACMR | grep -E '^\+[^+]' | grep -E "$patterns" | grep -vE "$placeholders")
+if [ -n "$hits" ]; then
+  echo "✖ Baris berikut terlihat seperti kredensial:"
+  echo "$hits" | cut -c1-160 | sed 's/^/    /'
+  echo "  Ganti dengan penanda (mis. [YOUR-PASSWORD]) atau pindahkan ke .env yang tidak di-commit."
+  status=1
+fi
+
+exit $status
