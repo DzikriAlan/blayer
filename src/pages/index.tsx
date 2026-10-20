@@ -1,22 +1,23 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 
-import LandingShell from '@/components/landing-shell'
-import LandingContent from '@/features/landing/components/landingContent'
+import AppShell from '@/components/app-shell'
+import HomeFooter from '@/features/home/components/homeFooter'
+import HomeList from '@/features/home/components/homeList'
 
 const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Blayer — Dari client brief sampai commit</title>
+        <title>Blayer — Indonesia Hari Ini</title>
         <meta
           name="description"
-          content="Blayer adalah kumpulan portable SKILL.md yang memandu alur kerja perangkat lunak dari permintaan klien sampai commit. Dipakai seperti slash command di Claude Code."
+          content="Video politik, ekonomi, investasi, psikologi, dan pengembangan diri untuk memahami Indonesia lebih dalam."
         />
       </Head>
-      <LandingShell>
-        <LandingContent />
-      </LandingShell>
+      <AppShell hideHeader footer={<HomeFooter />}>
+        <HomeList />
+      </AppShell>
     </>
   )
 }

@@ -28,11 +28,11 @@ export default function ErrorView({
     <div className="relative mx-auto w-full max-w-4xl px-5 py-20 sm:px-8 sm:py-28">
       <span
         aria-hidden
-        className="glow-soft pointer-events-none absolute inset-x-0 top-0 -z-10 h-72"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(70%_70%_at_50%_50%,hsl(var(--primary)/0.18),transparent_70%)]"
       />
 
       <div className="flex flex-col items-center text-center">
-        <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+        <span className="rounded-lg border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
           ERROR {code}
         </span>
 
