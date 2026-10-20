@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCw } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -13,22 +13,26 @@ import HomeBanner from './homeBanner'
 import HomeCard from './homeCard'
 import type { HomeCardItem } from './homeCard'
 import HomeCategories from './homeCategories'
-import { HOME_ALL_CATEGORY, HOME_ALL_PAYLOADS, HOME_CATEGORIES, HOME_SEARCH_DEFAULTS } from './homeCatalog'
+import { HOME_ALL_CATEGORY, HOME_ALL_PAYLOADS, HOME_CATEGORIES, HOME_MAX_AGE_HOURS } from './homeCatalog'
 
 const SKELETON_COUNT = 8
 // Kartu di baris pertama terlihat tanpa scroll, jadi gambarnya dimuat segera
 const PRIORITY_CARDS = 4
+// Beranda menampilkan 20 video dulu; 20 berikutnya dimuat saat pengguna menggulir mendekati bawah
+const PAGE_SIZE = 20
 
 export default function HomeList() {
   const { searchList, setGetSearchList } = useSearchStates()
   const { fetchSearchList } = useSearchControllers()
+  const sentinelRef = useRef<HTMLDivElement>(null)
   const [filters, setFilters] = useState({
     activeCategory: HOME_ALL_CATEGORY,
+    visibleCount: PAGE_SIZE,
   })
 
   const data = useMemo(() => {
     // utilisasi wajib ditulis di dalam parent function
-    const getCategoryName = (query: string) => HOME_CATEGORIES.find((category) => category.query === query)?.name ?? ''
+    const getCategoryName = (key: string) => HOME_CATEGORIES.find((category) => category.key === key)?.name ?? ''
 
     const getMappedItem = (video: DataSearch, category: string): HomeCardItem => ({
       id: video.id,
@@ -36,6 +40,7 @@ export default function HomeList() {
       title: video.title,
       channel: video.channel,
       isVerified: video.verifiedChannel,
+      isShort: video.isShort,
       meta: [video.views ? `${getCompactCount(video.views)} ditonton` : '', video.published].filter(Boolean).join(' · '),
       duration: video.isLive ? 'LIVE' : getDurationLabel(video.duration),
       category,
@@ -52,7 +57,7 @@ export default function HomeList() {
           const video = group.items[index]
           if (video && !seen.has(video.id)) {
             seen.add(video.id)
-            items.push(getMappedItem(video, getCategoryName(group.q)))
+            items.push(getMappedItem(video, getCategoryName(group.key)))
           }
         }
       }
@@ -60,14 +65,19 @@ export default function HomeList() {
     }
 
     const mappedList = getInterleaved(searchList.data)
+    // Tanpa IntersectionObserver (browser lama) semua video langsung ditampilkan
+    const canLazyLoad = typeof window !== 'undefined' && 'IntersectionObserver' in window
+    const visibleCount = canLazyLoad ? filters.visibleCount : mappedList.length
     const tabs = [HOME_ALL_CATEGORY, ...HOME_CATEGORIES.map((category) => category.name)].map((name) => ({
       name,
       isActive: name === filters.activeCategory,
     }))
 
     return {
-      data: mappedList,
+      data: mappedList.slice(0, visibleCount),
+      hasMore: mappedList.length > visibleCount,
       tabs,
+      countLabel: mappedList.length ? `${mappedList.length} video · ${HOME_MAX_AGE_HOURS} jam terakhir` : '',
       isLoading: searchList.status === 'loading',
       isError: searchList.status === 'error',
       isEmpty: searchList.status === 'empty' || (searchList.status === 'success' && !mappedList.length),
@@ -83,7 +93,7 @@ export default function HomeList() {
   }, [filters, searchList])
 
   const editCategory = (name: string) => {
-    setFilters((prev) => ({ ...prev, activeCategory: name }))
+    setFilters((prev) => ({ ...prev, activeCategory: name, visibleCount: PAGE_SIZE }))
   }
 
   const loadSearchList = () => {
@@ -94,11 +104,26 @@ export default function HomeList() {
     // utilisasi wajib ditulis di dalam parent function
     const getPayloads = () => {
       const category = HOME_CATEGORIES.find((item) => item.name === filters.activeCategory)
-      return category ? [{ ...HOME_SEARCH_DEFAULTS, q: category.query }] : HOME_ALL_PAYLOADS
+      return category ? [category.payload] : HOME_ALL_PAYLOADS
     }
 
     setGetSearchList(getPayloads())
   }, [filters.activeCategory, setGetSearchList])
+
+  // Lazy load: saat baris skeleton di bawah mendekati layar, tampilkan 20 video berikutnya.
+  // Skeleton memakai overflow-anchor:none agar browser tidak menahan scroll di situ dan memicu muatan beruntun.
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!data.hasMore || !sentinel) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) setFilters((prev) => ({ ...prev, visibleCount: prev.visibleCount + PAGE_SIZE }))
+      },
+      { rootMargin: '600px 0px' },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [data.hasMore, data.data.length])
 
   return (
     <>
@@ -107,7 +132,10 @@ export default function HomeList() {
         aria-label="Indonesia Hari Ini"
         className="flex w-full max-w-[1360px] flex-col gap-4 px-[clamp(16px,4vw,48px)] pb-10 pt-[clamp(22px,3.5vw,44px)] sm:gap-5"
       >
-        <h2 className="m-0 font-display text-[clamp(24px,3.2vw,38px)] font-normal leading-none tracking-tight">Indonesia Hari Ini</h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="m-0 font-display text-[clamp(24px,3.2vw,38px)] font-normal leading-none tracking-tight">Indonesia Hari Ini</h2>
+          {data.countLabel && !data.isLoading ? <p className="m-0 text-[13px] text-muted-foreground">{data.countLabel}</p> : null}
+        </div>
         <HomeCategories tabs={data.tabs} onEditCategory={editCategory} />
 
         {data.isLoading ? (
@@ -144,6 +172,17 @@ export default function HomeList() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(210px,100%),1fr))] gap-x-3.5 gap-y-7">
             {data.data.map((item, index) => (
               <HomeCard key={item.id} item={item} isPriority={index < PRIORITY_CARDS} />
+            ))}
+          </div>
+        ) : null}
+
+        {data.hasMore && !data.isLoading && !data.isError ? (
+          <div ref={sentinelRef} aria-hidden className="grid grid-cols-[repeat(auto-fill,minmax(min(210px,100%),1fr))] gap-x-3.5 gap-y-7 [overflow-anchor:none]">
+            {data.skeletons.slice(0, 4).map((index) => (
+              <div key={index} className="flex flex-col gap-2.5">
+                <Skeleton className="aspect-video w-full rounded-xl" />
+                <Skeleton className="h-4 w-11/12" />
+              </div>
             ))}
           </div>
         ) : null}

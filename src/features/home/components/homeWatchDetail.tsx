@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { BadgeCheck, Check, ExternalLink, Share2 } from 'lucide-react'
 
+import MarkdownText from '@/components/markdown-text'
 import { Button } from '@/components/ui/button'
 import type { DataVideo } from '@/features/video/types/videoTypes'
 import { getCompactCount, getFullCount, getPublishLabel, getSecondsLabel } from '@/shared/lib/videoFormat'
@@ -10,7 +11,10 @@ interface Props {
   video: DataVideo
 }
 
+// Deskripsi lebih panjang dari ini dipotong secara visual sampai pengguna menekan Selengkapnya
 const DESCRIPTION_PREVIEW = 220
+
+const getHashtagHref = (tag: string) => `https://www.youtube.com/hashtag/${encodeURIComponent(tag.toLowerCase())}`
 
 export default function HomeWatchDetail({ video }: Props) {
   const [filters, setFilters] = useState({ isExpanded: false, isCopied: false })
@@ -37,28 +41,10 @@ export default function HomeWatchDetail({ video }: Props) {
         { label: 'Channel', value: `${video.channel.name} · ${video.channel.subscribersLabel}` },
       ].filter((item) => item.value)
 
-    // Potong di spasi terakhir agar pratinjau tidak memutus link di tengah
-    const getPreview = (text: string) => {
-      const cut = text.slice(0, DESCRIPTION_PREVIEW)
-      const lastSpace = cut.search(/\s\S*$/)
-      return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
-    }
-
-    // Pecah deskripsi jadi teks biasa, link, dan tagar supaya link & tagar bisa diklik dan diberi warna
-    const getSegments = (text: string) =>
-      text.split(/(https?:\/\/[^\s]+|#[\p{L}\p{N}_]+)/gu).filter(Boolean).map((part, index) => {
-        if (/^https?:\/\//.test(part)) return { key: index, type: 'link' as const, text: part, href: part }
-        if (part.startsWith('#') && part.length > 1) {
-          return { key: index, type: 'tag' as const, text: part, href: `https://www.youtube.com/hashtag/${encodeURIComponent(part.slice(1).toLowerCase())}` }
-        }
-        return { key: index, type: 'text' as const, text: part, href: '' }
-      })
-
     const getKeywordHref = (keyword: string) => `https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}`
 
     const description = video.description.trim()
     const isLong = description.length > DESCRIPTION_PREVIEW || video.keywords.length > 0
-    const visibleDescription = filters.isExpanded || description.length <= DESCRIPTION_PREVIEW ? description : getPreview(description)
 
     return {
       initial: video.channel.name.charAt(0).toUpperCase(),
@@ -67,7 +53,8 @@ export default function HomeWatchDetail({ video }: Props) {
         : video.channel.subscribersLabel,
       stats: getStats(),
       moreDetails: getMoreDetails(),
-      descriptionSegments: getSegments(visibleDescription),
+      description,
+      isClamped: !filters.isExpanded && description.length > DESCRIPTION_PREVIEW,
       hasDescription: !!description,
       isLong,
       isExpanded: filters.isExpanded,
@@ -158,23 +145,12 @@ export default function HomeWatchDetail({ video }: Props) {
         </dl>
 
         {data.hasDescription ? (
-          <p className="wrap-any m-0 whitespace-pre-line text-sm leading-relaxed text-foreground/90">
-            {data.descriptionSegments.map((segment) =>
-              segment.type === 'text' ? (
-                <span key={segment.key}>{segment.text}</span>
-              ) : (
-                <a
-                  key={segment.key}
-                  href={segment.href}
-                  target="_blank"
-                  rel="noreferrer nofollow"
-                  className="text-blue-600 hover:underline dark:text-sky-400"
-                >
-                  {segment.text}
-                </a>
-              ),
-            )}
-          </p>
+          <div className={data.isClamped ? 'relative max-h-[8.5rem] overflow-hidden' : undefined}>
+            <MarkdownText text={data.description} getHashtagHref={getHashtagHref} className="text-foreground/90" />
+            {data.isClamped ? (
+              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-muted to-transparent" />
+            ) : null}
+          </div>
         ) : (
           <p className="m-0 text-sm text-muted-foreground">Kreator tidak menulis deskripsi untuk video ini.</p>
         )}

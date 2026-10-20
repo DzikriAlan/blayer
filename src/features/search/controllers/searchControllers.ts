@@ -3,7 +3,7 @@ import { useQueries } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 
 import { useSearchStates } from '../states/searchStates'
-import { getSearch } from '../services/searchServices'
+import { getSearch, getSearchKey } from '../services/searchServices'
 import type { DataSearchGroup, DataSearchResult } from '../types/searchTypes'
 
 export const useSearchControllers = () => {
@@ -16,7 +16,7 @@ export const useSearchControllers = () => {
       isAllError: results.length > 0 && results.every((result) => result.isError),
       errorMessage: results.find((result) => result.isError)?.error?.message ?? '',
       data: payloadGetSearchList.map<DataSearchGroup>((payload, index) => ({
-        q: payload.q,
+        key: getSearchKey(payload),
         items: results[index]?.data?.data ?? [],
       })),
       refetch: () => Promise.all(results.map((result) => result.refetch())),

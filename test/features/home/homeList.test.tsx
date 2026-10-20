@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -7,11 +7,15 @@ import HomeList from '@/features/home/components/homeList'
 import type { DataSearch, PayloadGetSearch } from '@/features/search/types/searchTypes'
 import { getSearch } from '@/features/search/services/searchServices'
 
-vi.mock('@/features/search/services/searchServices', () => ({ getSearch: vi.fn() }))
+vi.mock('@/features/search/services/searchServices', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/search/services/searchServices')>()),
+  getSearch: vi.fn(),
+}))
 
 const getVideo = (id: string, title: string): DataSearch => ({
   id,
   url: `https://www.youtube.com/watch?v=${id}`,
+  isShort: false,
   embedUrl: `https://www.youtube.com/embed/${id}`,
   title,
   channel: 'Kanal Uji',
@@ -19,6 +23,7 @@ const getVideo = (id: string, title: string): DataSearch => ({
   channelUrl: '',
   verifiedChannel: false,
   published: '1 hari lalu',
+  publishedHoursAgo: 48,
   duration: '10.05',
   views: 1200,
   isLive: false,
@@ -35,9 +40,10 @@ const renderHome = () =>
 
 describe('beranda', () => {
   beforeEach(() => {
+    vi.mocked(getSearch).mockReset()
     vi.mocked(getSearch).mockImplementation(async (payload: PayloadGetSearch) => ({
-      data: [getVideo(`${payload.q.slice(0, 5)}-1`.padEnd(11, 'x'), `${payload.q} pertama`), getVideo(`${payload.q.slice(0, 5)}-2`.padEnd(11, 'y'), `${payload.q} kedua`)],
-      pagination: { page: 1, limit: 12, total: 2, totalPages: 1 },
+      data: [getVideo(`${payload.q[0].slice(0, 5)}-1`.padEnd(11, 'x'), `${payload.q[0]} pertama`), getVideo(`${payload.q[0].slice(0, 5)}-2`.padEnd(11, 'y'), `${payload.q[0]} kedua`)],
+      pagination: { page: 1, limit: 100, total: 2, totalPages: 1 },
     }))
   })
 
@@ -46,21 +52,62 @@ describe('beranda', () => {
 
     expect(screen.getByRole('heading', { name: 'Indonesia Hari Ini', level: 2 })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Politik' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Pengembangan Diri' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Investasi' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Psikologi' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Pengembangan Diri' })).not.toBeInTheDocument()
 
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(10))
-    expect(screen.getAllByText('1,2 rb ditonton · 1 hari lalu')).toHaveLength(10)
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(6))
+    expect(screen.getAllByText('1,2 rb ditonton · 1 hari lalu')).toHaveLength(6)
+    expect(screen.getByText('6 video · 48 jam terakhir')).toBeInTheDocument()
     expect(screen.getAllByText('10:05').length).toBeGreaterThan(0)
   })
 
   it('menyaring video saat kategori dipilih', async () => {
     renderHome()
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(10))
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(6))
 
     await userEvent.click(screen.getByRole('button', { name: 'Investasi' }))
 
     await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(2))
-    expect(screen.getByText('investasi saham indonesia pertama')).toBeInTheDocument()
+    expect(screen.getByText('IHSG pertama')).toBeInTheDocument()
+  })
+
+  it('meminta 100 video per kategori dengan batas 48 jam', async () => {
+    renderHome()
+    await waitFor(() => expect(getSearch).toHaveBeenCalledTimes(3))
+
+    for (const [payload] of vi.mocked(getSearch).mock.calls) {
+      expect(payload.limit).toBe(100)
+      expect(payload.maxAgeHours).toBe(48)
+      expect(payload.shortsPercent).toBe(15)
+      expect(payload.q.length).toBeGreaterThan(1)
+    }
+  })
+
+  it('menampilkan 20 video dulu lalu 20 berikutnya saat digulir', async () => {
+    let onIntersect: IntersectionObserverCallback = () => undefined
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          onIntersect = callback
+        }
+        observe() {}
+        disconnect() {}
+      },
+    )
+    vi.mocked(getSearch).mockImplementation(async (payload: PayloadGetSearch) => ({
+      data: payload.q[0] === 'IHSG' ? Array.from({ length: 30 }, (_, index) => getVideo(`ihsg-${index}`.padEnd(11, 'z'), `IHSG ${index}`)) : [],
+      pagination: { page: 1, limit: 100, total: 30, totalPages: 1 },
+    }))
+    renderHome()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Investasi' }))
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(20))
+
+    act(() => onIntersect([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(30))
+    vi.unstubAllGlobals()
   })
 
   it('menampilkan pesan dan tombol coba lagi saat API gagal', async () => {

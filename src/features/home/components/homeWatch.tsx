@@ -15,6 +15,7 @@ import { useVideoControllers } from '@/features/video/controllers/videoControlle
 import { getCompactCount, getDurationLabel } from '@/shared/lib/videoFormat'
 import { HOME_ALL_PAYLOADS } from './homeCatalog'
 import HomeWatchDetail from './homeWatchDetail'
+import HomeWatchPlayer from './homeWatchPlayer'
 import HomeWatchUpNext from './homeWatchUpNext'
 import type { HomeWatchUpNextItem } from './homeWatchUpNext'
 
@@ -52,9 +53,11 @@ export default function HomeWatch({ videoId }: Props) {
 
     return {
       video: current,
-      // Klik kartu di Blayer adalah gestur pengguna, jadi browser mengizinkan video langsung diputar
-      embedSrc: current ? `${current.embedUrl}?autoplay=1&playsinline=1&rel=0&modestbranding=1` : '',
-      isEmbeddable: current?.embeddable !== false,
+      // Satu keadaan untuk area video: memuat, diputar di Blayer, atau hanya bisa di YouTube
+      playerMode: (() => {
+        if (!current) return 'loading'
+        return current.embeddable === false ? 'blocked' : 'player'
+      })(),
       upNext,
       isUpNextLoading: searchList.status === 'loading',
       isLoading: video.status === 'loading' || (!!video.data && !current),
@@ -102,34 +105,27 @@ export default function HomeWatch({ videoId }: Props) {
   return (
     <div className="flex w-full max-w-[1360px] flex-col gap-8 px-[clamp(12px,4vw,48px)] pb-10 pt-1 lg:flex-row lg:items-start">
       <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black sm:rounded-2xl">
-          {data.isLoading ? <Skeleton className="absolute inset-0 rounded-none" /> : null}
-          {data.video && data.isEmbeddable ? (
-            <iframe
-              key={data.video.id}
-              src={data.embedSrc}
-              title={data.video.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-              className="absolute inset-0 h-full w-full border-0"
-            />
-          ) : null}
-          {data.video && !data.isEmbeddable ? (
-            <>
-              <Image src={data.video.thumbnail} alt="" fill unoptimized sizes="(min-width: 1024px) 66vw, 100vw" className="object-cover opacity-60" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center text-white">
-                <p className="m-0 text-sm">Pemilik video tidak mengizinkan video ini diputar di luar YouTube.</p>
-                <Button asChild className="h-10 rounded-xl px-5">
-                  <a href={data.video.url} target="_blank" rel="noreferrer">
-                    <ExternalLink />
-                    Tonton di YouTube
-                  </a>
-                </Button>
-              </div>
-            </>
-          ) : null}
-        </div>
+        {data.video && data.playerMode === 'player' ? (
+          <HomeWatchPlayer key={data.video.id} videoId={data.video.id} embedUrl={data.video.embedUrl} title={data.video.title} />
+        ) : (
+          <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black sm:rounded-2xl">
+            {data.playerMode === 'loading' ? <Skeleton className="absolute inset-0 rounded-none" /> : null}
+            {data.video && data.playerMode === 'blocked' ? (
+              <>
+                <Image src={data.video.thumbnail} alt="" fill unoptimized sizes="(min-width: 1024px) 66vw, 100vw" className="object-cover opacity-60" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center text-white">
+                  <p className="m-0 text-sm">Pemilik video tidak mengizinkan video ini diputar di luar YouTube.</p>
+                  <Button asChild className="h-10 rounded-xl px-5">
+                    <a href={data.video.url} target="_blank" rel="noreferrer">
+                      <ExternalLink />
+                      Tonton di YouTube
+                    </a>
+                  </Button>
+                </div>
+              </>
+            ) : null}
+          </div>
+        )}
 
         {data.isLoading ? (
           <div className="flex flex-col gap-3">

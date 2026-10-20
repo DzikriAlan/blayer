@@ -8,6 +8,7 @@ export interface HomeCardItem {
   title: string
   channel: string
   isVerified: boolean
+  isShort: boolean
   meta: string
   duration: string
   category: string
@@ -36,6 +37,9 @@ export default function HomeCard({ item, isPriority = false }: Props) {
         <div className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl bg-primary text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100">
           <Play className="h-[18px] w-[18px] fill-current" />
         </div>
+        {item.isShort ? (
+          <span className="absolute left-2 top-2 rounded-md bg-[#ff0033] px-1.5 py-0.5 text-[11px] font-bold text-white">Shorts</span>
+        ) : null}
         {item.category ? (
           <span className="absolute bottom-2 left-2 rounded-md border border-white/25 bg-white/15 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">
             {item.category}
