@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 
-import LandingShell from '@/components/landing-shell'
+import AppShell from '@/components/app-shell'
 import ErrorView from '@/components/error-view'
 
 const SERVER_ERROR_LINKS = [
@@ -11,8 +11,8 @@ const SERVER_ERROR_LINKS = [
     description: 'Periksa kesiapan aplikasi, basis data, dan rate limit.',
   },
   {
-    href: '/#produk',
-    label: 'Bagian produk',
+    href: '/',
+    label: 'Beranda',
     description: 'Coba buka halaman depan; kegagalan biasanya hanya sesaat.',
   },
 ]
@@ -24,14 +24,14 @@ const ServerErrorPage: NextPage = () => {
         <title>Terjadi Kesalahan — BLAYER</title>
         <meta name="robots" content="noindex" />
       </Head>
-      <LandingShell>
+      <AppShell>
         <ErrorView
           code="500"
           title={'Ada yang rusak\ndi sisi kami'}
           subtitle="Permintaanmu gagal diproses di server. Coba muat ulang halamannya; kalau masih gagal, tunggu sebentar lalu ulangi."
           links={SERVER_ERROR_LINKS}
         />
-      </LandingShell>
+      </AppShell>
     </>
   )
 }

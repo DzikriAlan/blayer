@@ -9,7 +9,6 @@ export default function Layout({ children }: { children: ReactNode }) {
       tree={docsSource.pageTree}
       nav={{ title: 'Blayer · Dokumentasi', url: '/' }}
       links={[
-        { text: 'Console', url: '/console' },
         { text: 'GitHub', url: 'https://github.com/DzikriAlan/blayer', external: true },
       ]}
     >

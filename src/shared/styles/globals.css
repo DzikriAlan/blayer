@@ -3,40 +3,54 @@
 @tailwind utilities;
 
 @layer base {
-  /* Tema gelap dipakai apa adanya sebagai satu-satunya tema. Nilainya ditulis
-     di :root supaya tidak bergantung pada kelas .dark yang bisa hilang saat
-     halaman dirender di server. */
+  /* Tema terang adalah bawaan :root; tema gelap aktif lewat kelas .dark di
+     elemen <html> (dipasang di _document dan diganti dari dialog akun). */
   :root {
-    --background: 240 6% 4%;
-    --foreground: 0 0% 96%;
-    --paper: 240 5% 7%;
-    --card: 240 5% 7%;
-    --card-foreground: 0 0% 96%;
-    --popover: 240 5% 8%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 270 100% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 12%;
-    --secondary-foreground: 0 0% 96%;
-    --muted: 240 5% 12%;
-    --muted-foreground: 240 5% 64%;
-    --accent: 270 100% 55%;
-    --accent-foreground: 0 0% 100%;
+    --background: 0 0% 100%;
+    --foreground: 240 6% 10%;
+    --paper: 240 5% 96%;
+    --card: 240 5% 96%;
+    --card-foreground: 240 6% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 6% 10%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 240 6% 4%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 42%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 240 6% 4%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 5% 16%;
-    --input: 240 5% 16%;
-    --ring: 270 100% 55%;
-    --chart-1: 270 100% 55%;
-    --chart-2: 270 70% 72%;
-    --chart-3: 240 5% 64%;
-    --chart-4: 300 70% 62%;
-    --chart-5: 240 5% 36%;
-    --radius: 5px;
+    --border: 240 6% 88%;
+    --input: 240 6% 88%;
+    --ring: 25 95% 53%;
+    --chart-1: 25 95% 53%;
+    --chart-2: 25 90% 68%;
+    --chart-3: 240 4% 42%;
+    --chart-4: 12 80% 55%;
+    --chart-5: 240 5% 64%;
+    --radius: 12px;
   }
 
   .dark {
     color-scheme: dark;
+    --background: 240 6% 4%;
+    --foreground: 40 20% 95%;
+    --paper: 240 5% 8%;
+    --card: 240 5% 8%;
+    --card-foreground: 40 20% 95%;
+    --popover: 240 5% 8%;
+    --popover-foreground: 40 20% 95%;
+    --secondary: 240 5% 8%;
+    --secondary-foreground: 40 20% 95%;
+    --muted: 240 5% 8%;
+    --muted-foreground: 40 5% 60%;
+    --border: 240 5% 16%;
+    --input: 240 5% 16%;
+    --chart-3: 240 5% 64%;
+    --chart-5: 240 5% 36%;
   }
 }
 
@@ -55,169 +69,6 @@
 }
 
 @layer components {
-  /* Kartu bento: permukaan sedikit lebih terang dari halaman, dengan garis tepi
-     tipis sebagai pembatas, bukan bayangan. */
-  .surface {
-    @apply rounded-xl border border-border bg-card;
-  }
-
-  .surface-muted {
-    @apply rounded-xl border border-border bg-muted/40;
-  }
-
-  .eyebrow {
-    @apply text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground;
-  }
-
-  /* Label 8-bit. Ukuran hurufnya dikecilkan karena Press Start 2P menggambar
-     karakter jauh lebih besar dari font biasa pada ukuran yang sama. */
-  .pixel-label {
-    @apply font-pixel text-[10px] leading-[1.6] tracking-tight;
-  }
-
-  .index-badge {
-    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/60 text-sm font-medium text-foreground;
-  }
-
-  /* Cahaya ungu di belakang panel. Ditaruh sebagai lapisan sendiri supaya
-     kartunya tetap bisa memakai latar pekat dan tulisannya tetap terbaca. */
-  .glow {
-    background: radial-gradient(
-      60% 60% at 50% 40%,
-      hsl(var(--primary) / 0.5) 0%,
-      hsl(var(--primary) / 0.16) 45%,
-      transparent 72%
-    );
-  }
-
-  .glow-soft {
-    background: radial-gradient(
-      70% 70% at 50% 50%,
-      hsl(var(--primary) / 0.22) 0%,
-      transparent 70%
-    );
-  }
-
-  .grid-lines {
-    background-image:
-      linear-gradient(hsl(var(--border) / 0.7) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--border) / 0.7) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 100%);
-  }
-
-  /* Latar bergradien seperti panel besar di referensi: beberapa sumber cahaya
-     ungu yang saling tumpang tindih, lalu dikasari butiran halus supaya tidak
-     terlihat seperti gradien mulus buatan mesin. */
-  .mesh {
-    background-color: hsl(270 80% 8%);
-    background-image:
-      radial-gradient(60% 80% at 15% 20%, hsl(280 100% 60% / 0.55), transparent 60%),
-      radial-gradient(50% 70% at 85% 10%, hsl(258 100% 62% / 0.5), transparent 62%),
-      radial-gradient(70% 90% at 70% 90%, hsl(295 100% 52% / 0.42), transparent 65%),
-      radial-gradient(40% 60% at 40% 70%, hsl(250 100% 50% / 0.38), transparent 60%);
-  }
-
-  .mesh-soft {
-    background-color: hsl(270 60% 6%);
-    background-image:
-      radial-gradient(60% 80% at 20% 30%, hsl(275 100% 58% / 0.35), transparent 62%),
-      radial-gradient(50% 70% at 80% 20%, hsl(300 100% 55% / 0.28), transparent 60%);
-  }
-
-  .noise {
-    background-image: radial-gradient(
-      hsl(0 0% 100% / 0.16) 0.5px,
-      transparent 0.5px
-    );
-    background-size: 3px 3px;
-  }
-
-  .dotted {
-    background-image: radial-gradient(
-      hsl(var(--foreground) / 0.16) 1px,
-      transparent 1px
-    );
-    background-size: 8px 8px;
-  }
-
-  .marquee {
-    animation: marquee 26s linear infinite;
-  }
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
-  .rotator {
-    display: inline-block;
-    height: 1.5em;
-    line-height: 1.5em;
-    overflow: hidden;
-    vertical-align: bottom;
-  }
-  .rotator-track {
-    display: grid;
-    grid-auto-rows: 1.5em;
-    align-items: center;
-    animation: rotator 10s infinite;
-  }
-  .rotator-track > * {
-    white-space: nowrap;
-  }
-
-  @keyframes rotator {
-    0%,
-    22% {
-      transform: translateY(0);
-    }
-    28%,
-    55% {
-      transform: translateY(-25%);
-    }
-    61%,
-    88% {
-      transform: translateY(-50%);
-    }
-    94%,
-    100% {
-      transform: translateY(-75%);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .marquee,
-    .rotator-track {
-      animation: none;
-    }
-  }
-
-  /* Cuplikan kode di kartu: token diwarnai dengan kelas, bukan pustaka
-     highlight — isinya tetap, jadi tidak perlu parser di sisi klien. */
-  .code {
-    @apply overflow-x-auto rounded-lg border border-border bg-background/80 p-4 font-mono text-xs leading-relaxed;
-  }
-  .code .tok-key {
-    @apply text-primary;
-  }
-  .code .tok-str {
-    @apply text-emerald-300;
-  }
-  .code .tok-com {
-    @apply text-muted-foreground;
-  }
-  .code .tok-fn {
-    @apply text-sky-300;
-  }
-  .code .tok-num {
-    @apply text-amber-300;
-  }
-
   .scroll-hidden {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -239,6 +90,21 @@
   }
   .scroll-thin::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
-    border-radius: 9999px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .wrap-any {
+    overflow-wrap: anywhere;
+  }
+
+  @keyframes watch-progress {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
   }
 }

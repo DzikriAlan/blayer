@@ -36,23 +36,19 @@ describe('halaman tidak ditemukan', () => {
     expect(
       screen.getByRole('link', { name: /Kembali ke Beranda/ })
     ).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: /Lihat Produk/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Beranda/ })).toHaveAttribute(
       'href',
-      '/#produk'
+      '/'
     )
-    expect(
-      screen.getByRole('link', { name: /Status platform/ })
-    ).toHaveAttribute('href', '/#status')
-    expect(
-      screen.getByRole('link', { name: /^Console$/ })
-    ).toHaveAttribute('href', '/console')
   })
 
-  it('TC-33 memakai rangka halaman publik lengkap dengan footernya', () => {
+  it('TC-33 memakai rangka halaman dengan logo dan tombol akun', () => {
     renderPage(<NotFoundPage />)
 
-    expect(screen.getByText('Proyek')).toBeInTheDocument()
-    expect(screen.getByText(/AI Agent Platform/)).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /Blayer, ke beranda/ })
+    ).toHaveAttribute('href', '/')
+    expect(screen.getByRole('button', { name: 'Akun' })).toBeInTheDocument()
   })
 })
 
