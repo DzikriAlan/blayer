@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import AccountDialog from '@/components/account-dialog'
+import ThemeToggle from '@/components/theme-toggle'
 import { cn } from '@/shared/lib/utils'
 
 interface Props {
@@ -22,7 +22,7 @@ export default function AppShell({ className, children, footer, hideHeader }: Pr
         >
           blayer
         </Link>
-        <AccountDialog />
+        <ThemeToggle />
       </header>
       )}
       <main className={cn('flex w-full flex-1 flex-col items-center', className)}>{children}</main>

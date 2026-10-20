@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Play } from 'lucide-react'
 
-import AccountDialog from '@/components/account-dialog'
+import ThemeToggle from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -25,7 +25,7 @@ export default function HomeBanner({ imageSrc, watchHref, title, subtitle }: Pro
           <Link href="/" aria-label="Blayer, ke beranda" className="font-display text-[30px] font-normal leading-none tracking-tight">
             blayer
           </Link>
-          <AccountDialog />
+          <ThemeToggle className="text-white hover:bg-white/15 hover:text-white" />
         </div>
         <div className="relative flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
           <div className="flex min-w-0 max-w-[560px] flex-col gap-3">

@@ -42,13 +42,13 @@ describe('halaman tidak ditemukan', () => {
     )
   })
 
-  it('TC-33 memakai rangka halaman dengan logo dan tombol akun', () => {
+  it('TC-33 memakai rangka halaman dengan logo dan tombol tema', () => {
     renderPage(<NotFoundPage />)
 
     expect(
       screen.getByRole('link', { name: /Blayer, ke beranda/ })
     ).toHaveAttribute('href', '/')
-    expect(screen.getByRole('button', { name: 'Akun' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /mode terang atau gelap/ })).toBeInTheDocument()
   })
 })
 
