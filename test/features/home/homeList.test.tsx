@@ -52,32 +52,34 @@ describe('beranda', () => {
 
     expect(screen.getByRole('heading', { name: 'Indonesia Hari Ini', level: 2 })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Politik' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Saham' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Crypto' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Hukum & Kriminal' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ekonomi' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Kriminal' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Saham' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Crypto' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Hukum & Kriminal' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Investasi' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Psikologi' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Pengembangan Diri' })).not.toBeInTheDocument()
 
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(10))
-    expect(screen.getAllByText('1,2 rb ditonton · 1 hari lalu')).toHaveLength(10)
-    expect(screen.getByText('10 video · 48 jam terakhir')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(6))
+    expect(screen.getAllByText('1,2 rb ditonton · 1 hari lalu')).toHaveLength(6)
+    expect(screen.getByText('6 video · 48 jam terakhir')).toBeInTheDocument()
     expect(screen.getAllByText('10:05').length).toBeGreaterThan(0)
   })
 
   it('menyaring video saat kategori dipilih', async () => {
     renderHome()
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(10))
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(6))
 
-    await userEvent.click(screen.getByRole('button', { name: 'Saham' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Kriminal' }))
 
     await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(2))
-    expect(screen.getByText('IHSG pertama')).toBeInTheDocument()
+    expect(screen.getByText('berita kriminal hari ini pertama')).toBeInTheDocument()
   })
 
   it('meminta 100 video per kategori dengan batas 48 jam', async () => {
     renderHome()
-    await waitFor(() => expect(getSearch).toHaveBeenCalledTimes(5))
+    await waitFor(() => expect(getSearch).toHaveBeenCalledTimes(3))
 
     for (const [payload] of vi.mocked(getSearch).mock.calls) {
       expect(payload.limit).toBe(100)
@@ -100,12 +102,12 @@ describe('beranda', () => {
       },
     )
     vi.mocked(getSearch).mockImplementation(async (payload: PayloadGetSearch) => ({
-      data: payload.q[0] === 'IHSG' ? Array.from({ length: 30 }, (_, index) => getVideo(`ihsg-${index}`.padEnd(11, 'z'), `IHSG ${index}`)) : [],
+      data: payload.q[0] === 'berita kriminal hari ini' ? Array.from({ length: 30 }, (_, index) => getVideo(`ihsg-${index}`.padEnd(11, 'z'), `IHSG ${index}`)) : [],
       pagination: { page: 1, limit: 100, total: 30, totalPages: 1 },
     }))
     renderHome()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Saham' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Kriminal' }))
     await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(20))
 
     act(() => onIntersect([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))

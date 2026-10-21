@@ -294,6 +294,27 @@ const isWithinHours = (row: VideosSearchEntity, maxAgeHours: number) => {
   return row.publishedHoursAgo <= maxAgeHours
 }
 
+// Hasil pencarian tidak membawa negara channel, jadi asal Indonesia ditebak dari teksnya: judul
+// ditulis dengan huruf Latin, memuat kata khas Bahasa Indonesia, dan bukan media Malaysia.
+const INDONESIAN_WORDS = new Set([
+  'yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'ini', 'itu', 'tidak', 'ada', 'dengan', 'akan', 'jadi',
+  'sudah', 'bisa', 'karena', 'saat', 'kini', 'soal', 'begini', 'ternyata', 'hari', 'terbaru', 'berita',
+  'kasus', 'harga', 'warga', 'pria', 'wanita', 'pelaku', 'korban', 'tersangka', 'ditangkap', 'viral',
+  'indonesia', 'jakarta', 'ri', 'presiden', 'pemerintah', 'menteri', 'rupiah', 'prabowo', 'gibran',
+  'jokowi', 'dpr', 'kpk', 'tni', 'polri', 'polda', 'polres', 'polisi', 'ekonomi', 'politik', 'emas',
+])
+const MALAYSIAN_WORDS = new Set(['polis', 'pdrm', 'ringgit', 'awani', 'bernama'])
+const NON_LATIN = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u
+
+export const isIndonesian = (row: Pick<VideosSearchEntity, 'title' | 'channel' | 'snippet'>) => {
+  if (NON_LATIN.test(row.title) || /malaysia/i.test(row.channel)) return false
+
+  const words = `${row.title} ${row.channel} ${row.snippet}`.toLowerCase().split(/[^\p{L}\p{N}]+/u)
+  if (words.some((word) => MALAYSIAN_WORDS.has(word))) return false
+
+  return words.some((word) => INDONESIAN_WORDS.has(word))
+}
+
 const byNewest = (a: VideosSearchEntity, b: VideosSearchEntity) =>
   (a.publishedHoursAgo ?? -1) - (b.publishedHoursAgo ?? -1)
 
@@ -355,7 +376,7 @@ export class VideosRepository {
         seen.add(video.videoId)
 
         const row = getSearchRow(video)
-        if (isWantedKind(row, kind) && isWithinHours(row, maxAgeHours)) {
+        if (isWantedKind(row, kind) && isWithinHours(row, maxAgeHours) && isIndonesian(row)) {
           kept.push(row)
           matched++
         }

@@ -1,7 +1,7 @@
 import { getSearchKey } from '@/features/search/services/searchServices'
 import type { PayloadGetSearch } from '@/features/search/types/searchTypes'
 
-export type HomeCategoryName = 'Politik' | 'Ekonomi' | 'Saham' | 'Crypto' | 'Hukum & Kriminal'
+export type HomeCategoryName = 'Politik' | 'Ekonomi' | 'Kriminal'
 
 export interface HomeCategory {
   name: HomeCategoryName
@@ -35,9 +35,7 @@ const getCategory = (name: HomeCategoryName, queries: string[]): HomeCategory =>
 export const HOME_CATEGORIES: HomeCategory[] = [
   getCategory('Politik', ['politik indonesia', 'berita politik hari ini', 'DPR RI', 'prabowo']),
   getCategory('Ekonomi', ['ekonomi indonesia', 'berita ekonomi hari ini', 'rupiah hari ini', 'harga emas hari ini']),
-  getCategory('Saham', ['IHSG', 'saham hari ini', 'analisa saham', 'saham indonesia']),
-  getCategory('Crypto', ['crypto hari ini', 'bitcoin hari ini', 'berita crypto', 'kripto indonesia', 'harga bitcoin', 'altcoin']),
-  getCategory('Hukum & Kriminal', ['berita kriminal hari ini', 'kasus hukum terbaru', 'KPK', 'polisi tangkap']),
+  getCategory('Kriminal', ['berita kriminal hari ini', 'kasus kriminal terbaru', 'polisi tangkap', 'kasus pembunuhan indonesia']),
 ]
 
 export const HOME_ALL_PAYLOADS: PayloadGetSearch[] = HOME_CATEGORIES.map((category) => category.payload)

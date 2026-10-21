@@ -27,7 +27,8 @@ const YOUTUBE_ORIGIN = 'https://www.youtube.com'
 const STATE_ENDED = 0
 const STATE_PLAYING = 1
 const PLAYING_STATES = new Set([STATE_PLAYING, 3])
-// Kalau autoplay bersuara ditolak browser, video diputar tanpa suara setelah jeda ini (hanya sekali di awal)
+// Kalau autoplay bersuara ditolak browser, video diputar tanpa suara setelah jeda ini (hanya sekali di awal,
+// dan hanya bila pengguna belum berinteraksi dengan halaman; video yang dibuka lewat klik tetap bersuara)
 const MUTED_FALLBACK_MS = 1500
 const PROGRESS_SAVE_MS = 5000
 const RESUME_MIN_SECONDS = 5
@@ -70,6 +71,8 @@ export default function HomeWatchPlayer({ videoId, embedUrl, title, onEnded }: P
       isPlaying: false,
       hasStarted: false,
       isMuted: false,
+      // Dibisukan oleh cadangan autoplay, bukan oleh pengguna; klik pertama pada video membunyikannya lagi
+      isAutoMuted: false,
       isFullscreen: false,
       isTouchActive: false,
       startAt,
@@ -140,6 +143,12 @@ export default function HomeWatchPlayer({ videoId, embedUrl, title, onEnded }: P
 
   // Klik area video: mouse langsung play/pause; sentuhan pertama hanya memunculkan kontrol
   const editVideoArea = () => {
+    if (filters.isAutoMuted) {
+      postCommand('unMute')
+      if (!filters.isPlaying) postCommand('playVideo')
+      setFilters((prev) => ({ ...prev, isMuted: false, isAutoMuted: false }))
+      return
+    }
     if (pointerTypeRef.current === 'touch' && filters.isPlaying && !filters.isTouchActive) {
       setFilters((prev) => ({ ...prev, isTouchActive: true }))
       return
@@ -149,7 +158,7 @@ export default function HomeWatchPlayer({ videoId, embedUrl, title, onEnded }: P
 
   const editMute = () => {
     postCommand(filters.isMuted ? 'unMute' : 'mute')
-    setFilters((prev) => ({ ...prev, isMuted: !prev.isMuted }))
+    setFilters((prev) => ({ ...prev, isMuted: !prev.isMuted, isAutoMuted: false }))
   }
 
   const editSeekPreview = (seconds: number) => {
@@ -283,8 +292,11 @@ export default function HomeWatchPlayer({ videoId, embedUrl, title, onEnded }: P
     if (!filters.isReady || filters.hasStarted || filters.isPlaying) return
     const timer = setTimeout(() => {
       const frame = frameRef.current?.contentWindow
-      frame?.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [], id: videoId, channel: 'widget' }), YOUTUBE_ORIGIN)
+      // Halaman yang sudah diklik pengguna boleh memutar dengan suara, jadi cukup minta putar tanpa membisukan
+      const hasUserActivation = !!navigator.userActivation?.hasBeenActive
+      frame?.postMessage(JSON.stringify({ event: 'command', func: hasUserActivation ? 'unMute' : 'mute', args: [], id: videoId, channel: 'widget' }), YOUTUBE_ORIGIN)
       frame?.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [], id: videoId, channel: 'widget' }), YOUTUBE_ORIGIN)
+      if (!hasUserActivation) setFilters((prev) => ({ ...prev, isMuted: true, isAutoMuted: true }))
     }, MUTED_FALLBACK_MS)
     return () => clearTimeout(timer)
   }, [filters.isReady, filters.hasStarted, filters.isPlaying, videoId])

@@ -15,6 +15,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Disalin ke public/vendor oleh scripts/copyDocsStyles.mjs. */}
         <link rel="stylesheet" href="/vendor/fumadocs-ui.css" />
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="flex min-h-screen flex-col">
         <RootProvider search={{ SearchDialog: DocsSearchDialog }}>
