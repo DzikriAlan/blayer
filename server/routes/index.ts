@@ -9,6 +9,7 @@ import { modelsModule } from '@server/features/models/module'
 import { projectsModule } from '@server/features/projects/module'
 import { runsModule } from '@server/features/runs/module'
 import { toolsModule } from '@server/features/tools/module'
+import { videosModule } from '@server/features/videos/module'
 import { notFoundError } from '@server/shared/http-error'
 import { logger } from '@server/shared/utils/logger.util'
 import { sendError } from '@server/shared/response'
@@ -50,6 +51,9 @@ const routes: Route[] = [
   { path: 'v1/tools/:toolId', handler: toolsModule.detail },
   { path: 'v1/knowledge/:documentId', handler: knowledgeModule.detail },
   { path: 'v1/runs/:runId/confirm', handler: runsModule.confirm },
+
+  { path: 'v1/videos/search', handler: videosModule.search },
+  { path: 'v1/videos/:videoId', handler: videosModule.detail },
 ]
 
 const matched = routes.map((route) => ({

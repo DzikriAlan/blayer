@@ -1,14 +1,5 @@
 const { createMDX } = require('fumadocs-mdx/next')
 
-// Origin API yt-topic yang dipanggil langsung dari browser untuk data video beranda
-const getYtTopicOrigin = () => {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_YT_TOPIC_API_URL || 'http://localhost:3500').origin
-  } catch {
-    return ''
-  }
-}
-
 const getContentSecurityPolicy = () => {
   const supabase = (
     process.env.SUPABASE_URL ||
@@ -28,8 +19,8 @@ const getContentSecurityPolicy = () => {
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' data: blob: https://images.unsplash.com ${youtubeImages} ${supabase}`.trim(),
     "font-src 'self' data:",
-    `connect-src 'self' https://api.github.com ${getYtTopicOrigin()} ${supabase}`.trim(),
-    // Di development API yt-topic biasanya http://localhost; aturan ini akan menaikkannya ke https dan gagal
+    `connect-src 'self' https://api.github.com ${supabase}`.trim(),
+    // Di development aplikasi berjalan di http://localhost; aturan ini akan menaikkannya ke https dan gagal
     ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
   ].join('; ')
 }

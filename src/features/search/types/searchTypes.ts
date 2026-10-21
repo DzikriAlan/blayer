@@ -1,10 +1,10 @@
-import type { YtTopicPagination } from '@/shared/lib/ytTopicClient'
+import type { VideoApiPagination } from '@/shared/lib/videoClient'
 
 export type SearchPeriod = 'hour' | 'today' | 'week' | 'month' | 'year' | 'all'
 export type SearchSort = 'date' | 'relevance' | 'views'
 
 export interface PayloadGetSearch {
-  // Beberapa kata kunci digabung jadi satu daftar oleh API (parameter q berulang)
+  // Beberapa kata kunci digabung jadi satu daftar oleh server (parameter q berulang)
   q: string[]
   maxAgeHours: number
   // Persentase Shorts dalam hasil, mis. 15 -> 15 Shorts dan 85 video biasa per 100
@@ -36,7 +36,7 @@ export interface DataSearch {
 
 export interface DataSearchResult {
   data: DataSearch[]
-  pagination: YtTopicPagination
+  pagination: VideoApiPagination
 }
 
 // Satu kelompok hasil per payload, supaya beranda bisa memberi label kategori

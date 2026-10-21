@@ -1,5 +1,5 @@
 import { getLocalCache, postLocalCache } from '@/shared/lib/localCache'
-import { getYtTopic } from '@/shared/lib/ytTopicClient'
+import { getVideoApi } from '@/shared/lib/videoClient'
 import type { DataSearch, DataSearchResult, PayloadGetSearch } from '../types/searchTypes'
 
 const SEARCH_CACHE_MS = 30 * 60 * 1000
@@ -21,7 +21,7 @@ export const getSearch = async (payload: PayloadGetSearch) => {
     ['page', String(payload.page)],
     ['limit', String(payload.limit)],
   ]).toString()
-  const body = await getYtTopic<DataSearch[]>(`/search?${queryString}`)
+  const body = await getVideoApi<DataSearch[]>(`/search?${queryString}`)
   const result: DataSearchResult = {
     data: body.data ?? [],
     pagination: body.pagination ?? { page: payload.page, limit: payload.limit, total: 0, totalPages: 1 },
