@@ -100,6 +100,13 @@ const HEADERS = {
 
 const MIN_GAP_MS = 900
 const MAX_PAGES = 25
+// Dipakai kalau halaman tonton tidak memuat versinya (mis. diganti halaman cek bot)
+const FALLBACK_CLIENT_VERSION = '2.20261020.01.00'
+
+const MONTHS: Record<string, number> = {
+  jan: 1, feb: 2, mar: 3, apr: 4, mei: 5, may: 5, jun: 6, jul: 7,
+  agu: 8, agt: 8, aug: 8, sep: 9, okt: 10, oct: 10, nov: 11, des: 12, dec: 12,
+}
 
 const HOURS_PER_UNIT: Record<string, number> = {
   detik: 1 / 3600, second: 1 / 3600,
@@ -190,6 +197,15 @@ export const getAgeRange = (publishedText: unknown) => {
   const unitHours = HOURS_PER_UNIT[match[2].toLowerCase()]
 
   return { min: amount * unitHours, max: (amount + 1) * unitHours }
+}
+
+// "20 Okt 2026" / "Streaming dimulai 20 Okt 2026" -> "2026-10-20"; kosong kalau tidak terbaca
+export const getDateIso = (label: string) => {
+  const match = /(\d{1,2})\s+([a-z]{3})[a-z]*\.?\s+(\d{4})/i.exec(label)
+  const month = match ? MONTHS[match[2].toLowerCase()] : undefined
+  if (!match || !month) return ''
+
+  return `${match[3]}-${String(month).padStart(2, '0')}-${match[1].padStart(2, '0')}`
 }
 
 // Menelusuri bentuk respons apa pun dan mengambil objek pertama di bawah `key`
@@ -441,7 +457,14 @@ export class VideosRepository {
     const initial = getEmbeddedJson(html, 'var ytInitialData =')
     const details = player?.videoDetails
     if (!details) {
-      throw new VideosSourceError('NOT_FOUND', 'Video tidak ditemukan, privat, atau dibatasi usia.')
+      // ERROR berarti videonya memang tidak ada atau privat. Selain itu —
+      // terutama "Sign in to confirm you're not a bot" yang dipasang YouTube
+      // untuk IP pusat data seperti Vercel — detailnya diambil dari panel info.
+      if (player?.playabilityStatus?.status === 'ERROR') {
+        throw new VideosSourceError('NOT_FOUND', 'Video tidak ditemukan atau privat.')
+      }
+
+      return this.getVideosDetailNext(id, html)
     }
 
     const micro = player?.microformat?.playerMicroformatRenderer ?? {}
@@ -489,6 +512,78 @@ export class VideosRepository {
         subscribersLabel: subscriberLabel,
         // Membuka tautan ini memunculkan konfirmasi "Subscribe?" milik YouTube
         subscribeUrl: `https://www.youtube.com/channel/${details.channelId}?sub_confirmation=1`,
+      },
+    }
+  }
+
+  // Panel info di bawah video (youtubei/v1/next) tidak ikut dicek bot seperti
+  // player. Durasi, kategori, dan kata kunci tidak tersedia di sini, jadi
+  // dikosongkan dan disembunyikan tampilan.
+  async getVideosDetailNext(id: string, html: string): Promise<VideosDetailEntity> {
+    const clientVersion = /"INNERTUBE_CLIENT_VERSION":"([^"]+)"/.exec(html)?.[1] ?? FALLBACK_CLIENT_VERSION
+    const res = await youtubeFetch('https://www.youtube.com/youtubei/v1/next?prettyPrint=false', {
+      method: 'POST',
+      headers: { ...HEADERS, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        context: { client: { clientName: 'WEB', clientVersion, hl: 'id', gl: 'ID' } },
+        videoId: id,
+      }),
+    })
+    if (res.status === 429) throw new VideosSourceError('BLOCKED', 'YouTube membatasi permintaan.')
+    if (!res.ok) throw new VideosSourceError('UNAVAILABLE', `Panel info YouTube membalas ${res.status}.`)
+
+    const data = await res.json()
+    const primary = findFirst(data, 'videoPrimaryInfoRenderer')
+    const secondary = findFirst(data, 'videoSecondaryInfoRenderer') ?? {}
+    if (!primary) throw new VideosSourceError('NOT_FOUND', 'Video tidak ditemukan atau privat.')
+
+    const owner = secondary.owner?.videoOwnerRenderer ?? {}
+    const channelEndpoint = owner.title?.runs?.[0]?.navigationEndpoint?.browseEndpoint ?? {}
+    const channelId = channelEndpoint.browseId ?? ''
+    const channelPath = channelEndpoint.canonicalBaseUrl ?? ''
+    const subscriberLabel =
+      getText(owner.subscriberCountText) ||
+      owner.subscriberCountText?.accessibility?.accessibilityData?.label ||
+      ''
+    const viewCount = primary.viewCount?.videoViewCountRenderer
+    const isLiveNow = !!viewCount?.isLive
+    const views = Number(viewCount?.originalViewCount ?? 0) || getCount(getText(viewCount?.viewCount))
+    const likeLabel = /"likeCountIfIndifferentNumber":"(\d+)"/.exec(JSON.stringify(data))?.[1] ?? ''
+    const publishDate = getDateIso(getText(primary.dateText))
+    const title = getText(primary.title)
+
+    return {
+      id,
+      url: `https://www.youtube.com/watch?v=${id}`,
+      embedUrl: `https://www.youtube.com/embed/${id}`,
+      embedHtml: `<iframe width="560" height="315" src="https://www.youtube.com/embed/${id}" title="${title.replaceAll('"', '&quot;')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`,
+      // Tidak diketahui dari panel ini; player embed sendiri yang akan memberi tahu kalau diblokir
+      embeddable: true,
+      title,
+      description: secondary.attributedDescription?.content ?? getText(secondary.description),
+      publishDate,
+      uploadDate: publishDate,
+      lengthSeconds: 0,
+      category: '',
+      keywords: [],
+      views: isLiveNow ? 0 : views,
+      likes: getCount(likeLabel),
+      comments: 0,
+      isLive: isLiveNow,
+      isLiveNow,
+      watchingNow: isLiveNow ? views : 0,
+      thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+      channel: {
+        id: channelId,
+        name: getText(owner.title),
+        url: channelPath
+          ? `https://www.youtube.com${channelPath}`
+          : `https://www.youtube.com/channel/${channelId}`,
+        avatar: owner.thumbnail?.thumbnails?.at(-1)?.url ?? '',
+        verified: (owner.badges ?? []).length > 0,
+        subscribers: getCount(subscriberLabel),
+        subscribersLabel: subscriberLabel,
+        subscribeUrl: `https://www.youtube.com/channel/${channelId}?sub_confirmation=1`,
       },
     }
   }
