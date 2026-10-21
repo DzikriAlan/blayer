@@ -1,5 +1,4 @@
 import { serviceUnavailableError } from '../../../shared/http-error'
-import { getRateLimitStore } from '../../../shared/services/rateLimitStore.service'
 import {
   healthRepository,
   type HealthRepository,
@@ -8,7 +7,6 @@ import {
 export interface HealthResponseDto {
   isReady: boolean
   databaseMs: number
-  rateLimitStore: string
   uptimeSeconds: number
 }
 
@@ -28,7 +26,6 @@ export class HealthService {
     return {
       isReady: true,
       databaseMs: database.durationMs,
-      rateLimitStore: getRateLimitStore().name,
       uptimeSeconds: Math.round(process.uptime()),
     }
   }

@@ -6,7 +6,6 @@ const shared = {
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@server': path.resolve(__dirname, './server'),
-      '@blayer/sdk': path.resolve(__dirname, './sdk/src/index.ts'),
     },
   },
   esbuild: {

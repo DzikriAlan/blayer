@@ -28,12 +28,6 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://blayer:${POSTGRES_PASSWORD:-blayer}@db:5432/blayer
-      BLAYER_ENCRYPTION_KEY: ${BLAYER_ENCRYPTION_KEY:?setel BLAYER_ENCRYPTION_KEY}
-      BLAYER_ADMIN_USERNAME: ${BLAYER_ADMIN_USERNAME:-admin}
-      BLAYER_ADMIN_PASSWORD: ${BLAYER_ADMIN_PASSWORD:-admin123}
-      BLAYER_SESSION_SECRET: ${BLAYER_SESSION_SECRET:-}
-      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-0}
-      RATE_LIMIT_STORE: postgres
     ports:
       - '${BLAYER_PORT:-3000}:3000'
 

@@ -1,85 +1,37 @@
--- CreateEnum
-CREATE TYPE "FieldType" AS ENUM ('SHORT_TEXT', 'LONG_TEXT', 'NUMBER', 'EMAIL', 'PHONE', 'URL', 'DATE', 'TIME', 'SELECT', 'RADIO', 'CHECKBOX', 'RATING', 'SCALE', 'MENU', 'PAYMENT');
+-- Skema awal Blayer versi video. Seluruh tabel platform agent lama sudah dihapus.
+
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateTable
-CREATE TABLE "forms" (
+CREATE TABLE "videos" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "is_short" BOOLEAN NOT NULL DEFAULT false,
     "title" TEXT NOT NULL,
-    "description" TEXT,
-    "purpose" TEXT,
-    "templateId" TEXT,
-    "bannerUrl" TEXT,
-    "meetingUrl" TEXT,
-    "videoUrl" TEXT,
-    "qrisUrl" TEXT,
-    "priceAmount" INTEGER,
-    "isPublished" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "channel" TEXT NOT NULL,
+    "channel_id" TEXT NOT NULL,
+    "channel_url" TEXT NOT NULL,
+    "verified_channel" BOOLEAN NOT NULL DEFAULT false,
+    "duration" TEXT NOT NULL,
+    "views" INTEGER NOT NULL DEFAULT 0,
+    "is_live" BOOLEAN NOT NULL DEFAULT false,
+    "thumbnail" TEXT NOT NULL,
+    "published_at" TIMESTAMP(3) NOT NULL,
+    "scraped_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "forms_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "form_fields" (
-    "id" TEXT NOT NULL,
-    "formId" TEXT NOT NULL,
-    "label" TEXT NOT NULL,
-    "description" TEXT,
-    "placeholder" TEXT,
-    "type" "FieldType" NOT NULL DEFAULT 'SHORT_TEXT',
-    "isRequired" BOOLEAN NOT NULL DEFAULT false,
-    "options" JSONB,
-    "order" INTEGER NOT NULL DEFAULT 0,
-
-    CONSTRAINT "form_fields_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "form_responses" (
-    "id" TEXT NOT NULL,
-    "formId" TEXT NOT NULL,
-    "respondentName" TEXT,
-    "respondentEmail" TEXT,
-    "answers" JSONB NOT NULL,
-    "durationSeconds" INTEGER,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "form_responses_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "form_analyses" (
-    "id" TEXT NOT NULL,
-    "formId" TEXT NOT NULL,
-    "purpose" TEXT NOT NULL,
-    "summary" TEXT NOT NULL,
-    "recommendation" TEXT NOT NULL,
-    "ranking" JSONB NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "form_analyses_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "videos_pkey" PRIMARY KEY ("category","id")
 );
 
 -- CreateIndex
-CREATE INDEX "forms_userId_idx" ON "forms"("userId");
+CREATE INDEX "videos_scraped_at_idx" ON "videos"("scraped_at");
 
 -- CreateIndex
-CREATE INDEX "form_fields_formId_idx" ON "form_fields"("formId");
+CREATE INDEX "videos_published_at_idx" ON "videos"("published_at");
 
--- CreateIndex
-CREATE INDEX "form_responses_formId_idx" ON "form_responses"("formId");
 
--- CreateIndex
-CREATE INDEX "form_analyses_formId_idx" ON "form_analyses"("formId");
-
--- AddForeignKey
-ALTER TABLE "form_fields" ADD CONSTRAINT "form_fields_formId_fkey" FOREIGN KEY ("formId") REFERENCES "forms"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "form_responses" ADD CONSTRAINT "form_responses_formId_fkey" FOREIGN KEY ("formId") REFERENCES "forms"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "form_analyses" ADD CONSTRAINT "form_analyses_formId_fkey" FOREIGN KEY ("formId") REFERENCES "forms"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
+-- Menutup akses langsung lewat PostgREST (anon key Supabase bersifat publik).
+-- RLS tanpa policy menolak semuanya; aplikasi dan scraper menyambung sebagai
+-- `postgres` yang ber-BYPASSRLS, jadi Prisma tidak terpengaruh.
+ALTER TABLE "videos" ENABLE ROW LEVEL SECURITY;

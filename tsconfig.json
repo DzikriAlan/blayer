@@ -28,9 +28,6 @@
       "@/.source": [
         "./.source/index.ts"
       ],
-      "@blayer/sdk": [
-        "./sdk/src/index.ts"
-      ],
       "@server/*": [
         "./server/*"
       ]

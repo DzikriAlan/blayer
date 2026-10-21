@@ -4,30 +4,24 @@ import { getRoutePaths, routeRequest } from '@server/routes'
 import { getTestRequest, getTestResponse, muteLogger } from '../helpers/apiTest'
 
 const { prismaMock } = vi.hoisted(() => ({
-  prismaMock: { project: { findMany: vi.fn(), findUnique: vi.fn() } },
+  prismaMock: { video: { findMany: vi.fn(), aggregate: vi.fn() } },
 }))
 
 vi.mock('@server/shared/prisma.service', () => ({ prismaService: prismaMock }))
 
-const ADMIN_TOKEN = 'token-pengelolaan-uji'
-
 const call = async ({
   path,
   method = 'GET',
-  token = ADMIN_TOKEN,
+  query = {},
 }: {
   path: string[]
   method?: string
-  token?: string
+  query?: Record<string, string>
 }) => {
   const res = getTestResponse()
 
   await routeRequest(
-    getTestRequest({
-      method,
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-      query: { path } as never,
-    }) as never,
+    getTestRequest({ method, query: { ...query, path } as never }) as never,
     res as never
   )
 
@@ -36,69 +30,57 @@ const call = async ({
 
 beforeEach(() => {
   muteLogger()
-  process.env.BLAYER_ADMIN_TOKEN = ADMIN_TOKEN
-  prismaMock.project.findMany = vi.fn().mockResolvedValue([])
-  prismaMock.project.findUnique = vi.fn().mockResolvedValue(null)
+  prismaMock.video.findMany = vi.fn().mockResolvedValue([])
+  prismaMock.video.aggregate = vi.fn().mockResolvedValue({ _max: { scrapedAt: null } })
 })
 
 describe('tabel rute', () => {
-  it('TC-84a memasang tiap rute tepat satu kali', () => {
+  it('TC-84a memasang tiap rute tepat satu kali, tanpa rute platform agent lama', () => {
     const paths = getRoutePaths()
 
     expect(new Set(paths).size).toBe(paths.length)
-    expect(paths).toContain('v1/agents/:agentId/run')
-    expect(paths).toContain('health')
+    expect(paths).toEqual(['health', 'v1/videos', 'v1/videos/search', 'v1/videos/:videoId'])
   })
 
-  it('TC-84b meneruskan permintaan ke module feature yang benar', async () => {
-    const res = await call({ path: ['v1', 'projects'] })
+  it('TC-84b daftar video dibaca dari basis data dalam masa simpan 3 hari', async () => {
+    const syncedAt = new Date('2026-10-21T03:05:00.000Z')
+    prismaMock.video.aggregate = vi.fn().mockResolvedValue({ _max: { scrapedAt: syncedAt } })
+
+    const res = await call({ path: ['v1', 'videos'] })
 
     expect(res.statusCode).toBe(200)
-    expect(prismaMock.project.findMany).toHaveBeenCalled()
+    expect(res.body.data).toEqual({ syncedAt: syncedAt.toISOString(), videos: [] })
+    const where = prismaMock.video.findMany.mock.calls[0][0].where
+    expect(Date.now() - where.publishedAt.gte.getTime()).toBeGreaterThanOrEqual(72 * 60 * 60 * 1000 - 1000)
+    expect(where.scrapedAt).toBeUndefined()
+    expect(res.headers['Cache-Control']).toContain('s-maxage')
   })
 
-  it('TC-84c menyalin parameter path ke query supaya controller membacanya', async () => {
-    const res = await call({ path: ['v1', 'projects', 'project-1', 'keys'] })
+  it('TC-84c `since` hanya mengambil video hasil scrape setelahnya', async () => {
+    await call({ path: ['v1', 'videos'], query: { since: '2026-10-20T03:05:00.000Z' } })
 
-    // Project tiruan tidak ada, jadi rutenya menjawab 404 dari service —
-    // buktinya parameter projectId memang sampai ke controller.
-    expect(res.statusCode).toBe(404)
-    expect(res.body.error?.code).toBe('PROJECT_NOT_FOUND')
+    const where = prismaMock.video.findMany.mock.calls[0][0].where
+    expect(where.scrapedAt).toEqual({ gt: new Date('2026-10-20T03:05:00.000Z') })
   })
 
-  it('TC-84d menolak alamat yang tidak terdaftar', async () => {
-    const res = await call({ path: ['v1', 'tidak', 'ada'] })
-
-    expect(res.statusCode).toBe(404)
-    expect(res.body.error?.code).toBe('ROUTE_NOT_FOUND')
-  })
-
-  it('TC-84e membedakan koleksi dari detail pada alamat mirip', async () => {
-    const collection = await call({ path: ['v1', 'projects'] })
-    const detail = await call({ path: ['v1', 'projects', 'project-1'] })
-
-    expect(collection.statusCode).toBe(200)
-    expect(detail.statusCode).toBe(404)
-    expect(detail.body.error?.code).toBe('PROJECT_NOT_FOUND')
-  })
-
-  it('TC-84h mendahulukan alamat tetap atas parameter yang bentuknya sama', async () => {
-    // 'preview' bisa terbaca sebagai id agent kalau urutannya salah; POST-nya
-    // sampai ke pratinjau, bukan ke detail agent yang tidak melayani POST.
-    const res = await call({ path: ['v1', 'agents', 'preview'], method: 'POST' })
+  it('TC-84d menolak `since` yang bukan tanggal', async () => {
+    const res = await call({ path: ['v1', 'videos'], query: { since: 'kemarin' } })
 
     expect(res.statusCode).toBe(422)
     expect(res.body.error?.code).toBe('VALIDATION_ERROR')
   })
 
-  it('TC-84f tetap menolak tanpa kredensial walau alamatnya benar', async () => {
-    const res = await call({ path: ['v1', 'projects'], token: '' })
+  it('TC-84e menolak alamat yang tidak terdaftar, termasuk rute agent lama', async () => {
+    for (const path of [['v1', 'tidak', 'ada'], ['v1', 'projects'], ['v1', 'agents']]) {
+      const res = await call({ path })
 
-    expect(res.statusCode).toBe(401)
+      expect(res.statusCode).toBe(404)
+      expect(res.body.error?.code).toBe('ROUTE_NOT_FOUND')
+    }
   })
 
   it('TC-84g menjawab 405 untuk method yang tidak dilayani rutenya', async () => {
-    const res = await call({ path: ['v1', 'models'], method: 'DELETE' })
+    const res = await call({ path: ['v1', 'videos'], method: 'DELETE' })
 
     expect(res.statusCode).toBe(405)
     expect(res.body.error?.code).toBe('METHOD_NOT_ALLOWED')

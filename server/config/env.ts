@@ -13,16 +13,12 @@ const ENV = {
   SUPABASE_PROJECT: () => process.env.SUPABASE_PROJECT,
   SUPABASE_PASSWORD: () => process.env.SUPABASE_PASSWORD,
   SUPABASE_URL: () => process.env.SUPABASE_URL,
+  SUPABASE_PROJECT_URL: () => process.env.SUPABASE_PROJECT_URL,
   SUPABASE_REGION: () => process.env.SUPABASE_REGION,
   SUPABASE_POOLER_HOST: () => process.env.SUPABASE_POOLER_HOST,
   SUPABASE_POOLER_PORT: () => process.env.SUPABASE_POOLER_PORT,
   SUPABASE_DIRECT_CONNECTION_STRING: () => process.env.SUPABASE_DIRECT_CONNECTION_STRING,
   NEXT_PUBLIC_SUPABASE_URL: () => process.env.NEXT_PUBLIC_SUPABASE_URL,
-  BLAYER_ENCRYPTION_KEY: () => process.env.BLAYER_ENCRYPTION_KEY,
-  BLAYER_ADMIN_USERNAME: () => process.env.BLAYER_ADMIN_USERNAME,
-  BLAYER_ADMIN_PASSWORD: () => process.env.BLAYER_ADMIN_PASSWORD,
-  BLAYER_SESSION_SECRET: () => process.env.BLAYER_SESSION_SECRET,
-  BLAYER_ADMIN_TOKEN: () => process.env.BLAYER_ADMIN_TOKEN,
 } as const
 
 // Next hanya menyalurkan sebagian variabel ke proses server produksi, sehingga
@@ -124,6 +120,7 @@ const getProjectRef = () => {
 
   const fromHost = [
     getValue('SUPABASE_URL'),
+    getValue('SUPABASE_PROJECT_URL'),
     getValue('NEXT_PUBLIC_SUPABASE_URL'),
     getValue('SUPABASE_DIRECT_CONNECTION_STRING'),
   ]
@@ -180,4 +177,4 @@ export const getDirectDatabaseUrl = () =>
 export const getEnvValue = (name: keyof typeof ENV) => getValue(name)
 
 export const getSupabaseUrl = () =>
-  getValue('SUPABASE_URL') || getValue('NEXT_PUBLIC_SUPABASE_URL')
+  getValue('SUPABASE_URL') || getValue('SUPABASE_PROJECT_URL') || getValue('NEXT_PUBLIC_SUPABASE_URL')

@@ -3,6 +3,7 @@ const { createMDX } = require('fumadocs-mdx/next')
 const getContentSecurityPolicy = () => {
   const supabase = (
     process.env.SUPABASE_URL ||
+    process.env.SUPABASE_PROJECT_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     ''
   ).trim()

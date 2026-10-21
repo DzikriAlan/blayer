@@ -51,4 +51,15 @@ export const videoIdValidation = z.object({
     .regex(/^[\w-]{11}$/, 'ID video YouTube terdiri dari 11 karakter.'),
 })
 
+// `since` = syncedAt terakhir yang dimiliki browser; kosong berarti ambil semuanya
+export const listVideosValidation = z.object({
+  since: z.preprocess(
+    (value) => (value === undefined || value === '' ? undefined : value),
+    z.coerce
+      .date({ errorMap: () => ({ message: 'since harus berupa tanggal ISO, contoh 2026-10-21T03:00:00.000Z.' }) })
+      .optional()
+  ),
+})
+
+export type ListVideosDto = z.infer<typeof listVideosValidation>
 export type SearchVideosDto = z.infer<typeof searchVideosValidation>

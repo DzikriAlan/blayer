@@ -1,50 +1,35 @@
-import { useCallback, useEffect } from 'react'
-import { useQueries } from '@tanstack/react-query'
-import type { UseQueryResult } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
+import { HOME_CATEGORIES } from '@/features/home/components/homeCatalog'
 import { useSearchStates } from '../states/searchStates'
-import { getSearch, getSearchKey } from '../services/searchServices'
-import type { DataSearchGroup, DataSearchResult } from '../types/searchTypes'
+import { getSearchList } from '../services/searchServices'
+import type { DataSearchGroup } from '../types/searchTypes'
 
 export const useSearchControllers = () => {
-  const { payloadGetSearchList, setSearchList } = useSearchStates()
+  const { setSearchList } = useSearchStates()
 
-  // combine hanya berjalan ulang saat hasil query berubah, jadi nilainya aman dipakai sebagai dependency effect
-  const combineSearchList = useCallback(
-    (results: UseQueryResult<DataSearchResult>[]) => ({
-      isPending: results.some((result) => result.isPending),
-      isAllError: results.length > 0 && results.every((result) => result.isError),
-      errorMessage: results.find((result) => result.isError)?.error?.message ?? '',
-      data: payloadGetSearchList.map<DataSearchGroup>((payload, index) => ({
-        key: getSearchKey(payload),
-        items: results[index]?.data?.data ?? [],
-      })),
-      refetch: () => Promise.all(results.map((result) => result.refetch())),
-    }),
-    [payloadGetSearchList],
-  )
-
-  // Satu query per kategori; hasil tiap kategori di-cache terpisah sehingga
-  // berpindah kategori tidak memanggil API lagi
-  const fetchSearchList = useQueries({
-    queries: payloadGetSearchList.map((payload) => ({
-      queryKey: ['search', payload],
-      queryFn: () => getSearch(payload),
-      staleTime: 5 * 60 * 1000,
-    })),
-    combine: combineSearchList,
+  // Satu query untuk seluruh kategori; isinya dibaca dari localStorage selama data hari ini sudah ada
+  const fetchSearchList = useQuery({
+    queryKey: ['search', 'list'],
+    queryFn: () => getSearchList(),
+    staleTime: 5 * 60 * 1000,
   })
 
   useEffect(() => {
-    if (!payloadGetSearchList.length || fetchSearchList.isPending) return setSearchList({ status: 'loading' })
+    if (fetchSearchList.isPending) return setSearchList({ status: 'loading' })
 
-    if (fetchSearchList.isAllError) {
-      return setSearchList({ status: 'error', statusSubtitle: fetchSearchList.errorMessage || 'Coba lagi nanti.', data: [] })
+    if (fetchSearchList.isError) {
+      return setSearchList({ status: 'error', statusSubtitle: fetchSearchList.error.message || 'Coba lagi nanti.', data: [] })
     }
 
-    const hasItems = fetchSearchList.data.some((group) => group.items.length)
-    setSearchList({ data: fetchSearchList.data, status: hasItems ? 'success' : 'empty' })
-  }, [payloadGetSearchList, fetchSearchList, setSearchList])
+    const videos = fetchSearchList.data ?? []
+    const data = HOME_CATEGORIES.map<DataSearchGroup>((name) => ({
+      key: name,
+      items: videos.filter((video) => video.category === name),
+    }))
+    setSearchList({ data, status: videos.length ? 'success' : 'empty' })
+  }, [fetchSearchList.isPending, fetchSearchList.isError, fetchSearchList.error, fetchSearchList.data, setSearchList])
 
   return { fetchSearchList }
 }

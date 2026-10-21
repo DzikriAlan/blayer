@@ -1,14 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { agentsModule } from '@server/features/agents/module'
-import { authModule } from '@server/features/auth/module'
 import { healthModule } from '@server/features/health/module'
-import { integrationsModule } from '@server/features/integrations/module'
-import { knowledgeModule } from '@server/features/knowledge/module'
-import { modelsModule } from '@server/features/models/module'
-import { projectsModule } from '@server/features/projects/module'
-import { runsModule } from '@server/features/runs/module'
-import { toolsModule } from '@server/features/tools/module'
 import { videosModule } from '@server/features/videos/module'
 import { notFoundError } from '@server/shared/http-error'
 import { logger } from '@server/shared/utils/logger.util'
@@ -26,32 +18,7 @@ interface Route {
 const routes: Route[] = [
   { path: 'health', handler: healthModule.status },
 
-  { path: 'v1/auth/login', handler: authModule.login },
-  { path: 'v1/models', handler: modelsModule.collection },
-
-  { path: 'v1/projects', handler: projectsModule.collection },
-  { path: 'v1/projects/:projectId', handler: projectsModule.detail },
-  { path: 'v1/projects/:projectId/keys', handler: projectsModule.keys },
-  { path: 'v1/projects/:projectId/credentials', handler: projectsModule.credentials },
-  { path: 'v1/projects/:projectId/integrations', handler: integrationsModule.byProject },
-  { path: 'v1/projects/:projectId/knowledge', handler: knowledgeModule.byProject },
-
-  { path: 'v1/agents', handler: agentsModule.collection },
-  { path: 'v1/agents/preview', handler: agentsModule.preview },
-  { path: 'v1/agents/:agentId', handler: agentsModule.detail },
-  { path: 'v1/agents/:agentId/versions', handler: agentsModule.versions },
-  { path: 'v1/agents/:agentId/publish', handler: agentsModule.publish },
-  { path: 'v1/agents/:agentId/run', handler: agentsModule.run },
-  { path: 'v1/agents/:agentId/runs', handler: agentsModule.runs },
-  { path: 'v1/agents/:agentId/sessions', handler: agentsModule.sessions },
-
-  { path: 'v1/integrations/:integrationId', handler: integrationsModule.detail },
-  { path: 'v1/integrations/:integrationId/tools', handler: integrationsModule.tools },
-
-  { path: 'v1/tools/:toolId', handler: toolsModule.detail },
-  { path: 'v1/knowledge/:documentId', handler: knowledgeModule.detail },
-  { path: 'v1/runs/:runId/confirm', handler: runsModule.confirm },
-
+  { path: 'v1/videos', handler: videosModule.list },
   { path: 'v1/videos/search', handler: videosModule.search },
   { path: 'v1/videos/:videoId', handler: videosModule.detail },
 ]

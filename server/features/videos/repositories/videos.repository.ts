@@ -99,6 +99,8 @@ const HEADERS = {
 }
 
 const MIN_GAP_MS = 900
+// oEmbed ringan dan tidak memicu captcha seperti halaman pencarian, jadi boleh beberapa sekaligus
+const OEMBED_CONCURRENCY = 5
 const MAX_PAGES = 25
 // Dipakai kalau halaman tonton tidak memuat versinya (mis. diganti halaman cek bot)
 const FALLBACK_CLIENT_VERSION = '2.20261020.01.00'
@@ -295,22 +297,51 @@ const isWithinHours = (row: VideosSearchEntity, maxAgeHours: number) => {
 }
 
 // Hasil pencarian tidak membawa negara channel, jadi asal Indonesia ditebak dari teksnya: judul
-// ditulis dengan huruf Latin, memuat kata khas Bahasa Indonesia, dan bukan media Malaysia.
+// dan nama channel ditulis dengan huruf Latin, memuat kata khas Bahasa Indonesia, tidak didominasi
+// kata Inggris, dan bukan media Malaysia.
 const INDONESIAN_WORDS = new Set([
   'yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'ini', 'itu', 'tidak', 'ada', 'dengan', 'akan', 'jadi',
   'sudah', 'bisa', 'karena', 'saat', 'kini', 'soal', 'begini', 'ternyata', 'hari', 'terbaru', 'berita',
   'kasus', 'harga', 'warga', 'pria', 'wanita', 'pelaku', 'korban', 'tersangka', 'ditangkap', 'viral',
-  'indonesia', 'jakarta', 'ri', 'presiden', 'pemerintah', 'menteri', 'rupiah', 'prabowo', 'gibran',
-  'jokowi', 'dpr', 'kpk', 'tni', 'polri', 'polda', 'polres', 'polisi', 'ekonomi', 'politik', 'emas',
+  'presiden', 'pemerintah', 'menteri', 'rupiah', 'dpr', 'kpk', 'tni', 'polri', 'polda', 'polres',
+  'polisi', 'ekonomi', 'politik', 'emas',
+  // Kata yang sering muncul di judul berita/clickbait berbahasa Indonesia
+  'apa', 'siapa', 'kenapa', 'mengapa', 'bagaimana', 'lagi', 'juga', 'atau', 'pada', 'oleh', 'baru',
+  'sampai', 'hingga', 'setelah', 'sebelum', 'bukan', 'cuma', 'hanya', 'akhir', 'nama', 'semua', 'para',
+  'kita', 'mereka', 'dia', 'anak', 'orang', 'rumah', 'jalan', 'kota', 'desa', 'negara', 'rakyat', 'uang',
+  'bursa', 'saham', 'pasar', 'naik', 'turun', 'anjlok', 'melonjak', 'tewas', 'tangkap', 'dibunuh',
+  'pembunuhan', 'penipuan', 'pencurian', 'narkoba', 'sidang', 'hakim', 'jaksa', 'vonis', 'penjara',
+  'ditahan', 'diperiksa', 'dugaan', 'korupsi', 'resmi', 'terkini', 'sekarang', 'kemarin', 'tahun',
+  'bulan', 'malam', 'lalu', 'ungkap', 'bongkar', 'bikin', 'minta', 'tolak', 'dukung', 'kritik', 'tegas',
+  'terkait', 'tentang', 'akibat', 'imbas', 'dampak', 'langsung', 'fakta', 'kabar', 'gak', 'nggak',
+  'banget', 'udah', 'gubernur', 'bupati', 'walikota', 'kapolri', 'kapolda', 'kapolres', 'kejagung',
+  'kejaksaan', 'pengadilan', 'mahkamah', 'menkeu', 'partai', 'pemilu', 'pilkada', 'koperasi', 'bansos',
+  'subsidi', 'pajak', 'utang', 'apbn', 'ojk', 'ihsg', 'beras', 'bbm', 'pertamina', 'listrik', 'gaji',
+  'buruh', 'phk', 'karhutla', 'kebakaran', 'banjir', 'gempa', 'kecelakaan', 'terbakar', 'evakuasi',
+])
+// Nama tempat dan tokoh ("Indonesia", "Prabowo") sengaja tidak masuk daftar di atas karena juga
+// muncul di judul media asing; yang dihitung hanya kosakata Bahasa Indonesia. Kata Inggris di
+// bawah dipakai untuk mengenali judul media asing.
+const ENGLISH_WORDS = new Set([
+  'the', 'of', 'is', 'are', 'was', 'were', 'in', 'on', 'and', 'what', 'why', 'how', 'to', 'for', 'with',
+  'from', 'after', 'as', 'at', 'by', 'this', 'that', 'will', 'has', 'have', 'its', 'their', 'says',
+  'over', 'into', 'across', 'since', 'went', 'wrong', 'biggest', 'crisis', 'market', 'stock', 'news',
 ])
 const MALAYSIAN_WORDS = new Set(['polis', 'pdrm', 'ringgit', 'awani', 'bernama'])
 const NON_LATIN = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u
 
 export const isIndonesian = (row: Pick<VideosSearchEntity, 'title' | 'channel' | 'snippet'>) => {
-  if (NON_LATIN.test(row.title) || /malaysia/i.test(row.channel)) return false
+  if (NON_LATIN.test(`${row.title} ${row.channel}`) || /malaysia/i.test(row.channel)) return false
 
-  const words = `${row.title} ${row.channel} ${row.snippet}`.toLowerCase().split(/[^\p{L}\p{N}]+/u)
+  const getWords = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean)
+  const words = getWords(`${row.title} ${row.channel} ${row.snippet}`)
   if (words.some((word) => MALAYSIAN_WORDS.has(word))) return false
+
+  // Media asing berbahasa Inggris tentang Indonesia ("Why Indonesia's Stock Market is in Crisis")
+  const titleWords = getWords(row.title)
+  const englishCount = titleWords.filter((word) => ENGLISH_WORDS.has(word)).length
+  const indonesianCount = titleWords.filter((word) => INDONESIAN_WORDS.has(word)).length
+  if (englishCount > indonesianCount) return false
 
   return words.some((word) => INDONESIAN_WORDS.has(word))
 }
@@ -465,6 +496,45 @@ export class VideosRepository {
     })
 
     return [...videos, ...shorts].sort(byNewest).slice(0, max)
+  }
+
+  // Judul di hasil pencarian bisa terjemahan otomatis YouTube (channel Korea atau Australia
+  // tampil berbahasa Indonesia), jadi asal video dicek ulang dari judul aslinya lewat oEmbed.
+  // oEmbed menolak (401/403/404) video yang tidak boleh di-embed — video itu memang tidak bisa
+  // diputar di Blayer, jadi ikut dibuang. Kalau oEmbed tidak bisa dihubungi, hasil pencarian dipakai.
+  async getVideosIndonesian(rows: VideosSearchEntity[]) {
+    const kept: (VideosSearchEntity | null)[] = new Array(rows.length).fill(null)
+    let next = 0
+
+    const work = async () => {
+      while (next < rows.length) {
+        const index = next++
+        const row = rows[index]
+        try {
+          const res = await fetch(
+            `https://www.youtube.com/oembed?${new URLSearchParams({ url: `https://www.youtube.com/watch?v=${row.id}`, format: 'json' })}`,
+            { headers: HEADERS }
+          )
+          if (!res.ok) {
+            if (res.status >= 500 || res.status === 429) kept[index] = row
+            continue
+          }
+          const original = (await res.json()) as { title?: string; author_name?: string }
+          const isOriginalIndonesian = isIndonesian({
+            title: original.title ?? row.title,
+            channel: original.author_name ?? row.channel,
+            snippet: '',
+          })
+          kept[index] = isOriginalIndonesian ? row : null
+        } catch {
+          kept[index] = row
+        }
+      }
+    }
+
+    await Promise.all(Array.from({ length: OEMBED_CONCURRENCY }, work))
+
+    return kept.filter((row): row is VideosSearchEntity => !!row)
   }
 
   // Semua yang diketahui halaman tonton tentang satu video

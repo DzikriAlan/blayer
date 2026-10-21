@@ -8,12 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { DataSearch, DataSearchGroup } from '@/features/search/types/searchTypes'
 import { useSearchStates } from '@/features/search/states/searchStates'
 import { useSearchControllers } from '@/features/search/controllers/searchControllers'
-import { getCompactCount, getDurationLabel } from '@/shared/lib/videoFormat'
+import { getCompactCount, getDurationLabel, getPublishedLabel } from '@/shared/lib/videoFormat'
 import HomeBanner from './homeBanner'
 import HomeCard from './homeCard'
 import type { HomeCardItem } from './homeCard'
 import HomeCategories from './homeCategories'
-import { HOME_ALL_CATEGORY, HOME_ALL_PAYLOADS, HOME_CATEGORIES, HOME_MAX_AGE_HOURS } from './homeCatalog'
+import { HOME_ALL_CATEGORY, HOME_CATEGORIES, HOME_RETENTION_DAYS } from './homeCatalog'
 
 const SKELETON_COUNT = 8
 // Kartu di baris pertama terlihat tanpa scroll, jadi gambarnya dimuat segera
@@ -24,7 +24,7 @@ const PAGE_SIZE = 20
 const LOAD_MORE_DELAY_MS = 700
 
 export default function HomeList() {
-  const { searchList, setGetSearchList } = useSearchStates()
+  const { searchList } = useSearchStates()
   const { fetchSearchList } = useSearchControllers()
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [filters, setFilters] = useState({
@@ -35,8 +35,6 @@ export default function HomeList() {
 
   const data = useMemo(() => {
     // utilisasi wajib ditulis di dalam parent function
-    const getCategoryName = (key: string) => HOME_CATEGORIES.find((category) => category.key === key)?.name ?? ''
-
     const getMappedItem = (video: DataSearch, category: string): HomeCardItem => ({
       id: video.id,
       href: `/watch/${video.id}`,
@@ -44,7 +42,7 @@ export default function HomeList() {
       channel: video.channel,
       isVerified: video.verifiedChannel,
       isShort: video.isShort,
-      meta: [video.views ? `${getCompactCount(video.views)} ditonton` : '', video.published].filter(Boolean).join(' · '),
+      meta: [video.views ? `${getCompactCount(video.views)} ditonton` : '', getPublishedLabel(video.publishedAt)].filter(Boolean).join(' · '),
       duration: video.isLive ? 'LIVE' : getDurationLabel(video.duration),
       category,
       imageSrc: video.thumbnail,
@@ -60,18 +58,19 @@ export default function HomeList() {
           const video = group.items[index]
           if (video && !seen.has(video.id)) {
             seen.add(video.id)
-            items.push(getMappedItem(video, getCategoryName(group.key)))
+            items.push(getMappedItem(video, group.key))
           }
         }
       }
       return items
     }
 
-    const mappedList = getInterleaved(searchList.data)
+    const groups = searchList.data.filter((group) => filters.activeCategory === HOME_ALL_CATEGORY || group.key === filters.activeCategory)
+    const mappedList = getInterleaved(groups)
     // Tanpa IntersectionObserver (browser lama) semua video langsung ditampilkan
     const canLazyLoad = typeof window !== 'undefined' && 'IntersectionObserver' in window
     const visibleCount = canLazyLoad ? filters.visibleCount : mappedList.length
-    const tabs = [HOME_ALL_CATEGORY, ...HOME_CATEGORIES.map((category) => category.name)].map((name) => ({
+    const tabs = [HOME_ALL_CATEGORY, ...HOME_CATEGORIES].map((name) => ({
       name,
       isActive: name === filters.activeCategory,
     }))
@@ -82,7 +81,7 @@ export default function HomeList() {
       isLoadingMore: filters.isLoadingMore,
       loadMoreLabel: `Memuat ${Math.min(PAGE_SIZE, mappedList.length - visibleCount)} video berikutnya…`,
       tabs,
-      countLabel: mappedList.length ? `${mappedList.length} video · ${HOME_MAX_AGE_HOURS} jam terakhir` : '',
+      countLabel: mappedList.length ? `${mappedList.length} video · ${HOME_RETENTION_DAYS} hari terakhir` : '',
       isLoading: searchList.status === 'loading',
       isError: searchList.status === 'error',
       isEmpty: searchList.status === 'empty' || (searchList.status === 'success' && !mappedList.length),
@@ -104,16 +103,6 @@ export default function HomeList() {
   const loadSearchList = () => {
     fetchSearchList.refetch()
   }
-
-  useEffect(() => {
-    // utilisasi wajib ditulis di dalam parent function
-    const getPayloads = () => {
-      const category = HOME_CATEGORIES.find((item) => item.name === filters.activeCategory)
-      return category ? [category.payload] : HOME_ALL_PAYLOADS
-    }
-
-    setGetSearchList(getPayloads())
-  }, [filters.activeCategory, setGetSearchList])
 
   // Lazy load: saat skeleton di bawah masuk layar, tampilkan status memuat lalu 20 video berikutnya.
   // Skeleton memakai overflow-anchor:none agar browser tidak menahan scroll di situ dan memicu muatan beruntun.

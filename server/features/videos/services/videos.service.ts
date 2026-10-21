@@ -4,14 +4,30 @@ import {
   serviceUnavailableError,
 } from '../../../shared/http-error'
 import { getPagination } from '../../../shared/response'
-import type { SearchVideosDto } from '../dto/videos.dto'
+import { getErrorFields, logger } from '../../../shared/utils/logger.util'
+import {
+  VIDEOS_CATEGORIES,
+  VIDEOS_PER_CATEGORY,
+  VIDEOS_RETENTION_HOURS,
+  VIDEOS_SCRAPE_MAX_AGE_HOURS,
+  VIDEOS_SHORTS_PERCENT,
+} from '../constants/videos.categories'
+import type { ListVideosDto, SearchVideosDto } from '../dto/videos.dto'
 import {
   videosRepository,
   VideosSourceError,
   type VideosRepository,
+  type VideosSearchEntity,
 } from '../repositories/videos.repository'
+import {
+  videosStoreRepository,
+  type VideosStoreEntity,
+  type VideosStoreRepository,
+} from '../repositories/videosStore.repository'
 
 const CACHE_MS = 30 * 60 * 1000
+const HOUR_MS = 60 * 60 * 1000
+const VIDEOS_CANDIDATE_RATIO = 1.4
 
 // Cache singkat di memori supaya panggilan berulang tidak kembali ke YouTube
 // dan memancing captcha.
@@ -44,8 +60,83 @@ const getSourceError = (error: unknown) => {
   return serviceUnavailableError('YOUTUBE_UNAVAILABLE', error.message)
 }
 
+// Hasil pencarian YouTube -> baris tabel videos. Umur dari YouTube ("16 jam lalu") diubah
+// jadi waktu terbit supaya tetap benar saat dibaca hari-hari berikutnya.
+const getStoredRow = (row: VideosSearchEntity, category: string, scrapedAt: Date): VideosStoreEntity => ({
+  id: row.id,
+  category,
+  url: row.url,
+  isShort: row.isShort,
+  title: row.title,
+  channel: row.channel,
+  channelId: row.channelId,
+  channelUrl: row.channelUrl,
+  verifiedChannel: row.verifiedChannel,
+  duration: row.duration,
+  views: row.views,
+  isLive: row.isLive,
+  thumbnail: row.thumbnail,
+  publishedAt: new Date(scrapedAt.getTime() - (row.publishedHoursAgo ?? 0) * HOUR_MS),
+  scrapedAt,
+})
+
 export class VideosService {
-  constructor(private readonly videosRepository: VideosRepository) {}
+  constructor(
+    private readonly videosRepository: VideosRepository,
+    private readonly videosStoreRepository: VideosStoreRepository
+  ) {}
+
+  // Dibaca browser sekali sehari; dengan `since` hanya video hasil scrape setelahnya
+  async fetchVideosList({ since }: ListVideosDto) {
+    const publishedAfter = new Date(Date.now() - VIDEOS_RETENTION_HOURS * HOUR_MS)
+    const [videos, syncedAt] = await Promise.all([
+      this.videosStoreRepository.getVideosStored({ publishedAfter, since }),
+      this.videosStoreRepository.getVideosSyncedAt(),
+    ])
+
+    return { syncedAt: syncedAt?.toISOString() ?? null, videos }
+  }
+
+  // Scrape harian: 100 video terbaru per kategori (yang judul aslinya berbahasa Indonesia) masuk ke basis data, lalu video yang
+  // terbit lebih dari 3 hari lalu dihapus. Kategori yang gagal dilewati agar kategori
+  // lain tetap terisi; kalau semuanya gagal, error terakhir dilempar.
+  async postVideosSync(scrapedAt = new Date()) {
+    const rows: VideosStoreEntity[] = []
+    const categories: { name: string; total: number; error?: string }[] = []
+    let lastError: unknown = null
+    const shortsMax = Math.round((VIDEOS_PER_CATEGORY * VIDEOS_SHORTS_PERCENT) / 100)
+
+    for (const category of VIDEOS_CATEGORIES) {
+      try {
+        // Kandidat dilebihkan karena sebagian gugur saat judul aslinya dicek
+        const candidates = await this.videosRepository.getVideosMix({
+          queries: [...category.queries],
+          sort: 'date',
+          max: Math.round(VIDEOS_PER_CATEGORY * VIDEOS_CANDIDATE_RATIO),
+          shortsMax: Math.round(shortsMax * VIDEOS_CANDIDATE_RATIO),
+          maxAgeHours: VIDEOS_SCRAPE_MAX_AGE_HOURS,
+        })
+        const verified = await this.videosRepository.getVideosIndonesian(candidates)
+        const shorts = verified.filter((row) => row.isShort).slice(0, shortsMax)
+        const found = [...verified.filter((row) => !row.isShort).slice(0, VIDEOS_PER_CATEGORY - shorts.length), ...shorts]
+        rows.push(...found.map((row) => getStoredRow(row, category.name, scrapedAt)))
+        categories.push({ name: category.name, total: found.length })
+      } catch (error) {
+        lastError = error
+        categories.push({ name: category.name, total: 0, error: error instanceof Error ? error.message : String(error) })
+        logger.warn('scrape kategori gagal', { category: category.name, ...getErrorFields(error) })
+      }
+    }
+
+    if (!rows.length && lastError) throw getSourceError(lastError)
+
+    await this.videosStoreRepository.postVideosStored(rows)
+    const deleted = await this.videosStoreRepository.deleteVideosStored(
+      new Date(scrapedAt.getTime() - VIDEOS_RETENTION_HOURS * HOUR_MS)
+    )
+
+    return { scrapedAt: scrapedAt.toISOString(), saved: rows.length, deleted, categories }
+  }
 
   async fetchVideosSearch(dto: SearchVideosDto) {
     const { q: queries, period, sort, page, limit, maxAgeHours, shortsPercent } = dto
@@ -87,4 +178,4 @@ export class VideosService {
   }
 }
 
-export const videosService = new VideosService(videosRepository)
+export const videosService = new VideosService(videosRepository, videosStoreRepository)

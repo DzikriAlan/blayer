@@ -27,3 +27,13 @@ export const getPublishLabel = (isoDate: string) => {
   if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 }
+
+// Umur video dihitung ulang dari waktu terbitnya, karena data di localStorage dipakai seharian:
+// "2026-10-21T01:00:00Z" dibaca jam 06.00 UTC -> "5 jam lalu"
+export const getPublishedLabel = (isoDate: string, now = Date.now()) => {
+  const hours = Math.floor((now - Date.parse(isoDate)) / (60 * 60 * 1000))
+  if (Number.isNaN(hours)) return ''
+  if (hours < 1) return 'Baru saja'
+  if (hours < 24) return `${hours} jam lalu`
+  return `${Math.floor(hours / 24)} hari lalu`
+}

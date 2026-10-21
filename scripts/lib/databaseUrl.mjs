@@ -74,6 +74,7 @@ export const getProjectRef = () => {
 
   const fromHost = [
     getValue('SUPABASE_URL'),
+    getValue('SUPABASE_PROJECT_URL'),
     getValue('NEXT_PUBLIC_SUPABASE_URL'),
     getValue('SUPABASE_DIRECT_CONNECTION_STRING'),
   ]

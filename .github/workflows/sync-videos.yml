@@ -1,0 +1,35 @@
+name: Sync videos
+
+# Scrape video beranda ke Supabase setiap hari jam 10.00 WIB (03.00 UTC).
+# GitHub bisa menunda jadwal cron beberapa menit saat sibuk; browser memeriksa
+# ulang tiap 30 menit sampai data hari itu masuk.
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-videos
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Runner GitHub hanya punya IPv4, sedangkan host koneksi langsung Supabase
+      # (db.<ref>.supabase.co) hanya IPv6. DATABASE_URL karena itu harus alamat
+      # pooler: Supabase → Connect → "Transaction pooler" (port 6543).
+      - run: npm run videos:sync
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}

@@ -13,9 +13,8 @@ import { useSearchStates } from '@/features/search/states/searchStates'
 import { useSearchControllers } from '@/features/search/controllers/searchControllers'
 import { useVideoStates } from '@/features/video/states/videoStates'
 import { useVideoControllers } from '@/features/video/controllers/videoControllers'
-import { getCompactCount, getDurationLabel } from '@/shared/lib/videoFormat'
+import { getCompactCount, getDurationLabel, getPublishedLabel } from '@/shared/lib/videoFormat'
 import { useAutoplayNext } from '@/shared/lib/watchPreferences'
-import { HOME_ALL_PAYLOADS } from './homeCatalog'
 import HomeWatchDetail from './homeWatchDetail'
 import HomeWatchPlayer from './homeWatchPlayer'
 import HomeWatchUpNext from './homeWatchUpNext'
@@ -29,8 +28,9 @@ const UP_NEXT_COUNT = 10
 
 export default function HomeWatch({ videoId }: Props) {
   const { video, setGetVideo } = useVideoStates()
-  const { searchList, setGetSearchList } = useSearchStates()
+  const { searchList } = useSearchStates()
   const { fetchVideo } = useVideoControllers()
+  // "Berikutnya" memakai video beranda yang sudah tersimpan di localStorage
   useSearchControllers()
   const router = useRouter()
   const isAutoplayNext = useAutoplayNext()
@@ -42,7 +42,7 @@ export default function HomeWatch({ videoId }: Props) {
       href: `/watch/${item.id}`,
       title: item.title,
       channel: item.channel,
-      meta: [item.views ? `${getCompactCount(item.views)} ditonton` : '', item.published].filter(Boolean).join(' · '),
+      meta: [item.views ? `${getCompactCount(item.views)} ditonton` : '', getPublishedLabel(item.publishedAt)].filter(Boolean).join(' · '),
       duration: item.isLive ? 'LIVE' : getDurationLabel(item.duration),
       imageSrc: item.thumbnail,
     })
@@ -86,11 +86,6 @@ export default function HomeWatch({ videoId }: Props) {
   useEffect(() => {
     setGetVideo({ id: videoId })
   }, [videoId, setGetVideo])
-
-  // "Berikutnya" memakai hasil pencarian beranda, yang biasanya sudah ada di localStorage
-  useEffect(() => {
-    setGetSearchList(HOME_ALL_PAYLOADS)
-  }, [setGetSearchList])
 
   if (data.isEmpty || data.isError) {
     return (
