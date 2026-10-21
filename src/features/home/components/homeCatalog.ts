@@ -1,7 +1,7 @@
 import { getSearchKey } from '@/features/search/services/searchServices'
 import type { PayloadGetSearch } from '@/features/search/types/searchTypes'
 
-export type HomeCategoryName = 'Politik' | 'Ekonomi' | 'Investasi'
+export type HomeCategoryName = 'Politik' | 'Ekonomi' | 'Saham' | 'Crypto' | 'Hukum & Kriminal'
 
 export interface HomeCategory {
   name: HomeCategoryName
@@ -26,7 +26,7 @@ const getPayload = (queries: string[]): PayloadGetSearch => ({
   limit: HOME_VIDEOS_PER_CATEGORY,
 })
 
-// Satu kata kunci jarang menghasilkan 100 video dalam 48 jam, jadi tiap kategori memakai beberapa
+// Satu kata kunci jarang menghasilkan 100 video dalam 48 jam, jadi tiap kategori memakai beberapa (maks. 6)
 const getCategory = (name: HomeCategoryName, queries: string[]): HomeCategory => {
   const payload = getPayload(queries)
   return { name, key: getSearchKey(payload), payload }
@@ -35,7 +35,9 @@ const getCategory = (name: HomeCategoryName, queries: string[]): HomeCategory =>
 export const HOME_CATEGORIES: HomeCategory[] = [
   getCategory('Politik', ['politik indonesia', 'berita politik hari ini', 'DPR RI', 'prabowo']),
   getCategory('Ekonomi', ['ekonomi indonesia', 'berita ekonomi hari ini', 'rupiah hari ini', 'harga emas hari ini']),
-  getCategory('Investasi', ['IHSG', 'saham hari ini', 'investasi saham', 'kripto hari ini']),
+  getCategory('Saham', ['IHSG', 'saham hari ini', 'analisa saham', 'saham indonesia']),
+  getCategory('Crypto', ['crypto hari ini', 'bitcoin hari ini', 'berita crypto', 'kripto indonesia', 'harga bitcoin', 'altcoin']),
+  getCategory('Hukum & Kriminal', ['berita kriminal hari ini', 'kasus hukum terbaru', 'KPK', 'polisi tangkap']),
 ]
 
 export const HOME_ALL_PAYLOADS: PayloadGetSearch[] = HOME_CATEGORIES.map((category) => category.payload)

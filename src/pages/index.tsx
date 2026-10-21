@@ -12,7 +12,7 @@ const Home: NextPage = () => {
         <title>Blayer — Indonesia Hari Ini</title>
         <meta
           name="description"
-          content="Video politik, ekonomi, investasi, psikologi, dan pengembangan diri untuk memahami Indonesia lebih dalam."
+          content="Video politik, ekonomi, saham, crypto, serta hukum dan kriminal untuk memahami Indonesia lebih dalam."
         />
       </Head>
       <AppShell hideHeader footer={<HomeFooter />}>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCw } from 'lucide-react'
+import { LoaderCircle, RotateCw } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -20,6 +20,8 @@ const SKELETON_COUNT = 8
 const PRIORITY_CARDS = 4
 // Beranda menampilkan 20 video dulu; 20 berikutnya dimuat saat pengguna menggulir mendekati bawah
 const PAGE_SIZE = 20
+// Jeda singkat agar skeleton "memuat" terlihat sebelum 20 video berikutnya muncul
+const LOAD_MORE_DELAY_MS = 700
 
 export default function HomeList() {
   const { searchList, setGetSearchList } = useSearchStates()
@@ -28,6 +30,7 @@ export default function HomeList() {
   const [filters, setFilters] = useState({
     activeCategory: HOME_ALL_CATEGORY,
     visibleCount: PAGE_SIZE,
+    isLoadingMore: false,
   })
 
   const data = useMemo(() => {
@@ -76,6 +79,8 @@ export default function HomeList() {
     return {
       data: mappedList.slice(0, visibleCount),
       hasMore: mappedList.length > visibleCount,
+      isLoadingMore: filters.isLoadingMore,
+      loadMoreLabel: `Memuat ${Math.min(PAGE_SIZE, mappedList.length - visibleCount)} video berikutnya…`,
       tabs,
       countLabel: mappedList.length ? `${mappedList.length} video · ${HOME_MAX_AGE_HOURS} jam terakhir` : '',
       isLoading: searchList.status === 'loading',
@@ -93,7 +98,7 @@ export default function HomeList() {
   }, [filters, searchList])
 
   const editCategory = (name: string) => {
-    setFilters((prev) => ({ ...prev, activeCategory: name, visibleCount: PAGE_SIZE }))
+    setFilters((prev) => ({ ...prev, activeCategory: name, visibleCount: PAGE_SIZE, isLoadingMore: false }))
   }
 
   const loadSearchList = () => {
@@ -110,20 +115,28 @@ export default function HomeList() {
     setGetSearchList(getPayloads())
   }, [filters.activeCategory, setGetSearchList])
 
-  // Lazy load: saat baris skeleton di bawah mendekati layar, tampilkan 20 video berikutnya.
+  // Lazy load: saat skeleton di bawah masuk layar, tampilkan status memuat lalu 20 video berikutnya.
   // Skeleton memakai overflow-anchor:none agar browser tidak menahan scroll di situ dan memicu muatan beruntun.
   useEffect(() => {
     const sentinel = sentinelRef.current
-    if (!data.hasMore || !sentinel) return
+    if (!data.hasMore || data.isLoadingMore || !sentinel) return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) setFilters((prev) => ({ ...prev, visibleCount: prev.visibleCount + PAGE_SIZE }))
+        if (entry?.isIntersecting) setFilters((prev) => ({ ...prev, isLoadingMore: true }))
       },
-      { rootMargin: '600px 0px' },
+      { rootMargin: '0px 0px 120px 0px' },
     )
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [data.hasMore, data.data.length])
+  }, [data.hasMore, data.isLoadingMore, data.data.length])
+
+  useEffect(() => {
+    if (!data.isLoadingMore) return
+    const timer = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, visibleCount: prev.visibleCount + PAGE_SIZE, isLoadingMore: false }))
+    }, LOAD_MORE_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [data.isLoadingMore])
 
   return (
     <>
@@ -177,13 +190,19 @@ export default function HomeList() {
         ) : null}
 
         {data.hasMore && !data.isLoading && !data.isError ? (
-          <div ref={sentinelRef} aria-hidden className="grid grid-cols-[repeat(auto-fill,minmax(min(210px,100%),1fr))] gap-x-3.5 gap-y-7 [overflow-anchor:none]">
-            {data.skeletons.slice(0, 4).map((index) => (
-              <div key={index} className="flex flex-col gap-2.5">
-                <Skeleton className="aspect-video w-full rounded-xl" />
-                <Skeleton className="h-4 w-11/12" />
-              </div>
-            ))}
+          <div ref={sentinelRef} className="flex flex-col gap-4 [overflow-anchor:none]">
+            <div aria-hidden className="grid grid-cols-[repeat(auto-fill,minmax(min(210px,100%),1fr))] gap-x-3.5 gap-y-7">
+              {data.skeletons.slice(0, 4).map((index) => (
+                <div key={index} className="flex flex-col gap-2.5">
+                  <Skeleton className="aspect-video w-full rounded-xl" />
+                  <Skeleton className="h-4 w-11/12" />
+                </div>
+              ))}
+            </div>
+            <p role="status" className="m-0 flex items-center justify-center gap-2 text-[13px] text-muted-foreground">
+              {data.isLoadingMore ? <LoaderCircle aria-hidden className="h-4 w-4 animate-spin" /> : null}
+              {data.isLoadingMore ? data.loadMoreLabel : 'Gulir untuk memuat video berikutnya'}
+            </p>
           </div>
         ) : null}
       </section>

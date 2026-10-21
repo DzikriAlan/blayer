@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { ExternalLink, RotateCw } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,7 @@ import { useSearchControllers } from '@/features/search/controllers/searchContro
 import { useVideoStates } from '@/features/video/states/videoStates'
 import { useVideoControllers } from '@/features/video/controllers/videoControllers'
 import { getCompactCount, getDurationLabel } from '@/shared/lib/videoFormat'
+import { useAutoplayNext } from '@/shared/lib/watchPreferences'
 import { HOME_ALL_PAYLOADS } from './homeCatalog'
 import HomeWatchDetail from './homeWatchDetail'
 import HomeWatchPlayer from './homeWatchPlayer'
@@ -30,6 +32,8 @@ export default function HomeWatch({ videoId }: Props) {
   const { searchList, setGetSearchList } = useSearchStates()
   const { fetchVideo } = useVideoControllers()
   useSearchControllers()
+  const router = useRouter()
+  const isAutoplayNext = useAutoplayNext()
 
   const data = useMemo(() => {
     // utilisasi wajib ditulis di dalam parent function
@@ -73,6 +77,12 @@ export default function HomeWatch({ videoId }: Props) {
     fetchVideo.refetch()
   }
 
+  // Video selesai: kalau putar otomatis aktif, lanjut ke video pertama di daftar "Berikutnya"
+  const submitEnded = () => {
+    const next = data.upNext[0]
+    if (isAutoplayNext && next) router.push(next.href)
+  }
+
   useEffect(() => {
     setGetVideo({ id: videoId })
   }, [videoId, setGetVideo])
@@ -106,7 +116,7 @@ export default function HomeWatch({ videoId }: Props) {
     <div className="flex w-full max-w-[1360px] flex-col gap-8 px-[clamp(12px,4vw,48px)] pb-10 pt-1 lg:flex-row lg:items-start">
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         {data.video && data.playerMode === 'player' ? (
-          <HomeWatchPlayer key={data.video.id} videoId={data.video.id} embedUrl={data.video.embedUrl} title={data.video.title} />
+          <HomeWatchPlayer key={data.video.id} videoId={data.video.id} embedUrl={data.video.embedUrl} title={data.video.title} onEnded={submitEnded} />
         ) : (
           <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black sm:rounded-2xl">
             {data.playerMode === 'loading' ? <Skeleton className="absolute inset-0 rounded-none" /> : null}

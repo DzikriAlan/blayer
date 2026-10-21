@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { Skeleton } from '@/components/ui/skeleton'
+import WatchedBar from '@/components/watched-bar'
 
 export interface HomeWatchUpNextItem {
   id: string
@@ -37,8 +38,9 @@ export default function HomeWatchUpNext({ items, isLoading }: Props) {
         <Link key={item.id} href={item.href} className="group flex gap-3">
           <div className="relative aspect-video w-36 shrink-0 overflow-hidden rounded-lg bg-muted sm:w-40">
             <Image src={item.imageSrc} alt="" fill unoptimized loading="lazy" sizes="160px" className="object-cover" />
+            <WatchedBar videoId={item.id} />
             {item.duration ? (
-              <span className="absolute bottom-1 right-1 rounded bg-[rgba(11,11,13,0.82)] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+              <span className="absolute bottom-1.5 right-1 rounded bg-[rgba(11,11,13,0.82)] px-1.5 py-0.5 text-[11px] font-semibold text-white">
                 {item.duration}
               </span>
             ) : null}

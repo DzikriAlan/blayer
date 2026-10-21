@@ -52,21 +52,24 @@ describe('beranda', () => {
 
     expect(screen.getByRole('heading', { name: 'Indonesia Hari Ini', level: 2 })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Politik' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Investasi' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Saham' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Crypto' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Hukum & Kriminal' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Investasi' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Psikologi' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Pengembangan Diri' })).not.toBeInTheDocument()
 
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(6))
-    expect(screen.getAllByText('1,2 rb ditonton · 1 hari lalu')).toHaveLength(6)
-    expect(screen.getByText('6 video · 48 jam terakhir')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(10))
+    expect(screen.getAllByText('1,2 rb ditonton · 1 hari lalu')).toHaveLength(10)
+    expect(screen.getByText('10 video · 48 jam terakhir')).toBeInTheDocument()
     expect(screen.getAllByText('10:05').length).toBeGreaterThan(0)
   })
 
   it('menyaring video saat kategori dipilih', async () => {
     renderHome()
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(6))
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(10))
 
-    await userEvent.click(screen.getByRole('button', { name: 'Investasi' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Saham' }))
 
     await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(2))
     expect(screen.getByText('IHSG pertama')).toBeInTheDocument()
@@ -74,7 +77,7 @@ describe('beranda', () => {
 
   it('meminta 100 video per kategori dengan batas 48 jam', async () => {
     renderHome()
-    await waitFor(() => expect(getSearch).toHaveBeenCalledTimes(3))
+    await waitFor(() => expect(getSearch).toHaveBeenCalledTimes(5))
 
     for (const [payload] of vi.mocked(getSearch).mock.calls) {
       expect(payload.limit).toBe(100)
@@ -102,11 +105,12 @@ describe('beranda', () => {
     }))
     renderHome()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Investasi' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Saham' }))
     await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(20))
 
     act(() => onIntersect([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))
-    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(30))
+    expect(await screen.findByText('Memuat 10 video berikutnya…')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /ditonton/ })).toHaveLength(30), { timeout: 2000 })
     vi.unstubAllGlobals()
   })
 

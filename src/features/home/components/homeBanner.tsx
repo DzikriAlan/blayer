@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Play } from 'lucide-react'
 
+import AutoplayToggle from '@/components/autoplay-toggle'
 import ThemeToggle from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import bannerImage from '@/shared/images/Semua Mata pada Karhutla.png'
@@ -32,7 +33,10 @@ export default function HomeBanner({ watchHref, title, isWatchReady }: Props) {
           <Link href="/" aria-label="Blayer, ke beranda" className="font-display text-[26px] font-normal leading-none tracking-tight text-white sm:text-[30px]">
             blayer
           </Link>
-          <ThemeToggle className="text-white hover:bg-white/15" />
+          <div className="flex items-center gap-1">
+            <AutoplayToggle className="text-white hover:bg-white/15 aria-pressed:text-primary" />
+            <ThemeToggle className="text-white hover:bg-white/15" />
+          </div>
         </div>
 
         <h1 className="sr-only">{title}</h1>

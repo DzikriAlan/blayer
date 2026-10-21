@@ -2,6 +2,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { BadgeCheck, Play } from 'lucide-react'
 
+import WatchedBar from '@/components/watched-bar'
+
 export interface HomeCardItem {
   id: string
   href: string
@@ -45,6 +47,7 @@ export default function HomeCard({ item, isPriority = false }: Props) {
             {item.category}
           </span>
         ) : null}
+        <WatchedBar videoId={item.id} />
         {item.duration ? (
           <span className="absolute bottom-2 right-2 rounded-md bg-[rgba(11,11,13,0.82)] px-1.5 py-0.5 text-[11px] font-semibold text-white">
             {item.duration}

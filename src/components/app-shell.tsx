@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import AutoplayToggle from '@/components/autoplay-toggle'
 import ThemeToggle from '@/components/theme-toggle'
 import { cn } from '@/shared/lib/utils'
 
@@ -22,7 +23,10 @@ export default function AppShell({ className, children, footer, hideHeader }: Pr
           >
             blayer
           </Link>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <AutoplayToggle />
+            <ThemeToggle />
+          </div>
         </header>
       )}
       <main className={cn('flex w-full flex-1 flex-col items-center', className)}>{children}</main>
